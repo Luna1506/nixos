@@ -1,23 +1,5 @@
 { pkgs, ... }:
 
-let
-  wofiStyle = pkgs.stdenv.mkDerivation {
-    name = "wofi-style";
-
-    src = ./wofi/style.scss;
-
-    nativeBuildInputs = [ pkgs.sass ];
-
-    buildPhase = ''
-      sass $src style.css
-    '';
-
-    installPhase = ''
-      mkdir -p $out
-      cp style.css $out/
-    '';
-  };
-in
 {
   programs.wofi = {
     enable = true;
@@ -31,7 +13,13 @@ in
     };
   };
 
-  home.file.".config/wofi/style.css".source =
-    "${wofiStyle}/style.css";
+  # Wofi CSS direkt kopieren
+  home.file.".config/wofi/style.css".text = pkgs.runCommand "compile-wofi-style" {
+    buildInputs = [ pkgs.sass ];
+  } ''
+    sass ./wofi/style.scss style.css
+    mkdir -p $out
+    cp style.css $out/
+  '';
 }
 
