@@ -33,5 +33,7 @@
   # Wichtig: Dieses Feld sollte der NixOS-Version deiner ERSTinstallation entsprechen.
   # In deiner Konfiguration stand "25.11", aktuell existiert 24.11 stabil.
   system.stateVersion = "24.11";
+
+  nixpkgs.config.allowUnfree = true;
 }
 
