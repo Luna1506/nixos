@@ -16,7 +16,7 @@
     ./modules/cursor.nix
     ./modules/hyprpaper.nix
     ./modules/theme.nix
-    ./modules/wofi.nix
+#    ./modules/wofi.nix
     ./modules/ghostty.nix
 #    ./modules/neovim.nix
   ];
