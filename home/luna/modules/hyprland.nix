@@ -1,5 +1,12 @@
 # home/luna/nixos/modules/hyprland.nix
 { config, pkgs, ... }:
+
+let
+  terminal = "ghostty";
+  fileManager = "nautilus";
+  menu = "wofi --show drun";
+  mainMod = "SUPER";
+in
 {
   wayland.windowManager.hyprland = {
     enable = true;
@@ -13,14 +20,13 @@
       ###################
       ### MY PROGRAMS ###
       ###################
-      "$terminal"    = "ghostty";
-      "$fileManager" = "nautilus";
-      "$menu"        = "wofi --show drun";
+      "$terminal"    = terminal;
+      "$fileManager" = fileManager;
+      "$menu"        = menu;
 
       #############################
       ### ENVIRONMENT VARIABLES ###
       #############################
-      # Hinweis: Du setzt XCURSOR bereits über Home Manager. Diese envs sind optional/redundant.
       env = [
         "XCURSOR_THEME,Bibata-Modern-Classic"
         "XCURSOR_SIZE,25"
@@ -30,8 +36,7 @@
       ### AUTOSTART ###
       #################
       "exec-once" = [
-        "$terminal"
-        # "hyprctl setcursor Bibata-Modern-Classic 25"  # <-- nicht nötig dank home.pointerCursor
+        terminal
         "hyprpaper"
       ];
 
@@ -51,17 +56,14 @@
 
       decoration = {
         rounding = 10;
-        rounding_power = 2;
         active_opacity = 1.0;
         inactive_opacity = 1.0;
-
         shadow = {
           enabled = true;
           range = 7;
           render_power = 3;
           color = "rgba(0000007f)";
         };
-
         blur = {
           enabled = true;
           size = 5;
@@ -72,8 +74,6 @@
 
       animations = {
         enabled = true;
-
-        # Curves
         bezier = [
           "easeOutQuint,0.23,1,0.32,1"
           "easeInOutCubic,0.65,0.05,0.36,1"
@@ -83,8 +83,6 @@
           "slideEaseOut,0,0.6,0.2,1"
           "easeInOutCubic,0.65,0,0.35,1"
         ];
-
-        # Animations
         animation = [
           "global,1,10,default"
           "border,1,5.39,easeOutQuint"
@@ -111,9 +109,7 @@
         preserve_split = true;
       };
 
-      master = {
-        new_status = "master";
-      };
+      master = { new_status = "master"; };
 
       misc = {
         force_default_wallpaper = 1;
@@ -127,17 +123,14 @@
       input = {
         kb_layout = "de";
         follow_mouse = 1;
-        sensitivity = 0; # -1.0 .. 1.0
-
-        touchpad = {
-          natural_scroll = false;
-        };
+        sensitivity = 0;
+        touchpad = { natural_scroll = false; };
       };
 
       ###################
       ### KEYBINDINGS ###
       ###################
-      "$mainMod" = "SUPER";
+      "$mainMod" = mainMod;
 
       bind = [
         "$mainMod, Q, exec, $terminal"
@@ -151,14 +144,10 @@
         "$mainMod, F, fullscreen"
         "$mainMod, S, exec, ~/.config/hypr/scripts/spotify-toggle.sh"
         "$mainMod, D, exec, vesktop"
-
-        # Focus
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"
         "$mainMod, down, movefocus, d"
-
-        # Workspaces
         "$mainMod, 1, workspace, 1"
         "$mainMod, 2, workspace, 2"
         "$mainMod, 3, workspace, 3"
@@ -169,8 +158,6 @@
         "$mainMod, 8, workspace, 8"
         "$mainMod, 9, workspace, 9"
         "$mainMod, 0, workspace, 10"
-
-        # Move to workspace
         "$mainMod SHIFT, 1, movetoworkspace, 1"
         "$mainMod SHIFT, 2, movetoworkspace, 2"
         "$mainMod SHIFT, 3, movetoworkspace, 3"
@@ -181,12 +168,8 @@
         "$mainMod SHIFT, 8, movetoworkspace, 8"
         "$mainMod SHIFT, 9, movetoworkspace, 9"
         "$mainMod SHIFT, 0, movetoworkspace, 10"
-
-        # Special workspace
         "$mainMod, S, togglespecialworkspace, magic"
         "$mainMod SHIFT, S, movetoworkspace, special:magic"
-
-        # Cycle workspaces
         "$mainMod, TAB, workspace, e+1"
       ];
 
