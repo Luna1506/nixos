@@ -18,7 +18,7 @@
     ./modules/theme.nix
 #    ./modules/wofi.nix
     ./modules/ghostty.nix
-#    ./modules/neovim.nix
+    ./modules/neovim.nix
   ];
 }
 
