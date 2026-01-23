@@ -10,7 +10,7 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
-  }
+  };
 
   # Alternativ: Module direkt einbinden
   imports = [

@@ -11,11 +11,12 @@
     ../../modules/locale.nix
     ../../modules/users.nix
     ../../modules/aliases.nix
-    ../../modules/programs.nix
+    ../../modules/packages.nix
     ../../modules/styling.nix
     ../../modules/desktop/hyprland.nix
     ../../modules/desktop/display-manager.nix
     ../../modules/hardware/nvidia.nix
+    ../../modules/docker.nix
   ];
 
   networking.hostName = "nixos";
