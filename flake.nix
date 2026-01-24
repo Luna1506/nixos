@@ -21,7 +21,11 @@
         in
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs; };
+          specialArgs =
+            {
+              inherit inputs;
+              username = "luna";
+            };
           modules = [
             ./hosts/laptop/default.nix
 

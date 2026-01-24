@@ -6,7 +6,7 @@
   services.displayManager = {
     sddm = {
       enable = true;
-      wayland.enable = false; # Baseline: X11-Greeter (NVIDIA-sicherer)
+      wayland.enable = true; # Baseline: X11-Greeter (NVIDIA-sicherer)
     };
 
     # Hyprland als Default-Session

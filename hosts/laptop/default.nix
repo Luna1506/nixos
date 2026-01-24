@@ -21,13 +21,6 @@
 
   networking.hostName = "nixos";
 
-  # Host-spezifische Filesystems (dein Steam-Mount)
-  fileSystems."/mnt/steam" = {
-    device = "/dev/disk/by-uuid/6bc50fd0-d0d8-458e-b5c4-589b1319af0f";
-    fsType = "ext4";
-    options = [ "nofail" "rw" ];
-  };
-
   # Empfohlen: Polkit sauber aktivieren (anstatt eigener systemd-Unit)
   security.polkit.enable = true;
 

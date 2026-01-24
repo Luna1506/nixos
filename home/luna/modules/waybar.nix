@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
   programs.waybar = {
@@ -165,6 +165,10 @@
         padding: 8px 10px;
       }
     '';
+  };
+  home.file.".config/hypr/scripts/waybar-toggle.sh" = {
+    source = ./scripts/waybar-toggle.sh;
+    executable = true;
   };
 }
 
