@@ -144,6 +144,8 @@ in
         "$mainMod, F, fullscreen"
         "$mainMod, D, exec, vesktop"
         "$mainMod, B, exec, ~/.config/hypr/scripts/waybar-toggle.sh"
+        "$mainMod, L, exec, hyprlock"
+        "$mainMod, Print, exec, grim -g \"$(slurp)\" - | wl-copy"
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
         "$mainMod, up, movefocus, u"

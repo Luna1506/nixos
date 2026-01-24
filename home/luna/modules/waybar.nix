@@ -28,7 +28,6 @@
           on-scroll-down = "hyprctl dispatch workspace e-1";
         };
 
-        # PipeWire / WirePlumber (Icons: “sicher”)
         wireplumber = {
           format = "  {volume}%";
           format-muted = " muted";
@@ -37,7 +36,6 @@
           on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
         };
 
-        # Network (Icons: “sicher”)
         network = {
           format-wifi = "  {signalStrength}%";
           format-ethernet = " {ipaddr}";
@@ -46,7 +44,6 @@
           on-click = "sh -lc 'command -v nm-connection-editor >/dev/null && nm-connection-editor || nmtui'";
         };
 
-        # Bluetooth (Icons: “sicher”)
         bluetooth = {
           format = "";
           format-off = " off";
@@ -61,7 +58,7 @@
         };
 
         "custom/power" = {
-          format = "⏻";
+          format = "";
           tooltip = true;
           tooltip-format = "Power";
           on-click = "wlogout";
@@ -76,35 +73,66 @@
         min-height: 0;
         margin: 0;
         padding: 0;
-        /* Text-Font neutral */
         font-family: "JetBrainsMono", "Noto Sans", sans-serif;
         font-size: 12px;
       }
 
-      /* Bar selbst transparent */
       window#waybar {
         background: transparent;
         color: #eaeaea;
       }
 
-      /* Module als “Pills” */
+      /* Pills */
       #workspaces,
       #clock,
       #wireplumber,
       #network,
       #bluetooth,
       #custom-power {
-        padding: 0 10px;
         margin: 6px 4px;
+        padding: 0 10px;
         background: rgba(255, 255, 255, 0.06);
         border-radius: 10px;
       }
 
-      /* Icons sicher über Nerd Fonts rendern */
+      /* Nerd Fonts für alle Icons */
       #wireplumber,
       #network,
+      #bluetooth,
+      #custom-power {
+        font-family: "JetBrainsMono Nerd Font",
+                     "JetBrainsMono NF",
+                     "Symbols Nerd Font",
+                     "Noto Sans Symbols",
+                     sans-serif;
+      }
+
+      /* Bluetooth: symmetrisch */
       #bluetooth {
-        font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NF", "Symbols Nerd Font", "Noto Sans Symbols", sans-serif;
+        min-width: 34px;
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      #custom-power {
+        min-width: 34px;
+        padding-left: 12px;
+        padding-right: 12px;
+        font-weight: 700;
+      }
+
+      #bluetooth label,
+      #custom-power label {
+        margin: 0;
+        padding: 0;
+      }
+
+      #wireplumber:hover,
+      #network:hover,
+      #bluetooth:hover,
+      #custom-power:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
       }
 
       /* Workspaces */
@@ -140,22 +168,12 @@
         color: rgba(255, 255, 255, 0.35);
       }
 
-      /* Muted / disconnected states */
+      /* States */
       #wireplumber.muted,
       #network.disconnected,
       #bluetooth.off,
       #bluetooth.disabled {
         color: rgba(255, 255, 255, 0.45);
-      }
-
-      /* Power */
-      #custom-power {
-        padding: 0 12px;
-        font-weight: 700;
-      }
-
-      #custom-power:hover {
-        background: rgba(255, 255, 255, 0.12);
       }
 
       tooltip {
@@ -166,6 +184,7 @@
       }
     '';
   };
+
   home.file.".config/hypr/scripts/waybar-toggle.sh" = {
     source = ./scripts/waybar-toggle.sh;
     executable = true;
