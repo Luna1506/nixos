@@ -25,7 +25,7 @@ Options:
   --branch <name>              (default: main)
   --nvidia-alt <true|false>
   --monitor <name>             (default: eDP-1)
-  --zoom <string>              (default: "1")
+  --zoom <string>              (default: "1") e.g. "1.5" or "2.5"
   --no-first-run
   -h, --help
 EOF
@@ -76,14 +76,14 @@ if [[ -n "${DEST_ABS:-}" && -n "${SCRIPT_PATH:-}" && "$SCRIPT_PATH" == "$DEST_AB
 fi
 
 echo "=== HARD RESET DOTFILES ==="
-echo "Repo:    $REPO"
-echo "Branch:  $BRANCH"
-echo "Dest:    $DEST"
-echo "User:    $USERNAME"
-[[ -n "$FULLNAME" ]] && echo "Name:    $FULLNAME"
-[[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:  $NVIDIA_ALT"
-echo "Monitor: $MONITOR"
-echo "Zoom:    \"$ZOOM\""
+echo "Repo:      $REPO"
+echo "Branch:    $BRANCH"
+echo "Dest:      $DEST"
+echo "User:      $USERNAME"
+[[ -n "$FULLNAME" ]] && echo "Name:      $FULLNAME"
+[[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:    $NVIDIA_ALT"
+echo "Monitor:   $MONITOR"
+echo "Zoom:      \"$ZOOM\""
 echo "First-run: $RUN_FIRST"
 echo
 
@@ -110,7 +110,6 @@ if [[ -d "$HOME_ROOT" ]]; then
     echo "→ Renaming home/luna → home/$USERNAME"
     mv "$HOME_ROOT/luna" "$HOME_ROOT/$USERNAME"
   else
-    # pick first directory under home/
     first_dir="$(find "$HOME_ROOT" -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort | head -n1 || true)"
     if [[ -n "$first_dir" ]]; then
       echo "→ Renaming home/$first_dir → home/$USERNAME"
@@ -123,18 +122,34 @@ else
   echo "ℹ No $HOME_ROOT directory; skipping home rename"
 fi
 
-# --- Patch flake.nix (let-bindings) - guaranteed replacements
+# --- Patch flake.nix (let-bindings) - safe replace-or-insert for zoom
 FLAKE="$DEST/flake.nix"
 if [[ -f "$FLAKE" ]]; then
   echo "→ Patching flake.nix…"
 
+  # Basic replacements (safe anywhere)
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$FLAKE"
   perl -0777 -i -pe "s/(\\bmonitor\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${MONITOR}\$3/g" "$FLAKE"
-  perl -0777 -i -pe "s/(\\bzoom\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${ZOOM}\$3/g" "$FLAKE"
 
   if [[ -n "$NVIDIA_ALT" ]]; then
     perl -0777 -i -pe "s/(\\bnvidiaAlternative\\s*=\\s*)(true|false)(\\s*;)/\$1${NVIDIA_ALT}\$3/g" "$FLAKE"
   fi
+
+  # Remove the common broken line that can appear if an earlier patch went wrong:
+  perl -0777 -i -pe 's/^\s*";\s*$\n//mg' "$FLAKE"
+
+  # Zoom: replace if present; otherwise insert after monitor = "...";
+  ZOOM="$ZOOM" perl -0777 -i -pe '
+    my $z = $ENV{ZOOM};
+
+    # 1) Replace existing zoom assignment if present
+    if (s/(\bzoom\s*=\s*")([^"]*)("\s*;)/$1.$z.$3/sg) {
+      # ok
+    } else {
+      # 2) Insert after monitor assignment (usually in let block)
+      s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          zoom = "$z";\n/s;
+    }
+  ' "$FLAKE"
 
   echo "✔ Patched $FLAKE"
 else
@@ -146,12 +161,14 @@ USERS_NIX="$DEST/modules/users.nix"
 if [[ -f "$USERS_NIX" ]]; then
   echo "→ Patching modules/users.nix…"
 
-  # Replace simple string assignments if present
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$USERS_NIX"
   perl -0777 -i -pe "s/(\\bname\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$USERS_NIX"
 
   if [[ -n "$FULLNAME" ]]; then
-    perl -0777 -i -pe "s/(\\b(fullName|realName|description)\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${FULLNAME}\$4/g" "$USERS_NIX"
+    FULLNAME="$FULLNAME" perl -0777 -i -pe '
+      my $n = $ENV{FULLNAME};
+      s/(\b(fullName|realName|description)\s*=\s*")([^"]*)("\s*;)/$1.$n.$4/g;
+    ' "$USERS_NIX"
   fi
 
   echo "✔ Patched $USERS_NIX"
