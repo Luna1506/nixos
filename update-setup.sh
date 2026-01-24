@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DEFAULT="https://github.com/Luna1506/dotfiles.git"
+REPO_DEFAULT="https://github.com/Luna1506/dotfiles/dotfiles.git"
 DEST_DEFAULT="$HOME/dotfiles"
 BRANCH_DEFAULT="main"
 
