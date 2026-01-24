@@ -44,12 +44,9 @@ sudo nixos-rebuild switch --flake ./dotfiles#nixos
 ```
 
 ## Wallpaper einrichten:
+Folgende Datei wird automatisch beim Rebuilden das neue Wallpaper
 ```
-mkdir /home/<username>/.config/hypr/wallpapers
-```
-Danach in dem Directory eine Datei mit folgendem Namen ablegen:
-```
-wallpaper1.jpg
+/home/<username>/.config/hypr/wallpaper/wallpaper1.jpg
 ```
 
 ## Weitere Aliases:
