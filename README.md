@@ -53,27 +53,27 @@ wallpaper1.jpg
 ```
 
 ## Weitere Aliases:
-zum Rebuilden:
+### Zum Rebuilden:
 ```
 rebuild = "sudo nixos-rebuild switch --flake ./dotfiles#nixos";
 ```
 
-zum Updaten aller Pakete:
+### Zum Updaten aller Pakete:
 ```
 update = "cd ./dotfiles && nix flake update && cd -";
 ```
 
-Zum Entfernen ungenutzer Dateien/Pakete:
+### Zum Entfernen ungenutzer Dateien/Pakete:
 ```
 garbage = "sudo nix-collect-garbage";
 ```
 
-Zum Aufräumen aller ungenutzen Nixos Generationen, bis auf die letzten 5:
+### Zum Aufräumen aller ungenutzen Nixos Generationen, bis auf die letzten 5:
 ```
 clear_efi = "sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +5";
 ```
 
-Führt garbage und clear_efi zusammen durch:
+### Führt garbage und clear_efi zusammen durch:
 ```
 clean = ''
   sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +5 &&
@@ -81,7 +81,7 @@ clean = ''
 '';
 ```
 
-Nur für die imaginäre Person, weil sie faul ist:
+### Nur für die imaginäre Person, weil sie faul ist:
 ```
 setup_tim = "./update-setup.sh --username timp --fullname 'Tim Pagels' --nvidia-alt true --dest ~/src/nixos/dotfiles --monitor 'HDMI-A-1' --zoom '1.5'";
 ```
