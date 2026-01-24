@@ -1,1 +1,1 @@
-Jonas stinkt
+Zu Beginn einmal first-run.sh ausführen
