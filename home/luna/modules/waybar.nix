@@ -38,7 +38,7 @@
 
         network = {
           format-wifi = "  {signalStrength}%";
-          format-ethernet = " {ipaddr}";
+          format-ethernet = "{ipaddr}";
           format-disconnected = "  offline";
           tooltip = true;
           on-click = "sh -lc 'command -v nm-connection-editor >/dev/null && nm-connection-editor || nmtui'";
