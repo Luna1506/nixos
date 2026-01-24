@@ -3,13 +3,6 @@ set -euo pipefail
 
 # =========================================================
 # HARD RESET dotfiles installer (sparse checkout: only ./dotfiles)
-# - Deletes DEST completely
-# - Clones ONLY the "dotfiles/" folder from the repo (sparse checkout)
-# - Removes .git afterwards
-# - Renames ./home/<old> -> ./home/<username>
-# - Patches flake.nix let-bindings: username, nvidiaAlternative, monitor, zoom (zoom as STRING)
-# - Patches modules/users.nix best-effort
-# - Runs first-run.sh (optional)
 # =========================================================
 
 REPO_DEFAULT="https://github.com/Luna1506/dotfiles.git"
@@ -24,7 +17,7 @@ usage() {
 Hard reset dotfiles installer (sparse checkout: only ./dotfiles).
 
 Usage:
-  bootstrap-dotfiles_hardreset.sh --username <name> [options]
+  bootstrap-dotfiles.sh --username <name> [options]
 
 Required:
   --username <name>
@@ -36,7 +29,7 @@ Options:
   --branch <name>              (default: main)
   --nvidia-alt <true|false>
   --monitor <name>             (default: eDP-1)
-  --zoom <string>              (default: "1") e.g. "1.5" or "2.5"
+  --zoom <string>              (default: "1") e.g. "1.5"
   --no-first-run
   -h, --help
 EOF
@@ -70,38 +63,35 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ -n "$USERNAME" ]] || { usage; die "--username is required"; }
+[[ -n "$USERNAME" ]] || die "--username is required"
 [[ -z "$NVIDIA_ALT" || "$NVIDIA_ALT" == "true" || "$NVIDIA_ALT" == "false" ]] || die "--nvidia-alt must be true|false"
-[[ "$ZOOM" =~ ^[0-9]+([.][0-9]+)?$ ]] || die "--zoom must look like 1 or 1.5 (dot only)"
+[[ "$ZOOM" =~ ^[0-9]+([.][0-9]+)?$ ]] || die "--zoom must look like 1 or 1.5"
 
 command -v git >/dev/null || die "git not installed"
 
-# If script is inside DEST, we cannot rm -rf DEST while running from it.
+# Safety: don't delete DEST while running from inside it
 SCRIPT_PATH="$(readlink -f "$0" 2>/dev/null || true)"
 DEST_ABS="$(readlink -f "$DEST" 2>/dev/null || true)"
-if [[ -n "${DEST_ABS:-}" && -n "${SCRIPT_PATH:-}" && "$SCRIPT_PATH" == "$DEST_ABS"* ]]; then
-  echo "⚠ You are running this script from inside DEST ($DEST_ABS)."
-  echo "  Copy it outside first, e.g.:"
-  echo "    cp \"$SCRIPT_PATH\" /tmp/bootstrap.sh && bash /tmp/bootstrap.sh --username \"$USERNAME\" ..."
+if [[ -n "$DEST_ABS" && -n "$SCRIPT_PATH" && "$SCRIPT_PATH" == "$DEST_ABS"* ]]; then
+  echo "⚠ Script is inside DEST. Copy it elsewhere first."
   exit 1
 fi
 
-echo "=== HARD RESET DOTFILES (sparse checkout: dotfiles/) ==="
-echo "Repo:      $REPO"
-echo "Branch:    $BRANCH"
-echo "Dest:      $DEST"
-echo "User:      $USERNAME"
-[[ -n "$FULLNAME" ]] && echo "Name:      $FULLNAME"
-[[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:    $NVIDIA_ALT"
-echo "Monitor:   $MONITOR"
-echo "Zoom:      \"$ZOOM\""
-echo "First-run: $RUN_FIRST"
+echo "=== HARD RESET DOTFILES (sparse checkout) ==="
+echo "Repo:    $REPO"
+echo "Branch:  $BRANCH"
+echo "Dest:    $DEST"
+echo "User:    $USERNAME"
+echo "Monitor: $MONITOR"
+echo "Zoom:    \"$ZOOM\""
 echo
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-echo "→ Cloning (sparse) to temp…"
+# ---------------------------------------------------------
+# Sparse checkout: only ./dotfiles
+# ---------------------------------------------------------
 git clone --filter=blob:none --no-checkout "$REPO" "$TMP/repo" >/dev/null
 pushd "$TMP/repo" >/dev/null
 git sparse-checkout init --cone >/dev/null
@@ -109,106 +99,72 @@ git sparse-checkout set dotfiles >/dev/null
 git checkout "$BRANCH" >/dev/null
 popd >/dev/null
 
-[[ -d "$TMP/repo/dotfiles" ]] || die "Repo does not contain a 'dotfiles/' directory (sparse checkout failed?)"
+[[ -d "$TMP/repo/dotfiles" ]] || die "Repo has no dotfiles/ directory"
 
-echo "→ Removing destination completely…"
+# ---------------------------------------------------------
+# Install
+# ---------------------------------------------------------
 rm -rf "$DEST"
 mkdir -p "$(dirname "$DEST")"
 mv "$TMP/repo/dotfiles" "$DEST"
-
-echo "→ Removing .git (if any)…"
 rm -rf "$DEST/.git"
 
-# --- Rename home folder deterministically
+# ---------------------------------------------------------
+# Rename home folder
+# ---------------------------------------------------------
 HOME_ROOT="$DEST/home"
-if [[ -d "$HOME_ROOT" ]]; then
-  if [[ -d "$HOME_ROOT/$USERNAME" ]]; then
-    echo "✔ home/$USERNAME already exists"
-  elif [[ -d "$HOME_ROOT/luna" ]]; then
-    echo "→ Renaming home/luna → home/$USERNAME"
+if [[ -d "$HOME_ROOT" && ! -d "$HOME_ROOT/$USERNAME" ]]; then
+  if [[ -d "$HOME_ROOT/luna" ]]; then
     mv "$HOME_ROOT/luna" "$HOME_ROOT/$USERNAME"
   else
-    first_dir="$(find "$HOME_ROOT" -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort | head -n1 || true)"
-    if [[ -n "$first_dir" ]]; then
-      echo "→ Renaming home/$first_dir → home/$USERNAME"
-      mv "$HOME_ROOT/$first_dir" "$HOME_ROOT/$USERNAME"
-    else
-      echo "⚠ No directories under $HOME_ROOT; skipping home rename"
-    fi
+    first="$(find "$HOME_ROOT" -mindepth 1 -maxdepth 1 -type d | head -n1)"
+    [[ -n "$first" ]] && mv "$first" "$HOME_ROOT/$USERNAME"
   fi
-else
-  echo "ℹ No $HOME_ROOT directory; skipping home rename"
 fi
 
-# --- Patch flake.nix (let-bindings) - safe replace-or-insert for zoom
+# ---------------------------------------------------------
+# Patch flake.nix (LET bindings)
+# ---------------------------------------------------------
 FLAKE="$DEST/flake.nix"
 if [[ -f "$FLAKE" ]]; then
-  echo "→ Patching flake.nix…"
-
-  # Basic replacements (safe anywhere)
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$FLAKE"
   perl -0777 -i -pe "s/(\\bmonitor\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${MONITOR}\$3/g" "$FLAKE"
 
-  if [[ -n "$NVIDIA_ALT" ]]; then
+  [[ -n "$NVIDIA_ALT" ]] && \
     perl -0777 -i -pe "s/(\\bnvidiaAlternative\\s*=\\s*)(true|false)(\\s*;)/\$1${NVIDIA_ALT}\$3/g" "$FLAKE"
-  fi
 
-  # Remove a common broken line that can appear if an earlier patch went wrong:
+  # Remove broken dangling quote line if present
   perl -0777 -i -pe 's/^\s*";\s*$\n//mg' "$FLAKE"
 
-  # Zoom: replace if present; otherwise insert after monitor = "...";
+  # ZOOM: replace or insert cleanly
   ZOOM="$ZOOM" perl -0777 -i -pe '
     my $z = $ENV{ZOOM};
-
-    # Replace existing zoom assignment if present
-    if (s/(\bzoom\s*=\s*")([^"]*)("\s*;)/$1.$z.$3/sg) {
-      # ok
+    if (s/(\bzoom\s*=\s*")([^"]*)("\s*;)/$1$z$3/sg) {
+      # replaced
     } else {
-      # Insert after monitor assignment (usually in let block)
       s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          zoom = "$z";\n/s;
     }
   ' "$FLAKE"
-
-  echo "✔ Patched $FLAKE"
-else
-  echo "⚠ No flake.nix found at $FLAKE (skipping flake patch)"
 fi
 
-# --- Patch modules/users.nix (best-effort)
+# ---------------------------------------------------------
+# Patch modules/users.nix (best effort)
+# ---------------------------------------------------------
 USERS_NIX="$DEST/modules/users.nix"
 if [[ -f "$USERS_NIX" ]]; then
-  echo "→ Patching modules/users.nix…"
-
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$USERS_NIX"
-  perl -0777 -i -pe "s/(\\bname\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$USERS_NIX"
-
-  if [[ -n "$FULLNAME" ]]; then
-    FULLNAME="$FULLNAME" perl -0777 -i -pe '
-      my $n = $ENV{FULLNAME};
-      s/(\b(fullName|realName|description)\s*=\s*")([^"]*)("\s*;)/$1.$n.$4/g;
-    ' "$USERS_NIX"
-  fi
-
-  echo "✔ Patched $USERS_NIX"
-else
-  echo "⚠ No modules/users.nix found (skipping)"
 fi
 
-# --- Run first-run.sh
-if [[ "$RUN_FIRST" == "true" ]]; then
-  if [[ -f "$DEST/first-run.sh" ]]; then
-    echo "→ Running first-run.sh…"
-    chmod +x "$DEST/first-run.sh"
-    (cd "$DEST" && ./first-run.sh)
-  else
-    echo "⚠ first-run.sh not found, skipping"
-  fi
-else
-  echo "→ Skipping first-run.sh"
+# ---------------------------------------------------------
+# first-run.sh
+# ---------------------------------------------------------
+if [[ "$RUN_FIRST" == "true" && -f "$DEST/first-run.sh" ]]; then
+  chmod +x "$DEST/first-run.sh"
+  (cd "$DEST" && ./first-run.sh)
 fi
 
 echo
-echo "✅ Done."
+echo "✅ DONE"
 echo "Next:"
 echo "  cd \"$DEST\""
 echo "  sudo nixos-rebuild switch --flake .#nixos"
