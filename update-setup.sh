@@ -3,10 +3,12 @@ set -euo pipefail
 
 # =========================================================
 # HARD RESET dotfiles installer (sparse checkout: only ./dotfiles)
+# + patches flake.nix let-bindings:
+#   username, nvidiaAlternative, monitor, zoom, git-name, git-email
 # =========================================================
 
 REPO_DEFAULT="https://github.com/Luna1506/dotfiles.git"
-DEST_DEFAULT="$HOME/dotfiles"
+DEST_DEFAULT="$HOME/nixos"
 BRANCH_DEFAULT="main"
 
 MONITOR_DEFAULT="eDP-1"
@@ -17,15 +19,17 @@ usage() {
 Hard reset dotfiles installer (sparse checkout: only ./dotfiles).
 
 Usage:
-  bootstrap-dotfiles.sh --username <name> [options]
+  update-setup.sh --username <name> [options]
 
 Required:
   --username <name>
 
 Options:
   --fullname "<Full Name>"
+  --git-name "<Name>"          Sets git-name in flake.nix (e.g. "Luna")
+  --git-email "<Email>"        Sets git-email in flake.nix (e.g. "me@mail.com")
   --repo <url>                 (default: https://github.com/Luna1506/dotfiles.git)
-  --dest <path>                (default: ~/dotfiles)
+  --dest <path>                (default: ~/nixos)
   --branch <name>              (default: main)
   --nvidia-alt <true|false>
   --monitor <name>             (default: eDP-1)
@@ -39,6 +43,8 @@ die(){ echo "Error: $*" >&2; exit 1; }
 
 USERNAME=""
 FULLNAME=""
+GIT_NAME=""
+GIT_EMAIL=""
 REPO="$REPO_DEFAULT"
 DEST="$DEST_DEFAULT"
 BRANCH="$BRANCH_DEFAULT"
@@ -51,6 +57,8 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --username) USERNAME="${2:-}"; shift 2;;
     --fullname) FULLNAME="${2:-}"; shift 2;;
+    --git-name) GIT_NAME="${2:-}"; shift 2;;
+    --git-email) GIT_EMAIL="${2:-}"; shift 2;;
     --repo) REPO="${2:-}"; shift 2;;
     --dest) DEST="${2:-}"; shift 2;;
     --branch) BRANCH="${2:-}"; shift 2;;
@@ -66,6 +74,9 @@ done
 [[ -n "$USERNAME" ]] || die "--username is required"
 [[ -z "$NVIDIA_ALT" || "$NVIDIA_ALT" == "true" || "$NVIDIA_ALT" == "false" ]] || die "--nvidia-alt must be true|false"
 [[ "$ZOOM" =~ ^[0-9]+([.][0-9]+)?$ ]] || die "--zoom must look like 1 or 1.5"
+if [[ -n "$GIT_EMAIL" ]] && ! [[ "$GIT_EMAIL" =~ ^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$ ]]; then
+  die "--git-email does not look like an email address"
+fi
 
 command -v git >/dev/null || die "git not installed"
 
@@ -78,12 +89,15 @@ if [[ -n "$DEST_ABS" && -n "$SCRIPT_PATH" && "$SCRIPT_PATH" == "$DEST_ABS"* ]]; 
 fi
 
 echo "=== HARD RESET DOTFILES (sparse checkout) ==="
-echo "Repo:    $REPO"
-echo "Branch:  $BRANCH"
-echo "Dest:    $DEST"
-echo "User:    $USERNAME"
-echo "Monitor: $MONITOR"
-echo "Zoom:    \"$ZOOM\""
+echo "Repo:     $REPO"
+echo "Branch:   $BRANCH"
+echo "Dest:     $DEST"
+echo "User:     $USERNAME"
+echo "Monitor:  $MONITOR"
+echo "Zoom:     \"$ZOOM\""
+[[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:   $NVIDIA_ALT"
+[[ -n "$GIT_NAME" ]] && echo "Git name: $GIT_NAME"
+[[ -n "$GIT_EMAIL" ]] && echo "Git mail: $GIT_EMAIL"
 echo
 
 TMP="$(mktemp -d)"
@@ -117,26 +131,32 @@ if [[ -d "$HOME_ROOT" && ! -d "$HOME_ROOT/$USERNAME" ]]; then
   if [[ -d "$HOME_ROOT/luna" ]]; then
     mv "$HOME_ROOT/luna" "$HOME_ROOT/$USERNAME"
   else
-    first="$(find "$HOME_ROOT" -mindepth 1 -maxdepth 1 -type d | head -n1)"
+    first="$(find "$HOME_ROOT" -mindepth 1 -maxdepth 1 -type d | head -n1 || true)"
     [[ -n "$first" ]] && mv "$first" "$HOME_ROOT/$USERNAME"
   fi
 fi
 
 # ---------------------------------------------------------
 # Patch flake.nix (LET bindings)
+# - username, monitor, nvidiaAlternative, zoom
+# - git-name, git-email (insert if missing; replace if present)
 # ---------------------------------------------------------
 FLAKE="$DEST/flake.nix"
 if [[ -f "$FLAKE" ]]; then
+  # username
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$FLAKE"
+
+  # monitor
   perl -0777 -i -pe "s/(\\bmonitor\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${MONITOR}\$3/g" "$FLAKE"
 
+  # nvidiaAlternative (optional)
   [[ -n "$NVIDIA_ALT" ]] && \
     perl -0777 -i -pe "s/(\\bnvidiaAlternative\\s*=\\s*)(true|false)(\\s*;)/\$1${NVIDIA_ALT}\$3/g" "$FLAKE"
 
   # Remove broken dangling quote line if present
   perl -0777 -i -pe 's/^\s*";\s*$\n//mg' "$FLAKE"
 
-  # ZOOM: replace or insert cleanly
+  # zoom: replace or insert after monitor
   ZOOM="$ZOOM" perl -0777 -i -pe '
     my $z = $ENV{ZOOM};
     if (s/(\bzoom\s*=\s*")([^"]*)("\s*;)/$1$z$3/sg) {
@@ -145,6 +165,42 @@ if [[ -f "$FLAKE" ]]; then
       s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          zoom = "$z";\n/s;
     }
   ' "$FLAKE"
+
+  # git-name: replace or insert after zoom
+  if [[ -n "$GIT_NAME" ]]; then
+    GIT_NAME="$GIT_NAME" perl -0777 -i -pe '
+      my $n = $ENV{GIT_NAME};
+      if (s/(\bgit-name\s*=\s*")([^"]*)("\s*;)/$1$n$3/sg) {
+        # replaced
+      } else {
+        # insert after zoom if present; else after monitor
+        if (s/(\bzoom\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-name = "$n";\n/s) {
+          # ok
+        } else {
+          s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-name = "$n";\n/s;
+        }
+      }
+    ' "$FLAKE"
+  fi
+
+  # git-email: replace or insert after git-name (or zoom/monitor)
+  if [[ -n "$GIT_EMAIL" ]]; then
+    GIT_EMAIL="$GIT_EMAIL" perl -0777 -i -pe '
+      my $e = $ENV{GIT_EMAIL};
+      if (s/(\bgit-email\s*=\s*")([^"]*)("\s*;)/$1$e$3/sg) {
+        # replaced
+      } else {
+        # insert after git-name if present, else after zoom, else after monitor
+        if (s/(\bgit-name\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-email = "$e";\n/s) {
+          # ok
+        } elsif (s/(\bzoom\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-email = "$e";\n/s) {
+          # ok
+        } else {
+          s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-email = "$e";\n/s;
+        }
+      }
+    ' "$FLAKE"
+  fi
 fi
 
 # ---------------------------------------------------------

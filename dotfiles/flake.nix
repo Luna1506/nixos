@@ -22,12 +22,14 @@
           nvidiaAlternative = true;
           monitor = "eDP-1";
           zoom = "1";
+          git-name = "Luna";
+          git-email = "mhaiplick1506@gmail.com";
         in
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs =
             {
-              inherit inputs username nvidiaAlternative monitor zoom;
+              inherit inputs username nvidiaAlternative monitor zoom git-name git-email;
             };
           modules = [
             ./hosts/laptop/default.nix
@@ -37,7 +39,7 @@
             {
               home-manager.useUserPackages = true;
               home-manager.users.${username} = import ./home/${username}/home.nix;
-              home-manager.extraSpecialArgs = { inherit inputs username monitor zoom; };
+              home-manager.extraSpecialArgs = { inherit inputs username monitor zoom git-name git-email; };
               home-manager.backupFileExtension = "backup";
             }
           ];

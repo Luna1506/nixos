@@ -1,6 +1,12 @@
-{ username, monitor, ... }:
+{ config, lib, username, monitor, ... }:
 
 {
+  # Ordner anlegen
+  home.activation.createHyprWallpapersDir =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      mkdir -p "${config.home.homeDirectory}/.config/hypr/wallpapers"
+    '';
+
   services.hyprpaper = {
     enable = true;
     settings = {
