@@ -33,7 +33,7 @@
             home-manager.nixosModules.home-manager
             {
               home-manager.useUserPackages = true;
-              home-manager.users.luna = import ./home/luna/home.nix;
+              home-manager.users.${username} = import ./home/${username}/home.nix;
               home-manager.extraSpecialArgs = { inherit inputs username; };
               home-manager.backupFileExtension = "backup";
             }
