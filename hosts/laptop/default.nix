@@ -1,4 +1,4 @@
-{ inputs, lib, pkgs, ... }:
+{ inputs, lib, pkgs, nvidiaAlternative, ... }:
 
 {
   imports = [
@@ -15,9 +15,13 @@
     ../../modules/styling.nix
     ../../modules/desktop/hyprland.nix
     ../../modules/desktop/display-manager.nix
-    ../../modules/hardware/nvidia.nix
     ../../modules/docker.nix
-  ];
+  ]
+  ++ (
+    if nvidiaAlternative
+    then [ ../../modules/desktop/nvidia-alternative.nix ]
+    else [ ../../modules/desktop/nvidia.nix ]
+  );
 
   networking.hostName = "nixos";
 

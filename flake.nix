@@ -19,12 +19,13 @@
         let
           system = "x86_64-linux";
           username = "luna";
+          nvidiaAlternative = false;
         in
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs =
             {
-              inherit inputs username;
+              inherit inputs username nvidiaAlternative;
             };
           modules = [
             ./hosts/laptop/default.nix
