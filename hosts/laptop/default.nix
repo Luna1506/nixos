@@ -19,8 +19,8 @@
   ]
   ++ (
     if nvidiaAlternative
-    then [ ../../modules/desktop/nvidia-alternative.nix ]
-    else [ ../../modules/desktop/nvidia.nix ]
+    then [ ../../modules/hardware/nvidia-alternative.nix ]
+    else [ ../../modules/hardware/nvidia.nix ]
   );
 
   networking.hostName = "nixos";
