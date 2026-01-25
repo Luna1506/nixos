@@ -20,19 +20,22 @@ update-setup.sh --username <name>
 #### Options:
 ```
 --fullname "<Full Name>"
+--git-name "<Name>"          Sets git-name in flake.nix (e.g. "Luna")
+--git-email "<Email>"        Sets git-email in flake.nix (e.g. "me@mail.com")
 --repo <url>                 (default: https://github.com/Luna1506/dotfiles.git)
 --dest <path>                (default: ~/nixos)
 --branch <name>              (default: main)
 --nvidia-alt <true|false>
 --monitor <name>             (default: eDP-1)
 --zoom <string>              (default: "1") e.g. "1.5"
+--luna-path                  Sets luna-path = true in flake.nix (or inserts it if missing)
 --no-first-run
 -h, --help
 ```
 
 #### Example (imaginary person):
 ```
-./update-setup.sh --username timp --fullname 'Tim Pagels' --nvidia-alt true --dest ~/src/nixos/dotfiles --monitor 'HDMI-A-1' --zoom '1.5'
+./update-setup.sh --username timp --fullname 'Tim Pagels' --nvidia-alt true --dest ~/src/nixos/dotfiles --monitor 'HDMI-A-1' --zoom '1.5 --luna-path false'
 ```
 #### Rebuilden (im nixos Directory):
 ```
@@ -80,5 +83,5 @@ clean = ''
 
 ### Nur für die imaginäre Person, weil sie faul ist:
 ```
-setup_tim = "./update-setup.sh --username timp --fullname 'Tim Pagels' --nvidia-alt true --dest ~/src/nixos/dotfiles --monitor 'HDMI-A-1' --zoom '1.5'";
+setup_tim = "./update-setup.sh --username timp --fullname 'Tim Pagels' --nvidia-alt true --dest ~/src/nixos/dotfiles --monitor 'HDMI-A-1' --zoom '1.5' --luna-path false";
 ```
