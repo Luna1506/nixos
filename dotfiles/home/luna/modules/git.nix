@@ -7,7 +7,7 @@
       name = "Luna";
       email = "mhaiplick1506@gmail.com";
     };
-    extraConfig = {
+    settings = {
       init.defaultBranch = "main";
     };
   };

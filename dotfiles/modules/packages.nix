@@ -24,7 +24,7 @@
     polkit # for authentification
     sl
     git
-    jetbrains.idea-ultimate
+    jetbrains.idea
     catppuccin-sddm # sddm theme
     lazydocker # terminal based gui for docker
     pavucontrol # application for sound controls

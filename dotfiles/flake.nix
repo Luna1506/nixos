@@ -24,12 +24,13 @@
           zoom = "1";
           git-name = "Luna";
           git-email = "mhaiplick1506@gmail.com";
+          luna-path = true;
         in
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs =
             {
-              inherit inputs username nvidiaAlternative monitor zoom git-name git-email;
+              inherit inputs username nvidiaAlternative monitor zoom git-name git-email luna-path;
             };
           modules = [
             ./hosts/laptop/default.nix

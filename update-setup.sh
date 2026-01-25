@@ -4,7 +4,7 @@ set -euo pipefail
 # =========================================================
 # HARD RESET dotfiles installer (sparse checkout: only ./dotfiles)
 # + patches flake.nix let-bindings:
-#   username, nvidiaAlternative, monitor, zoom, git-name, git-email
+#   username, nvidiaAlternative, monitor, zoom, git-name, git-email, luna-path
 # =========================================================
 
 REPO_DEFAULT="https://github.com/Luna1506/dotfiles.git"
@@ -34,6 +34,7 @@ Options:
   --nvidia-alt <true|false>
   --monitor <name>             (default: eDP-1)
   --zoom <string>              (default: "1") e.g. "1.5"
+  --luna-path                  Sets luna-path = true in flake.nix (or inserts it if missing)
   --no-first-run
   -h, --help
 EOF
@@ -52,6 +53,7 @@ NVIDIA_ALT=""
 MONITOR="$MONITOR_DEFAULT"
 ZOOM="$ZOOM_DEFAULT"
 RUN_FIRST="true"
+LUNA_PATH="false"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -65,6 +67,7 @@ while [[ $# -gt 0 ]]; do
     --nvidia-alt) NVIDIA_ALT="${2:-}"; shift 2;;
     --monitor) MONITOR="${2:-}"; shift 2;;
     --zoom) ZOOM="${2:-}"; shift 2;;
+    --luna-path) LUNA_PATH="true"; shift 1;;
     --no-first-run) RUN_FIRST="false"; shift 1;;
     -h|--help) usage; exit 0;;
     *) die "Unknown argument: $1";;
@@ -89,15 +92,16 @@ if [[ -n "$DEST_ABS" && -n "$SCRIPT_PATH" && "$SCRIPT_PATH" == "$DEST_ABS"* ]]; 
 fi
 
 echo "=== HARD RESET DOTFILES (sparse checkout) ==="
-echo "Repo:     $REPO"
-echo "Branch:   $BRANCH"
-echo "Dest:     $DEST"
-echo "User:     $USERNAME"
-echo "Monitor:  $MONITOR"
-echo "Zoom:     \"$ZOOM\""
-[[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:   $NVIDIA_ALT"
-[[ -n "$GIT_NAME" ]] && echo "Git name: $GIT_NAME"
-[[ -n "$GIT_EMAIL" ]] && echo "Git mail: $GIT_EMAIL"
+echo "Repo:      $REPO"
+echo "Branch:    $BRANCH"
+echo "Dest:      $DEST"
+echo "User:      $USERNAME"
+echo "Monitor:   $MONITOR"
+echo "Zoom:      \"$ZOOM\""
+[[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:    $NVIDIA_ALT"
+[[ -n "$GIT_NAME" ]] && echo "Git name:  $GIT_NAME"
+[[ -n "$GIT_EMAIL" ]] && echo "Git mail:  $GIT_EMAIL"
+echo "luna-path: $LUNA_PATH"
 echo
 
 TMP="$(mktemp -d)"
@@ -139,7 +143,8 @@ fi
 # ---------------------------------------------------------
 # Patch flake.nix (LET bindings)
 # - username, monitor, nvidiaAlternative, zoom
-# - git-name, git-email (insert if missing; replace if present)
+# - git-name, git-email
+# - luna-path (boolean)
 # ---------------------------------------------------------
 FLAKE="$DEST/flake.nix"
 if [[ -f "$FLAKE" ]]; then
@@ -166,15 +171,30 @@ if [[ -f "$FLAKE" ]]; then
     }
   ' "$FLAKE"
 
-  # git-name: replace or insert after zoom
+  # luna-path (boolean): replace if present; otherwise insert after zoom (or monitor)
+  LUNA_PATH="$LUNA_PATH" perl -0777 -i -pe '
+    my $v = $ENV{LUNA_PATH};
+    if (s/(\bluna-path\s*=\s*)(true|false)(\s*;)/$1$v$3/sg) {
+      # replaced
+    } else {
+      if (s/(\bzoom\s*=\s*"[^"]*"\s*;\s*)/$1\n          luna-path = $v;\n/s) {
+        # ok
+      } else {
+        s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          luna-path = $v;\n/s;
+      }
+    }
+  ' "$FLAKE"
+
+  # git-name: replace or insert after zoom/luna-path
   if [[ -n "$GIT_NAME" ]]; then
     GIT_NAME="$GIT_NAME" perl -0777 -i -pe '
       my $n = $ENV{GIT_NAME};
       if (s/(\bgit-name\s*=\s*")([^"]*)("\s*;)/$1$n$3/sg) {
         # replaced
       } else {
-        # insert after zoom if present; else after monitor
-        if (s/(\bzoom\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-name = "$n";\n/s) {
+        if (s/(\bluna-path\s*=\s*(true|false)\s*;\s*)/$1\n          git-name = "$n";\n/s) {
+          # ok
+        } elsif (s/(\bzoom\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-name = "$n";\n/s) {
           # ok
         } else {
           s/(\bmonitor\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-name = "$n";\n/s;
@@ -183,15 +203,16 @@ if [[ -f "$FLAKE" ]]; then
     ' "$FLAKE"
   fi
 
-  # git-email: replace or insert after git-name (or zoom/monitor)
+  # git-email: replace or insert after git-name (or luna-path/zoom/monitor)
   if [[ -n "$GIT_EMAIL" ]]; then
     GIT_EMAIL="$GIT_EMAIL" perl -0777 -i -pe '
       my $e = $ENV{GIT_EMAIL};
       if (s/(\bgit-email\s*=\s*")([^"]*)("\s*;)/$1$e$3/sg) {
         # replaced
       } else {
-        # insert after git-name if present, else after zoom, else after monitor
         if (s/(\bgit-name\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-email = "$e";\n/s) {
+          # ok
+        } elsif (s/(\bluna-path\s*=\s*(true|false)\s*;\s*)/$1\n          git-email = "$e";\n/s) {
           # ok
         } elsif (s/(\bzoom\s*=\s*"[^"]*"\s*;\s*)/$1\n          git-email = "$e";\n/s) {
           # ok
