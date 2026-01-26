@@ -29,7 +29,7 @@ update-setup.sh --username <name>
 --monitor <name>             (default: eDP-1)
 --zoom <string>              (default: "1") e.g. "1.5"
 --luna-path                  Sets luna-path = true in flake.nix (or inserts it if missing)
---no-first-run
+--no-first-run <true|false>  (default: true)
 -h, --help
 ```
 
