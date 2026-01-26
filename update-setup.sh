@@ -3,16 +3,12 @@ set -euo pipefail
 
 # =========================================================
 # HARD RESET dotfiles installer (sparse checkout: only ./dotfiles)
-# + patches flake.nix let-bindings
+# + patches flake.nix let-bindings:
+#   username, fullname (optional), nvidiaAlternative, monitor, zoom, git-name, git-email, luna-path
 # + OPTIONAL: add arbitrary flake inputs + optional nixos module includes
 #
 # Extra flakes via:
 #   --add-flake name=<inputName>,url=<flakeUrlOrPath>[,module=<attrPath>]
-#
-# Examples:
-#   --add-flake name=aliases,url=/home/timp/src/test,module=nixosModules.default
-#   --add-flake name=hm-extra,url=github:someone/flake,module=nixosModules.myModule
-#   --add-flake name=plain,url=github:someone/flake
 # =========================================================
 
 REPO_DEFAULT="https://github.com/Luna1506/dotfiles.git"
@@ -33,6 +29,7 @@ Required:
   --username <name>
 
 Options:
+  --fullname "<Full Name>"     Sets/updates fullname in flake.nix (if provided)
   --git-name "<Name>"
   --git-email "<Email>"
   --repo <url>                 (default: https://github.com/Luna1506/dotfiles.git)
@@ -59,6 +56,7 @@ EOF
 die(){ echo "Error: $*" >&2; exit 1; }
 
 USERNAME=""
+FULLNAME=""
 GIT_NAME=""
 GIT_EMAIL=""
 REPO="$REPO_DEFAULT"
@@ -74,7 +72,6 @@ LUNA_PATH="false"
 ADD_FLAKES=()
 
 normalize_flake_url() {
-  # input: raw url/path -> echoes normalized flake input url
   local raw="$1"
   if [[ -z "$raw" ]]; then
     echo ""
@@ -88,11 +85,9 @@ normalize_flake_url() {
       echo "path:$raw"
       ;;
     *)
-      # relative path or other bare flake ref; prefer path: for relative paths
       if [[ "$raw" == ./* || "$raw" == ../* ]]; then
         echo "path:$raw"
       else
-        # allow things like "github:user/repo" already handled; anything else treat as path-ish
         echo "path:$raw"
       fi
       ;;
@@ -114,17 +109,14 @@ parse_add_flake() {
   done
 
   [[ -n "$name" ]] || die "--add-flake requires name=..."
-  [[ -n "$url" ]]  || die "--add-flake requires url=..."
+  [[ -n "$url"  ]] || die "--add-flake requires url=..."
 
-  # Validate name is a reasonable nix attr identifier
   if ! [[ "$name" =~ ^[a-zA-Z_][a-zA-Z0-9_-]*$ ]]; then
     die "--add-flake name must be an identifier (got: '$name')"
   fi
 
-  # Normalize url
   url="$(normalize_flake_url "$url")"
 
-  # module is optional; if provided, must look like attrpath "foo.bar.baz"
   if [[ -n "$module" ]] && ! [[ "$module" =~ ^[a-zA-Z_][a-zA-Z0-9_-]*(\.[a-zA-Z_][a-zA-Z0-9_-]*)+$ ]]; then
     die "--add-flake module must look like 'nixosModules.default' (got: '$module')"
   fi
@@ -135,6 +127,7 @@ parse_add_flake() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --username) USERNAME="${2:-}"; shift 2;;
+    --fullname) FULLNAME="${2:-}"; shift 2;;
     --git-name) GIT_NAME="${2:-}"; shift 2;;
     --git-email) GIT_EMAIL="${2:-}"; shift 2;;
     --repo) REPO="${2:-}"; shift 2;;
@@ -161,7 +154,7 @@ fi
 
 command -v git >/dev/null || die "git not installed"
 
-# Safety check: don't delete DEST while running from inside it
+# Safety: don't delete DEST while running from inside it
 SCRIPT_PATH="$(readlink -f "$0" 2>/dev/null || true)"
 DEST_ABS="$(readlink -f "$DEST" 2>/dev/null || true)"
 if [[ -n "$DEST_ABS" && -n "$SCRIPT_PATH" && "$SCRIPT_PATH" == "$DEST_ABS"* ]]; then
@@ -173,6 +166,7 @@ echo "Repo:      $REPO"
 echo "Branch:    $BRANCH"
 echo "Dest:      $DEST"
 echo "User:      $USERNAME"
+[[ -n "$FULLNAME" ]] && echo "Fullname:  $FULLNAME"
 echo "Monitor:   $MONITOR"
 echo "Zoom:      $ZOOM"
 [[ -n "$NVIDIA_ALT" ]] && echo "NVIDIA:    $NVIDIA_ALT"
@@ -238,6 +232,18 @@ FLAKE="$DEST/flake.nix"
 if [[ -f "$FLAKE" ]]; then
   # username
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$FLAKE"
+
+  # fullname (only if provided): replace or insert after username
+  if [[ -n "$FULLNAME" ]]; then
+    FULLNAME="$FULLNAME" perl -0777 -i -pe '
+      my $fn = $ENV{FULLNAME};
+      if (s/(\bfullname\s*=\s*")([^"]*)("\s*;)/$1$fn$3/sg) {
+        # replaced
+      } else {
+        s/(\busername\s*=\s*"[^"]*"\s*;\s*)/$1\n          fullname = "$fn";\n/s;
+      }
+    ' "$FLAKE"
+  fi
 
   # monitor
   perl -0777 -i -pe "s/(\\bmonitor\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${MONITOR}\$3/g" "$FLAKE"
@@ -318,31 +324,28 @@ if [[ -f "$FLAKE" ]]; then
   # - Optionally adds <name>.<moduleAttrPath> into modules list
   # ---------------------------------------------------------
   if [[ ${#ADD_FLAKES[@]} -gt 0 ]]; then
-    # Pass the list as one string with newlines to perl
     EXTRA_LIST="$(printf "%s\n" "${ADD_FLAKES[@]}")"
     EXTRA_LIST="$EXTRA_LIST" perl -0777 -i -pe '
       my $list = $ENV{EXTRA_LIST} // "";
       my @entries = grep { length($_) } split(/\n/, $list);
-
       my $t = $_;
 
       for my $e (@entries) {
         my ($name,$url,$module) = split(/\|/, $e, 3);
         next unless $name && $url;
 
-        # 1) inputs.<name>.url
+        # inputs.<name>.url
         if ($t !~ /^\s*\Q$name\E\.url\s*=/m) {
           my $ins = "    $name.url = \"$url\";\n";
-          # insert before the closing "};" of inputs attrset (the one before outputs =)
           $t =~ s/(\n\s*\};\s*\n\s*\n\s*outputs\s*=)/\n$ins$1/s;
         }
 
-        # 2) outputs args include <name>
+        # outputs args include <name>
         if ($t !~ /outputs\s*=\s*\{[^}]*\b\Q$name\E\b/s) {
           $t =~ s/(outputs\s*=\s*\{[^}]*?)(,\s*\.\.\.\s*\}\@inputs:)/$1, $name$2/s;
         }
 
-        # 3) optional module include in modules = [ ... ];
+        # optional module include
         if (defined($module) && length($module)) {
           my $line = "$name.$module";
           if ($t !~ /^\s*\Q$line\E\s*$/m) {
@@ -362,6 +365,18 @@ fi
 USERS_NIX="$DEST/modules/users.nix"
 if [[ -f "$USERS_NIX" ]]; then
   perl -0777 -i -pe "s/(\\busername\\s*=\\s*\")([^\"]*)(\"\\s*;)/\$1${USERNAME}\$3/g" "$USERS_NIX"
+
+  # also patch fullname there if you use it (only if provided)
+  if [[ -n "$FULLNAME" ]]; then
+    FULLNAME="$FULLNAME" perl -0777 -i -pe '
+      my $fn = $ENV{FULLNAME};
+      if (s/(\bfullname\s*=\s*")([^"]*)("\s*;)/$1$fn$3/sg) {
+        # replaced
+      } else {
+        # do nothing if not present (safer)
+      }
+    ' "$USERS_NIX"
+  fi
 fi
 
 # ---------------------------------------------------------

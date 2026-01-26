@@ -1,9 +1,9 @@
-{ username, ... }:
+{ username, fullname, ... }:
 
 {
   users.users.${username} = {
     isNormalUser = true;
-    description = "Luna Haiplick";
+    description = "${fullname}";
     extraGroups = [ "networkmanager" "wheel" "docker" ];
     packages = [ ];
   };

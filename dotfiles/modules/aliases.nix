@@ -11,6 +11,7 @@ in
 {
   environment.shellAliases = {
     rebuild = "sudo nixos-rebuild switch --flake ${dotfilesPath}#nixos";
+    rb = "sudo nixos-rebuild switch --flake ${dotfilesPath}#nixos";
     update = "cd ${dotfilesPath} && nix flake update && cd -";
 
     garbage = "sudo nix-collect-garbage";
