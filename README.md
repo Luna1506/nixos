@@ -1,4 +1,4 @@
-# Lunas Nixos Setup
+# Nixos Setup
 ## Setup anpassen
 ### Für das erste mal:
 Projekt an die gewünschte stelle clonen mit 
