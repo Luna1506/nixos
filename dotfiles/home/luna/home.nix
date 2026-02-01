@@ -19,7 +19,8 @@
     ./modules/git.nix
     ./modules/yazi.nix
     ./modules/cursor.nix
-    ./modules/hyprpaper.nix
+    #     ./modules/hyprpaper.nix
+    ./modules/hyprland/default.nix
     ./modules/theme.nix
     ./modules/wofi.nix
     ./modules/ghostty.nix

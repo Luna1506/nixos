@@ -146,7 +146,7 @@ in
         "$mainMod, D, exec, vesktop"
         "$mainMod, B, exec, ~/.config/hypr/scripts/waybar-toggle.sh"
         "$mainMod, L, exec, hyprlock"
-        "$mainMod, Print, exec, grim -g \"$(slurp)\" - | wl-copy"
+        "$mainMod, D, exec, grim -g \"$(slurp)\" - | wl-copy"
         "$mainMod, 1, workspace, 1"
         "$mainMod, 2, workspace, 2"
         "$mainMod, 3, workspace, 3"
