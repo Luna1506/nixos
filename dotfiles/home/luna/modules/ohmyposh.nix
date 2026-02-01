@@ -3,10 +3,10 @@
   programs.oh-my-posh = {
     enable = true;
     package = pkgs.oh-my-posh;
-    enableBashIntegration = true;
+    # WICHTIG: keine automatische Bash-Integration, sonst lädt er evtl. ein anderes Theme
+    enableBashIntegration = false;
   };
 
-  # Theme-Datei direkt hier definieren
   home.file.".config/ohmyposh/theme.json".text = ''
     {
       "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
@@ -19,37 +19,26 @@
           "segments": [
             {
               "type": "session",
-              "style": "plain",
-              "foreground": "#ffffff"
-            },
-            {
-              "type": "text",
-              "text": "@",
-              "style": "plain",
-              "foreground": "#666666"
+              "style": "powerline",
+              "foreground": "#000000",
+              "background": "#ffffff",
+              "powerline_symbol": ""
             },
             {
               "type": "path",
-              "style": "plain",
-              "foreground": "#ffffff",
-              "properties": {
-                "style": "folder"
-              }
-            }
-          ]
-        },
-        {
-          "type": "prompt",
-          "alignment": "right",
-          "segments": [
+              "style": "powerline",
+              "foreground": "#000000",
+              "background": "#ffffff",
+              "powerline_symbol": "",
+              "properties": { "style": "folder" }
+            },
             {
               "type": "git",
-              "style": "plain",
-              "foreground": "#ff5fd7",
-              "properties": {
-                "branch_icon": " ",
-                "fetch_status": true
-              }
+              "style": "powerline",
+              "foreground": "#000000",
+              "background": "#ffffff",
+              "powerline_symbol": "",
+              "properties": { "branch_icon": " " }
             }
           ]
         }
@@ -57,9 +46,10 @@
     }
   '';
 
-  # Bash init: oh-my-posh Theme laden
   programs.bash = {
     enable = true;
+
+    # ganz am Ende initialisieren, damit nichts danach dein Prompt überschreibt
     initExtra = ''
       eval "$(oh-my-posh init bash --config ~/.config/ohmyposh/theme.json)"
     '';
