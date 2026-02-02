@@ -1,12 +1,12 @@
 { ... }:
 {
   wayland.windowManager.hyprland.settings = {
-    windowrulev2 = [
-      "workspace special:spotify, class:spotify"
-      "float, class:^(Spotify|com\\.spotify\\.Client)$"
-      "pin, class:^(Spotify|com\\.spotify\\.Client)$"
-      "size 1200 700, class:^(Spotify|com\\.spotify\\.Client)$"
-      "center, class:^(Spotify|com\\.spotify\\.Client)$"
+    windowrule = [
+      "match:class ^(Spotify|com\\.spotify\\.Client)$, workspace special:spotify"
+      "match:class ^(Spotify|com\\.spotify\\.Client)$, float on"
+      "match:class ^(Spotify|com\\.spotify\\.Client)$, center on"
+      "match:class ^(Spotify|com\\.spotify\\.Client)$, size 1200 700"
+      "match:class ^(Spotify|com\\.spotify\\.Client)$, opacity 0.92 override"
     ];
   };
 }

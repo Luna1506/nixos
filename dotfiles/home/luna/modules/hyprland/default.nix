@@ -8,7 +8,7 @@
     ./look.nix
     ./input.nix
     ./binds.nix
-    ./rules.nix
+    # ./rules.nix
   ];
 
   wayland.windowManager.hyprland.enable = true;
