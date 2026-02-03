@@ -33,6 +33,7 @@
     mission-center # task manager
     nvtopPackages.nvidia # task manager for nvidia
     traceroute
+    tree
   ];
 }
 
