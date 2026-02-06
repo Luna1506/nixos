@@ -14,6 +14,7 @@
     ../../modules/packages.nix
     ../../modules/styling.nix
     ../../modules/desktop/hyprland.nix
+    ../../modules/desktop/niri.nix
     ../../modules/desktop/display-manager.nix
     ../../modules/docker.nix
   ]
