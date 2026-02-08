@@ -12,7 +12,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flutter-dev = {
-      url = "path:home/luna/nixos/dotfiles/flakes/flake.nix";
+      url = "path:home/luna/nixos/dotfiles/flakes/flutter-dev";
       inputs.nixpkgs.follows = "nixpkgs"; # optional, aber sinnvoll
     };
   };
