@@ -11,7 +11,7 @@
     gnome-disk-utility # disks app from gnome
     bibata-cursors # cursor
     vesktop # discord for linux
-    spotify
+    cider-2
     grim # for screenshots
     slurp # for screenshots to select the area
     wl-clipboard # puts screenshots in clipboard
@@ -34,6 +34,9 @@
     nvtopPackages.nvidia # task manager for nvidia
     traceroute
     tree
+    nwg-dock-hyprland
+    jq
+    procps
   ];
 }
 

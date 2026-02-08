@@ -3,13 +3,12 @@
   wayland.windowManager.hyprland = {
     settings = {
       general = {
-        gaps_in = 2;
-        gaps_out = 4;
+        gaps_in = 5;
+        gaps_out = 10;
         border_size = 1;
         "col.active_border" = "rgba(ffffffff)";
         resize_on_border = true;
         allow_tearing = false;
-        layout = "dwindle";
       };
 
       decoration = {
@@ -20,7 +19,6 @@
         shadow = {
           enabled = true;
           range = 20;
-          render-power = 3;
         };
 
         blur = {
@@ -31,6 +29,11 @@
           xray = false;
         };
       };
+
+      layerrule = [
+        "blur on, match:namespace ^(.*)$"
+        "ignore_alpha 0.3, match:namespace ^(.*)$"
+      ];
 
       animations = {
         enabled = true;
@@ -66,11 +69,6 @@
         ];
       };
 
-      dwindle = {
-        pseudotile = true;
-        preserve_split = true;
-      };
-
       master = {
         new_status = "master";
       };
@@ -81,10 +79,5 @@
         disable_splash_rendering = true;
       };
     };
-
-    extraConfig = ''
-      layerrule = blur on, match:namespace ^(dock|nwg-dock|nwg-dock-hyprland)$
-      layerrule = ignore_alpha 0.3, match:namespace ^(dock|nwg-dock|nwg-dock-hyprland)$
-    '';
   };
 }

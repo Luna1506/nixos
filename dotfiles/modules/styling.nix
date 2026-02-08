@@ -6,14 +6,36 @@
     theme = "catppuccin-mocha-mauve";
   };
 
-  fonts = {
-    fontconfig.enable = true;
 
-    # Wichtig: Fonts hier rein, nicht nur systemPackages
+  fonts = {
+    enableDefaultPackages = true;
+
     packages = with pkgs; [
       nerd-fonts.jetbrains-mono
-      nerd-fonts.symbols-only
+      # CJK Fonts (das ist der entscheidende Fix)
+      noto-fonts-cjk-sans
+      noto-fonts-cjk-serif
+      noto-fonts-color-emoji
     ];
+
+    fontconfig = {
+      enable = true;
+
+      defaultFonts = {
+        monospace = [
+          "JetBrainsMono Nerd Font"
+          "Noto Sans Mono CJK KR"
+        ];
+
+        sansSerif = [
+          "Noto Sans CJK KR"
+        ];
+
+        serif = [
+          "Noto Serif CJK KR"
+        ];
+      };
+    };
   };
 }
 

@@ -4,7 +4,6 @@
     "exec-once" = [
       "$terminal"
       "hyprpaper"
-      "~/.config/hypr/scripts/waybar-toggle.sh"
     ];
   };
 }

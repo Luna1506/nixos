@@ -23,8 +23,9 @@
       background-color: rgba(24, 24, 24, 0.6);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-                  0 4px 6px -4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55),
+            0 6px 14px rgba(0, 0, 0, 0.35);
+
       border-radius: 1rem;
       font-size: 1.2rem;
     }

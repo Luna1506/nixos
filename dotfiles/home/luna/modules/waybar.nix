@@ -67,121 +67,132 @@
     };
 
     style = ''
-      * {
-        border: none;
-        border-radius: 0;
-        min-height: 0;
-        margin: 0;
-        padding: 0;
-        font-family: "JetBrainsMono", "Noto Sans", sans-serif;
-        font-size: 12px;
-      }
+          * {
+            border: none;
+            border-radius: 0;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            font-family: "JetBrainsMono", "Noto Sans", sans-serif;
+            font-size: 12px;
+          }
 
-      window#waybar {
-        background: transparent;
-        color: #eaeaea;
-      }
+          window#waybar {
+            background: transparent;
+            color: #eaeaea;
+          }
 
-      /* Pills */
-      #workspaces,
-      #clock,
-      #wireplumber,
-      #network,
-      #bluetooth,
-      #custom-power {
-        margin: 6px 4px;
-        padding: 0 10px;
-        background: rgba(255, 255, 255, 0.06);
-        border-radius: 10px;
-      }
+          /* Pills (Acrylic / Frosted Glass) */
+          #workspaces,
+          #clock,
+          #wireplumber,
+          #network,
+          #bluetooth,
+          #custom-power {
+      	margin: 6px 4px;
+      	padding: 0 10px;
 
-      /* Nerd Fonts für alle Icons */
-      #wireplumber,
-      #network,
-      #bluetooth,
-      #custom-power {
-        font-family: "JetBrainsMono Nerd Font",
-                     "JetBrainsMono NF",
-                     "Symbols Nerd Font",
-                     "Noto Sans Symbols",
-                     sans-serif;
-      }
+            /* Frosted background */
+            background: rgba(255, 255, 255, 0.06);
 
-      /* Bluetooth: symmetrisch */
-      #bluetooth {
-        min-width: 34px;
-        padding-left: 12px;
-        padding-right: 12px;
-      }
+            /* Acrylic blur */
+            -gtk-icon-effect: none;
+            backdrop-filter: blur(14px);
+            -gtk-backdrop-filter: blur(14px);
 
-      #custom-power {
-        min-width: 34px;
-        padding-left: 12px;
-        padding-right: 12px;
-        font-weight: 700;
-      }
+            /* A bit of “acrylic edge” */
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
 
-      #bluetooth label,
-      #custom-power label {
-        margin: 0;
-        padding: 0;
-      }
+            border-radius: 10px;
+          }
+          /* Nerd Fonts für alle Icons */
+          #wireplumber,
+          #network,
+          #bluetooth,
+          #custom-power {
+            font-family: "JetBrainsMono Nerd Font",
+                         "JetBrainsMono NF",
+                         "Symbols Nerd Font",
+                         "Noto Sans Symbols",
+                         sans-serif;
+          }
 
-      #wireplumber:hover,
-      #network:hover,
-      #bluetooth:hover,
-      #custom-power:hover {
-        background: rgba(255, 255, 255, 0.12);
-        color: #ffffff;
-      }
+          /* Bluetooth: symmetrisch */
+          #bluetooth {
+            min-width: 34px;
+            padding-left: 12px;
+            padding-right: 12px;
+          }
 
-      /* Workspaces */
-      #workspaces {
-        padding: 0 6px;
-      }
+          #custom-power {
+            min-width: 34px;
+            padding-left: 12px;
+            padding-right: 12px;
+            font-weight: 700;
+          }
 
-      #workspaces button {
-        padding: 2px 8px;
-        margin: 4px 3px;
-        border-radius: 8px;
-        background: transparent;
-        color: #bdbdbd;
-        transition: background 120ms ease, color 120ms ease;
-      }
+          #bluetooth label,
+          #custom-power label {
+            margin: 0;
+            padding: 0;
+          }
 
-      #workspaces button.active {
-        background: rgba(255, 255, 255, 0.14);
-        color: #ffffff;
-      }
+          #wireplumber:hover,
+          #network:hover,
+          #bluetooth:hover,
+          #custom-power:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+          }
 
-      #workspaces button:hover {
-        background: rgba(255, 255, 255, 0.10);
-        color: #ffffff;
-      }
+          /* Workspaces */
+          #workspaces {
+            padding: 0 6px;
+          }
 
-      #workspaces button.urgent {
-        background: rgba(255, 80, 80, 0.18);
-        color: #ffffff;
-      }
+          #workspaces button {
+            padding: 2px 8px;
+            margin: 4px 3px;
+            border-radius: 8px;
+            background: transparent;
+            color: #bdbdbd;
+            transition: background 120ms ease, color 120ms ease;
+          }
 
-      #workspaces button.empty {
-        color: rgba(255, 255, 255, 0.35);
-      }
+          #workspaces button.active {
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+          }
 
-      /* States */
-      #wireplumber.muted,
-      #network.disconnected,
-      #bluetooth.off,
-      #bluetooth.disabled {
-        color: rgba(255, 255, 255, 0.45);
-      }
+          #workspaces button:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: #ffffff;
+          }
 
-      tooltip {
-        background: rgba(10, 10, 10, 0.90);
-        color: #eaeaea;
-        border-radius: 10px;
-        padding: 8px 10px;
-      }
+          #workspaces button.urgent {
+            background: rgba(255, 80, 80, 0.18);
+            color: #ffffff;
+          }
+
+          #workspaces button.empty {
+            color: rgba(255, 255, 255, 0.35);
+          }
+
+          /* States */
+          #wireplumber.muted,
+          #network.disconnected,
+          #bluetooth.off,
+          #bluetooth.disabled {
+            color: rgba(255, 255, 255, 0.45);
+          }
+
+          tooltip {
+            background: rgba(10, 10, 10, 0.90);
+            color: #eaeaea;
+            border-radius: 10px;
+            padding: 8px 10px;
+          }
     '';
   };
 
