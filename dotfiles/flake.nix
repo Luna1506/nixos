@@ -50,7 +50,6 @@
         modules = [
           ({ ... }: {
             nixpkgs.overlays = [ teamspeak6Overlay ];
-            nixpkgs.config.allowUnfree = true;
           })
 
           ./hosts/laptop/default.nix

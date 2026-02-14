@@ -41,6 +41,12 @@
     temurin-bin-25
     bruno
     teamspeak6
+    pipewire
+    pulseaudio
+
+    # BEGIN AUTO PACKAGES
+    element-desktop
+    # END AUTO PACKAGES
   ];
 
   programs.nix-ld.enable = true;
