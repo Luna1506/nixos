@@ -45,7 +45,7 @@
     pulseaudio
 
     # BEGIN AUTO PACKAGES
-    webcord
+    element-desktop
     # END AUTO PACKAGES
   ];
 
