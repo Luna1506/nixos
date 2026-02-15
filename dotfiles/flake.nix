@@ -1,6 +1,4 @@
 {
-  description = "Modulares NixOS-Setup (Host: nixos) mit Home Manager-Option";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -34,10 +32,6 @@
       git-name = "Luna";
       git-email = "mhaiplick1506@gmail.com";
       luna-path = true;
-
-      teamspeak6Overlay = final: prev: {
-        teamspeak6 = final.callPackage ./pkgs/teamspeak6 { };
-      };
     in
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
@@ -48,16 +42,15 @@
         };
 
         modules = [
-          ({ ... }: {
-            nixpkgs.overlays = [ teamspeak6Overlay ];
-          })
-
           ./hosts/laptop/default.nix
 
           home-manager.nixosModules.home-manager
+
           {
             home-manager.useUserPackages = true;
-            home-manager.users.${username} = import ./home/${username}/home.nix;
+
+            home-manager.users.${username} =
+              import ./home/${username}/home.nix;
 
             home-manager.extraSpecialArgs = {
               inherit inputs username fullname monitor zoom git-name git-email;
