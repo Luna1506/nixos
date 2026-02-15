@@ -15,7 +15,6 @@
   # Alternativ: Module direkt einbinden
   imports = [
     ./modules/desktops/hyprland/default.nix
-    ./modules/desktops/niri/niri.nix
     ./modules/gpg.nix
     ./modules/git.nix
     ./modules/yazi.nix
