@@ -40,7 +40,7 @@
     unzip
     temurin-bin-25
     bruno
-    teamspeak6
+    teamspeak6-client
     pipewire
     pulseaudio
 

@@ -14,7 +14,7 @@
     ../../modules/packages.nix
     ../../modules/styling.nix
     ../../modules/desktop/hyprland.nix
-    ../../modules/desktop/kde.nix
+    # ../../modules/desktop/kde.nix
     ../../modules/desktop/display-manager.nix
     ../../modules/desktop/portals.nix
     ../../modules/docker.nix
