@@ -8,7 +8,6 @@
     extraPortals = with pkgs; [
       xdg-desktop-portal-gtk
       xdg-desktop-portal-hyprland
-      kdePackages.xdg-desktop-portal-kde
     ];
 
     # WICHTIG: KEIN xdg.portal.config hier!
