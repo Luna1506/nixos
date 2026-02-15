@@ -56,10 +56,10 @@
     zlib
     openssl
     glib
-    xorg.libX11
-    xorg.libXcursor
-    xorg.libXrandr
-    xorg.libXi
+    libx11
+    libxcursor
+    libxrandr
+    libxi
     libGL
   ];
 
