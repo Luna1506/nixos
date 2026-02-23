@@ -45,7 +45,13 @@
     pulseaudio
 
     # BEGIN AUTO PACKAGES
+    teams-for-linux
     element-desktop
+    fastfetch
+    cmatrix
+    cava
+    mapscii
+    nerdfetch
     # END AUTO PACKAGES
   ];
 
