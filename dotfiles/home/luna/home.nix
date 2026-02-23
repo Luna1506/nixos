@@ -28,6 +28,7 @@
     ./modules/waybar.nix
     ./modules/starship.nix
     ./modules/nwg-dock.nix
+    ./modules/nerdfetch-bash.nix
   ];
 }
 
