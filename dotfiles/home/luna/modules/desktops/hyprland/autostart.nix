@@ -1,28 +1,28 @@
 { ... }:
 {
   wayland.windowManager.hyprland.settings = {
-
     exec-once = [
-      # Workspace 1 aktivieren
+      # optional: sicherstellen, dass du auf WS1 bist
       "hyprctl dispatch workspace 1"
 
-      # Hauptterminal (links groß)
+      # links groß (erstes Fenster)
       "ghostty --title main"
 
-      # Rechts oben
+      # rechts oben (zweites Fenster)
       "ghostty --title matrix -e cmatrix"
 
-      # Rechts unten
+      # rechts unten (drittes Fenster)
       "ghostty --title cava -e cava"
 
-      # Hintergrund
+      # wallpaper
       "hyprpaper"
     ];
 
-    windowrulev2 = [
-      "workspace 1, title:^(main)$"
-      "workspace 1, title:^(matrix)$"
-      "workspace 1, title:^(cava)$"
+    # Neue Window-Rule Syntax (windowrule = match:... , effect ...)
+    windowrule = [
+      "match:title ^(main)$, workspace 1"
+      "match:title ^(matrix)$, workspace 1"
+      "match:title ^(cava)$, workspace 1"
     ];
   };
 }
