@@ -4,8 +4,8 @@
   programs.rofi = {
     enable = true;
 
-    # rofi-wayland ist ein echtes Package (statt null)
-    package = pkgs.rofi-wayland;
+    # rofi hat jetzt Wayland integriert
+    package = pkgs.rofi;
 
     extraConfig = {
       modi = "drun,run,window";
