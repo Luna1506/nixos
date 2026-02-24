@@ -48,16 +48,13 @@ in
       decoration = {
         rounding = t.corner;
 
-        drop_shadow = true;
-        shadow_range = 18;
-        shadow_render_power = 3;
-        "col.shadow" = "rgba(00000055)";
-
-        # ✅ normaler Hyprland blur (Acrylic)
+        # ✅ Blur ist weiterhin decoration:blur:* (passt)
         blur = {
           enabled = true;
           size = t.blurSize;
           passes = t.blurPasses;
+
+          ignore_opacity = true;
           new_optimizations = true;
           xray = true;
 
@@ -67,16 +64,32 @@ in
           vibrancy = 0.18;
           vibrancy_darkness = 0.0;
         };
+
+        # ✅ Shadow ist jetzt decoration:shadow:*
+        shadow = {
+          enabled = true;
+          range = 18;
+          render_power = 3;
+          color = "rgba(00000055)";
+          # optional:
+          # ignore_window = true;
+          # offset = "0 0";
+          # scale = 1.0;
+        };
       };
 
-      # ✅ Layer acrylic: Waybar / Dock / Notifs
+      # ✅ Layer rules: neue 0.53 Syntax
       layerrule = [
-        "blur, ^(waybar)$"
-        "ignorezero, ^(waybar)$"
-        "blur, ^(swaync-control-center|swaync-notification-window)$"
-        "ignorezero, ^(swaync-control-center|swaync-notification-window)$"
-        "blur, ^(nwg-dock|nwg-dock-hyprland)$"
-        "ignorezero, ^(nwg-dock|nwg-dock-hyprland)$"
+        "blur on, match:namespace ^(waybar)$"
+        "ignore_alpha 0.0, match:namespace ^(waybar)$"
+
+        "blur on, match:namespace ^(swaync-control-center)$"
+        "blur on, match:namespace ^(swaync-notification-window)$"
+        "ignore_alpha 0.0, match:namespace ^(swaync-control-center)$"
+        "ignore_alpha 0.0, match:namespace ^(swaync-notification-window)$"
+
+        "blur on, match:namespace ^(nwg-dock|nwg-dock-hyprland)$"
+        "ignore_alpha 0.0, match:namespace ^(nwg-dock|nwg-dock-hyprland)$"
       ];
 
       animations = {
@@ -110,6 +123,10 @@ in
       };
 
       bind = binds;
+
+      # Falls du wirklich schon auf der neuen Window-Rules Syntax bist,
+      # dann solltest du hier "windowrule" statt "windowrulev2" benutzen.
+      # Ich lasse es erstmal wie du es hattest, aber das könnte der nächste Stolperstein sein.
       windowrulev2 = rules;
     };
   };
