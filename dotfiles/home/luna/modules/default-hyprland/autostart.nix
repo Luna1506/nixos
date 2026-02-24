@@ -4,6 +4,7 @@
     exec-once = [
       "hyprpaper"
       "$terminal"
+      "wl-paste --type text --watch cliphist store"
 
       # Alles auf Workspace 1
       # "[workspace 1 silent] ghostty --title main"

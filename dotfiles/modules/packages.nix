@@ -56,6 +56,7 @@
     hyprpicker
     swaynotificationcenter
     playerctl
+    cliphist
     # END AUTO PACKAGES
   ];
 

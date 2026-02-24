@@ -16,6 +16,7 @@
       "$mainMod, D, exec, grim -g \"$(slurp)\" - | wl-copy"
       "$mainMod SHIFT, E, exit"
       "$mainMod, Y, exec, ~/test.sh"
+      "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
       "$mainMod, 1, workspace, 1"
       "$mainMod, 2, workspace, 2"
       "$mainMod, 3, workspace, 3"
