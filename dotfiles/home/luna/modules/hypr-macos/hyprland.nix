@@ -4,16 +4,13 @@ let
   t = config.hyprMacos;
   binds = config.hyprMacos.binds or [ ];
   rules = config.hyprMacos.windowRules or [ ];
-  liquidGlass = config.hyprMacos.liquidGlassPlugin;
-  enableLG = config.hyprMacos.enableLiquidGlass or false;
 in
 {
   wayland.windowManager.hyprland = {
     enable = true;
 
-    plugins = lib.optionals (enableLG && liquidGlass != null) [
-      liquidGlass
-    ];
+    # ✅ keine Plugins laden
+    plugins = [ ];
 
     settings = {
       monitor = [
@@ -56,40 +53,23 @@ in
         shadow_render_power = 3;
         "col.shadow" = "rgba(00000055)";
 
-        # Wenn LiquidGlass aktiv ist, schalten wir Hypr-Blur aus,
-        # sonst nutzen wir den normalen Blur.
-        blur =
-          if enableLG then {
-            enabled = false;
-          } else {
-            enabled = true;
-            size = t.blurSize;
-            passes = t.blurPasses;
-            new_optimizations = true;
-            xray = true;
-            noise = 0.02;
-            contrast = 1.05;
-            brightness = 1.0;
-            vibrancy = 0.18;
-            vibrancy_darkness = 0.0;
-          };
-      };
-
-      # Plugin config nur wenn enabled
-      plugin = lib.mkIf enableLG {
-        "liquid-glass" = {
+        # ✅ normaler Hyprland blur (Acrylic)
+        blur = {
           enabled = true;
-          blur_strength = 1.8;
-          refraction_strength = 0.10;
-          chromatic_aberration = 0.016;
-          fresnel_strength = 0.55;
-          specular_strength = 0.45;
-          glass_opacity = 1.0;
-          edge_thickness = 0.15;
+          size = t.blurSize;
+          passes = t.blurPasses;
+          new_optimizations = true;
+          xray = true;
+
+          noise = 0.02;
+          contrast = 1.05;
+          brightness = 1.0;
+          vibrancy = 0.18;
+          vibrancy_darkness = 0.0;
         };
       };
 
-      # Layer acrylic (Waybar/Dock/Notifs)
+      # ✅ Layer acrylic: Waybar / Dock / Notifs
       layerrule = [
         "blur, ^(waybar)$"
         "ignorezero, ^(waybar)$"
