@@ -1,9 +1,11 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   programs.rofi = {
     enable = true;
-    package = null; # rofi-wayland via home.packages
+
+    # rofi-wayland ist ein echtes Package (statt null)
+    package = pkgs.rofi-wayland;
 
     extraConfig = {
       modi = "drun,run,window";

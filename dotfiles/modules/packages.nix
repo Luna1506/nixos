@@ -52,6 +52,10 @@
     cava
     mapscii
     nerdfetch
+    hypridle
+    hyprpicker
+    swaynotificationcenter
+    playerctl
     # END AUTO PACKAGES
   ];
 
