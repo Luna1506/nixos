@@ -31,23 +31,29 @@ let
         udev
         wayland
 
-        # ✅ nixpkgs name
+        # nixpkgs name (pkg-config name is xkbcommon)
         libxkbcommon
 
+        # Hyprland for pkg-config + source
         hypr
       ];
 
       buildPhase = ''
         runHook preBuild
 
-        # Plugin includiert Hyprland internal headers als <hyprland/src/...>
+        # The plugin uses: <hyprland/src/...>
+        # Create a builddir-local "hyprland" that points to Hyprland source.
         if [ -e "${hypr.src or ""}" ] && [ -n "${hypr.src or ""}" ]; then
-          ln -s "${hypr.src}" hyprland
+          ln -sf "${hypr.src}" hyprland
         else
           echo "ERROR: pkgs.hyprland has no .src attribute in this nixpkgs."
           echo "Try pkgs.hyprland-unwrapped.src or pin a Hyprland source fetch."
           exit 1
         fi
+
+        # IMPORTANT: because headers are included with angle brackets, the current dir
+        # is not searched unless we add an include path. This makes <hyprland/src/...> work.
+        export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -I$PWD"
 
         make all
 
