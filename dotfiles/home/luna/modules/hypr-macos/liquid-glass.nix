@@ -25,17 +25,15 @@ let
       buildInputs = with pkgs; [
         pixman
         libdrm
-
-        # ✅ statt "pangocairo"
         pango
         cairo
-
         libinput
         udev
         wayland
-        xkbcommon
 
-        # Hyprland selbst (für pkg-config + src)
+        # ✅ nixpkgs name
+        libxkbcommon
+
         hypr
       ];
 
