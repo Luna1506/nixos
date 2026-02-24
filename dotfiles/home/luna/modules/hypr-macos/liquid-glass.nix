@@ -3,11 +3,10 @@
 let
   enableLiquidGlass = true;
 
-  # Hyprland derivation (für src)
   hypr = pkgs.hyprland;
 
   liquidGlassPlugin =
-    pkgs.hyprlandPlugins.mkHyprlandPlugin (finalAttrs: {
+    pkgs.hyprlandPlugins.mkHyprlandPlugin (_finalAttrs: {
       pluginName = "liquid-glass";
       version = "git";
 
@@ -23,15 +22,17 @@ let
         gnumake
       ];
 
-      # Damit pkg-config hyprland + headers verfügbar ist
       buildInputs = with pkgs; [
         pixman
         libdrm
-        pangocairo
+
+        # ✅ statt "pangocairo"
+        pango
+        cairo
+
         libinput
         udev
         wayland
-        xorg.libX11
         xkbcommon
 
         # Hyprland selbst (für pkg-config + src)
@@ -41,18 +42,12 @@ let
       buildPhase = ''
         runHook preBuild
 
-        # Das Plugin includiert Hyprland internal headers als:
-        #   <hyprland/src/...>
-        # Daher erzeugen wir im Builddir einen Ordner/Symlink "hyprland",
-        # der auf den Hyprland Source-Tree zeigt.
-        #
-        # Falls dein pkgs.hyprland kein .src hat (selten, aber möglich),
-        # sag Bescheid – dann nehmen wir hyprland-unwrapped oder fetchen den Source.
+        # Plugin includiert Hyprland internal headers als <hyprland/src/...>
         if [ -e "${hypr.src or ""}" ] && [ -n "${hypr.src or ""}" ]; then
           ln -s "${hypr.src}" hyprland
         else
           echo "ERROR: pkgs.hyprland has no .src attribute in this nixpkgs."
-          echo "We may need pkgs.hyprland-unwrapped.src or to pin/fetch Hyprland source."
+          echo "Try pkgs.hyprland-unwrapped.src or pin a Hyprland source fetch."
           exit 1
         fi
 
