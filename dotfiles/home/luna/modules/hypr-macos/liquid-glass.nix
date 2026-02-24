@@ -72,27 +72,9 @@ let
         EOF
                 fi
 
-                # ---- Protocol headers (cursor-shape-v1.hpp etc.) ----
-                # If Hyprland source contains a protocols/ dir, ensure it's at hyprland/protocols.
-                if [ ! -d hyprland/protocols ]; then
-                  # sometimes protocols are nested; try to locate within the copied source
-                  pdir="$(find hyprland -maxdepth 3 -type d -name protocols 2>/dev/null | head -n 1 || true)"
-                  if [ -n "$pdir" ] && [ -d "$pdir" ]; then
-                    echo "Found protocols dir inside Hyprland source: $pdir"
-                    # If it's not already hyprland/protocols, copy it there
-                    rm -rf hyprland/protocols
-                    mkdir -p hyprland/protocols
-                    cp -r "$pdir/." hyprland/protocols/
-                    chmod -R u+w hyprland/protocols || true
-                  else
-                    echo "No protocols dir found in Hyprland source tree (may fail later on cursor-shape-v1.hpp)."
-                  fi
-                fi
-
-                # ---- IMPORTANT: Makefile hardcodes 'g++' and ignores CXXFLAGS.
-                # Put a g++ wrapper first in PATH to inject include paths.
+                # ---- g++ wrapper because Makefile hardcodes g++ and ignores flags ----
                 cat > ./g++ <<EOF
-        #!/usr/bin/env bash
+        #!${pkgs.bash}/bin/bash
         exec ${pkgs.gcc}/bin/g++ -I"$PWD" "\$@"
         EOF
                 chmod +x ./g++
