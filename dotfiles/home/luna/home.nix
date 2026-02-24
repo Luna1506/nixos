@@ -21,7 +21,6 @@
     ./modules/yazi.nix
     ./modules/cursor.nix
     ./modules/neovim.nix
-    ./modules/starship.nix
     ./modules/nerdfetch-bash.nix
   ];
 }
