@@ -14,8 +14,7 @@
 
   # Alternativ: Module direkt einbinden
   imports = [
-    #./modules/default-hyprland
-    ./modules/hypr-macos
+    ./modules/default-hyprland
     ./modules/gpg.nix
     ./modules/git.nix
     ./modules/yazi.nix
