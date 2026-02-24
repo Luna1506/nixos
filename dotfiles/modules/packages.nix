@@ -57,6 +57,7 @@
     swaynotificationcenter
     playerctl
     cliphist
+    protonup-qt
     # END AUTO PACKAGES
   ];
 
