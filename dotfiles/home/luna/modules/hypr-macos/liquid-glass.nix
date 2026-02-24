@@ -37,7 +37,7 @@ let
       buildPhase = ''
                 runHook preBuild
 
-                # ---- Hyprland headers / internals available as <hyprland/src/...> ----
+                # ---- make Hyprland internals available as <hyprland/src/...> ----
                 if [ -e "${hypr.src or ""}" ] && [ -n "${hypr.src or ""}" ]; then
                   echo "Copying Hyprland source into builddir (writeable)..."
                   rm -rf hyprland
@@ -73,35 +73,30 @@ let
                 fi
 
                 # ---- Protocol headers (cursor-shape-v1.hpp etc.) ----
-                # Hyprland's Renderer.hpp includes ../../protocols/*.hpp which may not be present in plain src.
-                # Try to find any installed protocols in the Hyprland output and copy them into hyprland/protocols.
+                # If Hyprland source contains a protocols/ dir, ensure it's at hyprland/protocols.
                 if [ ! -d hyprland/protocols ]; then
-                  mkdir -p hyprland/protocols
-                fi
-                chmod -R u+w hyprland/protocols || true
-
-                echo "Searching Hyprland package output for protocol headers (*.hpp)..."
-                proto_dir="$(find "${hypr}" -maxdepth 6 -type d -name protocols 2>/dev/null | head -n 1 || true)"
-                if [ -n "$proto_dir" ] && [ -d "$proto_dir" ]; then
-                  echo "Found protocols dir: $proto_dir"
-                  # Copy all .hpp from that protocols dir (some packages have nested structure)
-                  find "$proto_dir" -type f -name '*.hpp' -print0 2>/dev/null | xargs -0 -I{} cp -f "{}" hyprland/protocols/ || true
-                else
-                  echo "No protocols dir found in Hyprland output; continuing (may still fail if required header missing)."
-                fi
-
-                # ---- Make sure -I$PWD is actually used by the compiler ----
-                # Your build log shows the g++ command doesn't include any -I from Nix env,
-                # so we patch the Makefile to include $(CXXFLAGS) in the compile line.
-                if [ -f Makefile ]; then
-                  echo "Patching Makefile to honor CXXFLAGS..."
-                  # Insert $(CXXFLAGS) after 'g++' if not already present
-                  # (safe-ish for this repo because the compile line is a single g++ invocation).
-                  sed -i 's/^g++ /g++ $(CXXFLAGS) /' Makefile
+                  # sometimes protocols are nested; try to locate within the copied source
+                  pdir="$(find hyprland -maxdepth 3 -type d -name protocols 2>/dev/null | head -n 1 || true)"
+                  if [ -n "$pdir" ] && [ -d "$pdir" ]; then
+                    echo "Found protocols dir inside Hyprland source: $pdir"
+                    # If it's not already hyprland/protocols, copy it there
+                    rm -rf hyprland/protocols
+                    mkdir -p hyprland/protocols
+                    cp -r "$pdir/." hyprland/protocols/
+                    chmod -R u+w hyprland/protocols || true
+                  else
+                    echo "No protocols dir found in Hyprland source tree (may fail later on cursor-shape-v1.hpp)."
+                  fi
                 fi
 
-                # Now set CXXFLAGS so <hyprland/src/...> resolves (angle brackets require explicit include paths)
-                export CXXFLAGS="$CXXFLAGS -I$PWD"
+                # ---- IMPORTANT: Makefile hardcodes 'g++' and ignores CXXFLAGS.
+                # Put a g++ wrapper first in PATH to inject include paths.
+                cat > ./g++ <<EOF
+        #!/usr/bin/env bash
+        exec ${pkgs.gcc}/bin/g++ -I"$PWD" "\$@"
+        EOF
+                chmod +x ./g++
+                export PATH="$PWD:$PATH"
 
                 # Build
                 make all
