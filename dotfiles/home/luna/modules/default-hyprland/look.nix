@@ -1,6 +1,14 @@
-{ ... }:
+{ pkgs, ... }:
+let
+  liquidGlass = pkgs.callPackage ./plugins/liquid-glass-plugin.nix { };
+in
 {
   wayland.windowManager.hyprland = {
+    # Plugin laden (NixOS/ HM Weg – nicht hyprpm)
+    plugins = [
+      liquidGlass
+    ];
+
     settings = {
       general = {
         gaps_in = 5;
@@ -21,13 +29,32 @@
           range = 20;
         };
 
+        # Das Plugin empfiehlt, Hyprlands Default-Blur auszuschalten,
+        # weil es seinen eigenen Blur/Shader macht.
+        # (Kann helfen, Artefakte/Doppelblur zu vermeiden.)
         blur = {
-          enabled = true;
+          enabled = false;
           size = 8;
           passes = 3;
           new_optimizations = true;
           xray = false;
         };
+      };
+
+      # Plugin-Konfiguration (aus README übernommen / leicht angepasst)
+      # In Home Manager geht das sauber als "plugin:NAME".
+      "plugin:liquid-glass" = {
+        enabled = true;
+
+        # eher "subtle", damit’s nicht direkt komplett eskaliert:
+        blur_strength = 1.5;
+        refraction_strength = 0.08;
+        chromatic_aberration = 0.012;
+        fresnel_strength = 0.4;
+        specular_strength = 0.3;
+
+        glass_opacity = 1.0;
+        edge_thickness = 0.15;
       };
 
       layerrule = [
