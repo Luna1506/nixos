@@ -5,12 +5,13 @@ let
   binds = config.hyprMacos.binds or [ ];
   rules = config.hyprMacos.windowRules or [ ];
   liquidGlass = config.hyprMacos.liquidGlassPlugin;
+  enableLG = config.hyprMacos.enableLiquidGlass or false;
 in
 {
   wayland.windowManager.hyprland = {
     enable = true;
 
-    plugins = [
+    plugins = lib.optionals (enableLG && liquidGlass != null) [
       liquidGlass
     ];
 
@@ -55,33 +56,40 @@ in
         shadow_render_power = 3;
         "col.shadow" = "rgba(00000055)";
 
-        # Der Plugin-README empfiehlt: default blur aus, weil das Plugin "seinen" Glas-Blur macht. :contentReference[oaicite:4]{index=4}
-        # Das kann aber Layer-Surfaces (Waybar/Dock) "weniger glassy" machen.
-        # Deshalb: Blur AUS für windows, aber wir geben Layern gezielt Blur über layerrule.
-        blur = {
-          enabled = false;
-        };
+        # Wenn LiquidGlass aktiv ist, schalten wir Hypr-Blur aus,
+        # sonst nutzen wir den normalen Blur.
+        blur =
+          if enableLG then {
+            enabled = false;
+          } else {
+            enabled = true;
+            size = t.blurSize;
+            passes = t.blurPasses;
+            new_optimizations = true;
+            xray = true;
+            noise = 0.02;
+            contrast = 1.05;
+            brightness = 1.0;
+            vibrancy = 0.18;
+            vibrancy_darkness = 0.0;
+          };
       };
 
-      # Liquid Glass Plugin Config (aus README übernommen) :contentReference[oaicite:5]{index=5}
-      plugin = {
+      # Plugin config nur wenn enabled
+      plugin = lib.mkIf enableLG {
         "liquid-glass" = {
           enabled = true;
-
-          # "Maximum Apple Vibes" light version (tuned)
           blur_strength = 1.8;
           refraction_strength = 0.10;
           chromatic_aberration = 0.016;
           fresnel_strength = 0.55;
           specular_strength = 0.45;
-
           glass_opacity = 1.0;
           edge_thickness = 0.15;
         };
       };
 
-      # Layer acrylic: Waybar / Dock / Notifications
-      # Namespaces können je nach App minimal abweichen – die Patterns sind bewusst großzügig.
+      # Layer acrylic (Waybar/Dock/Notifs)
       layerrule = [
         "blur, ^(waybar)$"
         "ignorezero, ^(waybar)$"

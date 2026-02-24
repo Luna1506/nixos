@@ -1,6 +1,9 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 
 let
+  # Set to true to enable plugin build + loading
+  enableLiquidGlass = true;
+
   liquidGlassPlugin =
     pkgs.hyprlandPlugins.mkHyprlandPlugin (finalAttrs: {
       pluginName = "liquid-glass";
@@ -10,12 +13,11 @@ let
         owner = "purple-lines";
         repo = "liquid-glass-plugin-hyprpm";
 
-        # Empfehlung: pinne auf einen Commit, nicht auf "main".
-        # Beispiel: rev = "a1b2c3d4...";
+        # Bitte pinnen, wenn du willst. Für jetzt geht main.
         rev = "main";
 
-        # Ersetze das nach dem ersten Build durch den echten sha256 aus der Fehlermeldung.
-        hash = lib.fakeSha256;
+        # Wichtig: fakeSha256, damit Nix dir beim Build den echten SRI sha256 ausspuckt
+        sha256 = lib.fakeSha256;
       };
 
       nativeBuildInputs = with pkgs; [
@@ -23,7 +25,6 @@ let
         gnumake
       ];
 
-      # Das Repo baut via `make all` und erzeugt `liquid-glass.so` im Projektroot. :contentReference[oaicite:2]{index=2}
       buildPhase = ''
         runHook preBuild
         make all
@@ -33,8 +34,6 @@ let
       installPhase = ''
         runHook preInstall
         mkdir -p $out/lib
-        # Hyprland erwartet ein .so im Output; Name ist hier egal, solange es ein plugin .so ist
-        # und über `wayland.windowManager.hyprland.plugins` geladen wird.
         install -m755 liquid-glass.so $out/lib/liquid-glass.so
         runHook postInstall
       '';
@@ -48,6 +47,18 @@ let
     });
 in
 {
-  # Export fürs Hyprland-Module
-  config.hyprMacos.liquidGlassPlugin = liquidGlassPlugin;
+  options.hyprMacos.enableLiquidGlass = lib.mkOption {
+    type = lib.types.bool;
+    default = enableLiquidGlass;
+  };
+
+  config = lib.mkMerge [
+    (lib.mkIf config.hyprMacos.enableLiquidGlass {
+      hyprMacos.liquidGlassPlugin = liquidGlassPlugin;
+    })
+
+    (lib.mkIf (!config.hyprMacos.enableLiquidGlass) {
+      hyprMacos.liquidGlassPlugin = null;
+    })
+  ];
 }
