@@ -38,11 +38,17 @@ let
                 runHook preBuild
 
                 # We need a builddir-local "hyprland/" tree that is WRITEABLE,
-                # because we may have to create hyprland/src/version.h.
+                # because we must potentially create hyprland/src/version.h.
                 if [ -e "${hypr.src or ""}" ] && [ -n "${hypr.src or ""}" ]; then
                   echo "Copying Hyprland source into builddir (writeable)..."
+                  rm -rf hyprland
                   mkdir -p hyprland
-                  cp -a "${hypr.src}/." hyprland/
+
+                  # Copy without preserving readonly perms from store
+                  cp -r "${hypr.src}/." hyprland/
+
+                  # Make sure it's actually writable (store sources often copy as 0555)
+                  chmod -R u+w hyprland || true
                 else
                   echo "ERROR: pkgs.hyprland has no .src attribute in this nixpkgs."
                   echo "Try pkgs.hyprland-unwrapped.src or pin/fetch Hyprland source."
@@ -56,6 +62,8 @@ let
                 if [ ! -f hyprland/src/version.h ]; then
                   echo "hyprland/src/version.h missing — generating a minimal stub"
                   mkdir -p hyprland/src
+                  chmod -R u+w hyprland/src || true
+
                   cat > hyprland/src/version.h <<'EOF'
         #pragma once
 
