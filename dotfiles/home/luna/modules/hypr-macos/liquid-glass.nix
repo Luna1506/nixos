@@ -13,11 +13,11 @@ let
         owner = "purple-lines";
         repo = "liquid-glass-plugin-hyprpm";
 
-        # Bitte pinnen, wenn du willst. Für jetzt geht main.
+        # Bitte später auf einen Commit pinnen, aber main geht erstmal.
         rev = "main";
 
-        # Wichtig: fakeSha256, damit Nix dir beim Build den echten SRI sha256 ausspuckt
-        sha256 = lib.fakeSha256;
+        # ✅ Nix hat dir diesen Hash gegeben:
+        sha256 = "sha256-awTwcDRSwV1HtBLA8+V+4exIFcqb2hmDzntlshd6Uf8=";
       };
 
       nativeBuildInputs = with pkgs; [
