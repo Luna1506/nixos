@@ -14,20 +14,14 @@
 
   # Alternativ: Module direkt einbinden
   imports = [
-    ./modules/desktops/hyprland/default.nix
+    ./modules/default-hyprland
+    #./modules/hypr-macos
     ./modules/gpg.nix
     ./modules/git.nix
     ./modules/yazi.nix
     ./modules/cursor.nix
-    ./modules/hyprpaper.nix
-    ./modules/hyprlock.nix
-    ./modules/theme.nix
-    ./modules/wofi.nix
-    ./modules/ghostty.nix
     ./modules/neovim.nix
-    ./modules/waybar.nix
     ./modules/starship.nix
-    ./modules/nwg-dock.nix
     ./modules/nerdfetch-bash.nix
   ];
 }
