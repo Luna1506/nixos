@@ -4,5 +4,5 @@ import Quickshell
 import "components" as C
 
 ShellRoot {
-  C.SideBar {}
+  C.Sidebar {}
 }

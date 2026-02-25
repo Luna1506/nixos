@@ -11,47 +11,41 @@ PanelWindow {
   implicitWidth: 64
   color: "transparent"
 
-  // --- style ---
-  property color bg: "#121318"
-  property color panel: "#171923"
-  property color border: "#2a2f3a"
+  // --- theme (dark) ---
+  property color bg: "#11131a"
+  property color panel: "#141824"
+  property color border: "#242b3a"
   property color text: "#e7e9ef"
   property color subtext: "#9aa3b2"
-  property color accent: "#8b5cf6"     // purple
-  property color accent2: "#22c55e"    // green
-  property color warn: "#f59e0b"       // amber
+  property color accent: "#8b5cf6"
+  property color ok: "#22c55e"
+  property color warn: "#f59e0b"
 
-  // Active button highlight
   property int activeIndex: 0
 
-  // --- processes (status) ---
-  Process { id: nmcli }
-  Process { id: btctl }
+  // --- processes ---
   Process { id: runner }
+  Process { id: nmproc }
+  Process { id: btproc }
 
   property bool wifiOn: false
   property int wifiStrength: 0
   property string wifiName: ""
-
   property bool btOn: false
 
-  function exec(cmd) {
+  function sh(cmd) {
     if (!cmd || cmd.length === 0) return;
     runner.exec({ arguments: [ "sh", "-lc", cmd ] });
   }
 
   function refreshWifi() {
-    // WiFi enabled?
-    nmcli.exec({ arguments: [ "sh", "-lc", "nmcli -t -f WIFI g 2>/dev/null || true" ] })
+    nmproc.exec({ arguments: [ "sh", "-lc", "nmcli -t -f WIFI g 2>/dev/null || true" ] });
   }
-
-  function refreshWifi2() {
-    // Active WiFi: SSID + signal
-    nmcli.exec({ arguments: [ "sh", "-lc", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true" ] })
+  function refreshWifiDetails() {
+    nmproc.exec({ arguments: [ "sh", "-lc", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true" ] });
   }
-
   function refreshBt() {
-    btctl.exec({ arguments: [ "sh", "-lc", "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true" ] })
+    btproc.exec({ arguments: [ "sh", "-lc", "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true" ] });
   }
 
   Timer {
@@ -60,15 +54,14 @@ PanelWindow {
     repeat: true
     onTriggered: {
       refreshWifi()
-      refreshWifi2()
+      refreshWifiDetails()
       refreshBt()
     }
   }
 
   Connections {
-    target: nmcli
+    target: nmproc
     function onFinished(exitCode, stdout, stderr) {
-      // We called two different commands with same Process; detect by content
       const out = String(stdout || "").trim();
 
       if (out === "enabled" || out === "disabled") {
@@ -76,7 +69,6 @@ PanelWindow {
         return;
       }
 
-      // expected "SSID:SIGNAL"
       if (out.includes(":")) {
         const parts = out.split(":");
         sidebar.wifiName = parts[0] || "";
@@ -84,24 +76,22 @@ PanelWindow {
         sidebar.wifiStrength = isNaN(sig) ? 0 : sig;
         return;
       }
-
-      // fallback
-      if (out.length === 0) {
-        sidebar.wifiName = "";
-        sidebar.wifiStrength = 0;
-      }
     }
   }
 
   Connections {
-    target: btctl
+    target: btproc
     function onFinished(exitCode, stdout, stderr) {
       const out = String(stdout || "").trim().toLowerCase();
       sidebar.btOn = (out === "yes" || out === "true" || out === "on");
     }
   }
 
-  // --- button model ---
+  function iconOrEmpty(name) {
+    const p = Quickshell.iconPath(name);
+    return p ? p : "";
+  }
+
   property var items: [
     { icon: "view-app-grid", tip: "Apps", cmd: "rofi -show drun" },
     { icon: "system-search", tip: "Search", cmd: "rofi -show drun" },
@@ -109,10 +99,9 @@ PanelWindow {
     { icon: "utilities-terminal", tip: "Terminal", cmd: "ghostty" },
     { icon: "system-file-manager", tip: "Files", cmd: "nautilus" },
     { icon: "preferences-system", tip: "Settings", cmd: "" },
-    { icon: "view-grid", tip: "Overview", cmd: "qs ipc call overview toggle || true" }
+    { icon: "view-grid", tip: "Overview", cmd: "" }
   ]
 
-  // --- background panel ---
   Rectangle {
     anchors.fill: parent
     radius: 22
@@ -121,17 +110,15 @@ PanelWindow {
     border.width: 1
   }
 
-  // --- content layout ---
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 10
     spacing: 12
 
-    // top "avatar" circle
+    // top circle "A"
     Item {
       Layout.alignment: Qt.AlignHCenter
-      width: 46
-      height: 46
+      width: 46; height: 46
 
       Rectangle {
         anchors.fill: parent
@@ -146,23 +133,20 @@ PanelWindow {
         text: "A"
         color: sidebar.text
         font.pixelSize: 16
-        font.weight: 700
-        opacity: 0.95
+        font.weight: 800
       }
     }
 
-    // buttons stack
+    // buttons
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 10
 
       Repeater {
         model: sidebar.items.length
-
         delegate: Item {
           required property int index
-          width: 46
-          height: 46
+          width: 46; height: 46
 
           property var data: sidebar.items[index]
           property bool hovered: false
@@ -175,32 +159,28 @@ PanelWindow {
             border.color: active ? sidebar.accent : sidebar.border
             border.width: 1
             opacity: hovered ? 1.0 : 0.95
-
-            Behavior on opacity { NumberAnimation { duration: 120 } }
           }
 
-          // icon (robust fallback)
           Item {
             anchors.centerIn: parent
-            width: 22
-            height: 22
+            width: 22; height: 22
 
             Image {
               anchors.fill: parent
-              source: Quickshell.iconPath(data.icon)
+              source: sidebar.iconOrEmpty(data.icon)
+              visible: source !== ""
               fillMode: Image.PreserveAspectFit
               smooth: true
-              visible: source !== ""
-              opacity: active ? 1.0 : 0.95
+              opacity: 0.95
             }
 
             Text {
               anchors.centerIn: parent
-              visible: Quickshell.iconPath(data.icon) === ""
-              text: data.tip && data.tip.length > 0 ? data.tip[0].toUpperCase() : "?"
+              visible: sidebar.iconOrEmpty(data.icon) === ""
+              text: (data.tip && data.tip.length > 0) ? data.tip[0].toUpperCase() : "?"
               color: sidebar.text
               font.pixelSize: 12
-              font.weight: 700
+              font.weight: 800
             }
           }
 
@@ -211,7 +191,11 @@ PanelWindow {
             onExited: hovered = false
             onClicked: {
               sidebar.activeIndex = index
-              if (data.cmd && data.cmd.length > 0) sidebar.exec(data.cmd)
+              if (data.tip === "Overview") {
+                Hyprland.dispatch("togglespecialworkspace overview")
+                return
+              }
+              if (data.cmd && data.cmd.length > 0) sidebar.sh(data.cmd)
             }
           }
 
@@ -222,15 +206,14 @@ PanelWindow {
       }
     }
 
-    // spacer
     Item { Layout.fillHeight: true }
 
-    // status section: WiFi + BT
+    // status: wifi + bt
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 10
 
-      // WiFi pill
+      // wifi
       Item {
         width: 46; height: 46
         property bool hovered: false
@@ -246,9 +229,8 @@ PanelWindow {
 
         Text {
           anchors.centerIn: parent
-          // simple glyph fallback, no icon-theme dependency
           text: sidebar.wifiOn ? "📶" : "⨯"
-          color: sidebar.wifiOn ? sidebar.accent2 : sidebar.subtext
+          color: sidebar.wifiOn ? sidebar.ok : sidebar.subtext
           font.pixelSize: 16
         }
 
@@ -257,7 +239,7 @@ PanelWindow {
           hoverEnabled: true
           onEntered: parent.hovered = true
           onExited: parent.hovered = false
-          onClicked: sidebar.exec("nmcli r wifi " + (sidebar.wifiOn ? "off" : "on"))
+          onClicked: sidebar.sh("nmcli r wifi " + (sidebar.wifiOn ? "off" : "on"))
         }
 
         ToolTip.visible: hovered
@@ -266,7 +248,7 @@ PanelWindow {
           : "WiFi: off"
       }
 
-      // Bluetooth pill
+      // bt
       Item {
         width: 46; height: 46
         property bool hovered: false
@@ -282,10 +264,10 @@ PanelWindow {
 
         Text {
           anchors.centerIn: parent
-          text: "ᛒ" // cheap BT-ish rune; works everywhere
-          color: sidebar.btOn ? sidebar.accent2 : sidebar.subtext
+          text: "ᛒ"
+          color: sidebar.btOn ? sidebar.ok : sidebar.subtext
           font.pixelSize: 18
-          font.weight: 700
+          font.weight: 800
         }
 
         MouseArea {
@@ -293,7 +275,7 @@ PanelWindow {
           hoverEnabled: true
           onEntered: parent.hovered = true
           onExited: parent.hovered = false
-          onClicked: sidebar.exec("bluetoothctl power " + (sidebar.btOn ? "off" : "on"))
+          onClicked: sidebar.sh("bluetoothctl power " + (sidebar.btOn ? "off" : "on"))
         }
 
         ToolTip.visible: hovered
@@ -301,7 +283,7 @@ PanelWindow {
       }
     }
 
-    // workspaces: dots (1..10)
+    // workspaces (dots)
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 8
@@ -329,29 +311,27 @@ PanelWindow {
       }
     }
 
-    // bottom: Desktop label + date/time + power
+    // bottom: label + time + power
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 10
 
       Item {
         width: 46
-        height: 130
-
+        height: 120
         Text {
           anchors.centerIn: parent
           rotation: 90
           text: "Desktop"
           color: sidebar.subtext
           font.pixelSize: 12
-          font.weight: 600
-          letterSpacing: 1
+          font.weight: 700
         }
       }
 
       Item {
         width: 46
-        height: 120
+        height: 110
 
         Column {
           anchors.centerIn: parent
@@ -363,7 +343,6 @@ PanelWindow {
             font.pixelSize: 14
             width: 46
             horizontalAlignment: Text.AlignHCenter
-            opacity: 0.95
           }
           Text {
             text: Qt.formatDateTime(new Date(), "MM")
@@ -397,7 +376,6 @@ PanelWindow {
         }
       }
 
-      // power
       Item {
         width: 46; height: 46
         property bool hovered: false
@@ -423,7 +401,7 @@ PanelWindow {
           hoverEnabled: true
           onEntered: parent.hovered = true
           onExited: parent.hovered = false
-          onClicked: sidebar.exec('printf "lock\\nlogout\\nreboot\\npoweroff\\n" | rofi -dmenu -p Power | xargs -r -I{} sh -lc \'case "{}" in lock) hyprlock ;; logout) hyprctl dispatch exit ;; reboot) systemctl reboot ;; poweroff) systemctl poweroff ;; esac\'')
+          onClicked: sidebar.sh('printf "lock\\nlogout\\nreboot\\npoweroff\\n" | rofi -dmenu -p Power | xargs -r -I{} sh -lc \'case "{}" in lock) hyprlock ;; logout) hyprctl dispatch exit ;; reboot) systemctl reboot ;; poweroff) systemctl poweroff ;; esac\'')
         }
       }
     }

@@ -7,7 +7,6 @@ let
   quickshellConfigDir = pkgs.runCommand "quickshell-${configName}" { } ''
     set -eu
     mkdir -p "$out/components"
-
     cp -f ${./shell.qml} "$out/shell.qml"
     cp -f ${./components/Sidebar.qml} "$out/components/Sidebar.qml"
   '';
@@ -21,9 +20,10 @@ in
       default = pkgs.quickshell;
     };
 
+    # IMPORTANT: default to "sidebar" (not "default")
     configName = lib.mkOption {
       type = lib.types.str;
-      default = "default";
+      default = "sidebar";
     };
 
     autostart = lib.mkOption {
