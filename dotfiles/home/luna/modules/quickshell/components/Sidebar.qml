@@ -18,15 +18,14 @@ PanelWindow {
   property color text: "#f0f0f0"
   property color subtext: "#a6a6a6"
   property color accent: "#d9d9d9"
-  property color accent2: "#8b5cf6" // tiny sparkle for active
-  property color danger: "#ffffff"  // power icon white
+  property color accent2: "#8b5cf6" // small highlight
+  property color danger: "#ffffff"
 
   property int radiusOuter: 18
   property int leftSquareStrip: 18
-
   property int activeIndex: 0
 
-  // time must be stateful to update
+  // time updates
   property var now: new Date()
   Timer {
     interval: 1000
@@ -39,7 +38,6 @@ PanelWindow {
   Process { id: runner }
   Process { id: nmproc }
   Process { id: btproc }
-
   Process { id: mprisPoll }
   Process { id: mprisCtl }
 
@@ -64,19 +62,32 @@ PanelWindow {
     nmproc.exec({ command: [ "sh", "-lc", "nmcli -t -f WIFI g 2>/dev/null || true" ] });
   }
   function refreshWifiDetails() {
-    nmproc.exec({ command: [ "sh", "-lc", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true" ] });
+    nmproc.exec({ command: [ "sh", "-lc",
+      "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true"
+    ]});
   }
   function refreshBt() {
-    btproc.exec({ command: [ "sh", "-lc", "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true" ] });
+    btproc.exec({ command: [ "sh", "-lc",
+      "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true"
+    ]});
   }
 
+  // Choose the *playing* player first; else prefer spotify; else first available.
   function refreshMpris() {
-    // prefer spotify if it exists, else first available
-    // output: player|status|artist|title
     mprisPoll.exec({
       command: [ "sh", "-lc",
-        "playerctl -l 2>/dev/null | grep -i spotify | head -n1 | xargs -r -I{} playerctl -p {} metadata --format '{{playerName}}|{{status}}|{{artist}}|{{title}}' 2>/dev/null || " +
-        "playerctl -a metadata --format '{{playerName}}|{{status}}|{{artist}}|{{title}}' 2>/dev/null | head -n1 || true"
+        "P=$(" +
+          "playerctl -a status --format '{{playerName}}|{{status}}' 2>/dev/null " +
+          "| awk -F'|' '$2==\"Playing\"{print $1; exit}'" +
+        "); " +
+        "if [ -z \"$P\" ]; then " +
+          "P=$(playerctl -l 2>/dev/null | grep -i spotify | head -n1); " +
+        "fi; " +
+        "if [ -z \"$P\" ]; then " +
+          "P=$(playerctl -l 2>/dev/null | head -n1); " +
+        "fi; " +
+        "if [ -z \"$P\" ]; then exit 0; fi; " +
+        "playerctl -p \"$P\" metadata --format '{{playerName}}|{{status}}|{{artist}}|{{title}}' 2>/dev/null || true"
       ]
     });
   }
@@ -87,7 +98,7 @@ PanelWindow {
   }
 
   Timer {
-    interval: 1500
+    interval: 1200
     running: true
     repeat: true
     onTriggered: {
@@ -137,7 +148,6 @@ PanelWindow {
         sidebar.playing = false
         return
       }
-
       const parts = out.split("|")
       sidebar.playerName = parts[0] || ""
       const status = (parts[1] || "").toLowerCase()
@@ -148,18 +158,25 @@ PanelWindow {
     }
   }
 
-  function iconOrEmpty(name) {
-    const p = Quickshell.iconPath(name);
-    return p ? p : "";
+  // Try multiple icon names, because theme coverage differs a lot.
+  function resolveIcon(names) {
+    for (let i = 0; i < names.length; i++) {
+      const p = Quickshell.iconPath(names[i]);
+      if (p && p.length > 0) return p;
+    }
+    return "";
   }
 
-  // --- nav items ---
+  // ---- nav items ----
   property var navItems: [
-    { icon: "view-app-grid", tip: "Apps", cmd: "rofi -show drun" },
-    { icon: "system-search", tip: "Search", cmd: "rofi -show drun" },
-    { icon: "internet-web-browser", tip: "Browser", cmd: "command -v zen-browser >/dev/null && zen-browser || command -v zen >/dev/null && zen || zen-browser" },
-    { icon: "utilities-terminal", tip: "Terminal", cmd: "ghostty" },
-    { icon: "system-file-manager", tip: "Files", cmd: "nautilus" }
+    { icons: [ "view-app-grid", "applications-all", "applications" ], tip: "Apps", cmd: "rofi -show drun" },
+    { icons: [ "system-search", "edit-find", "search" ], tip: "Search", cmd: "rofi -show drun" },
+    // Browser -> zen-browser
+    { icons: [ "zen-browser", "zen", "firefox", "internet-web-browser" ], tip: "Browser",
+      cmd: "command -v zen-browser >/dev/null && zen-browser || command -v zen >/dev/null && zen || zen-browser"
+    },
+    { icons: [ "utilities-terminal", "terminal", "org.gnome.Terminal" ], tip: "Terminal", cmd: "ghostty" },
+    { icons: [ "system-file-manager", "folder", "org.gnome.Nautilus" ], tip: "Files", cmd: "nautilus" }
   ]
 
   // ---- panel body ----
@@ -198,11 +215,11 @@ PanelWindow {
   component ClickButton : Item {
     id: root
     property string tip: ""
-    property string iconName: ""
+    property var iconNames: []
     property string fallbackText: ""
     property bool active: false
     property bool small: false
-    property color iconColor: sidebar.text
+    property color textColor: sidebar.text
     signal clicked()
 
     width: small ? 38 : 40
@@ -210,6 +227,7 @@ PanelWindow {
 
     property bool hovered: false
     property bool pressed: false
+    property string iconPath: resolveIcon(iconNames)
 
     Rectangle {
       anchors.fill: parent
@@ -230,7 +248,7 @@ PanelWindow {
 
       Image {
         anchors.fill: parent
-        source: sidebar.iconOrEmpty(root.iconName)
+        source: root.iconPath
         visible: source !== ""
         fillMode: Image.PreserveAspectFit
         smooth: true
@@ -239,9 +257,9 @@ PanelWindow {
 
       Text {
         anchors.centerIn: parent
-        visible: sidebar.iconOrEmpty(root.iconName) === ""
+        visible: root.iconPath === ""
         text: root.fallbackText && root.fallbackText.length > 0 ? root.fallbackText : "?"
-        color: root.iconColor
+        color: root.textColor
         font.pixelSize: small ? 10 : 11
         font.weight: 800
       }
@@ -268,11 +286,11 @@ PanelWindow {
     anchors.margins: 8
     spacing: 10
 
-    // TOP: no more "A" — just an app/menu button
+    // Top menu button (instead of "A")
     ClickButton {
       Layout.alignment: Qt.AlignHCenter
       tip: "Menu"
-      iconName: "open-menu-symbolic"
+      iconNames: [ "open-menu-symbolic", "open-menu", "application-menu", "view-more" ]
       fallbackText: "≡"
       onClicked: sidebar.sh("rofi -show drun")
     }
@@ -287,7 +305,7 @@ PanelWindow {
         delegate: ClickButton {
           required property int index
           tip: sidebar.navItems[index].tip
-          iconName: sidebar.navItems[index].icon
+          iconNames: sidebar.navItems[index].icons
           fallbackText: tip.length > 0 ? tip[0].toUpperCase() : "?"
           active: sidebar.activeIndex === index
           onClicked: {
@@ -301,7 +319,7 @@ PanelWindow {
 
     Item { Layout.fillHeight: true }
 
-    // quick controls (launch apps)
+    // Quick controls (launch tools)
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 9
@@ -309,7 +327,7 @@ PanelWindow {
       ClickButton {
         small: true
         tip: "WiFi (nm-applet)"
-        iconName: "network-wireless"
+        iconNames: [ "network-wireless", "networkmanager", "nm-device-wireless" ]
         fallbackText: "W"
         onClicked: sidebar.sh("nm-applet & disown")
       }
@@ -317,7 +335,7 @@ PanelWindow {
       ClickButton {
         small: true
         tip: "Bluetooth (blueman)"
-        iconName: "bluetooth"
+        iconNames: [ "bluetooth", "blueman", "preferences-system-bluetooth" ]
         fallbackText: "B"
         onClicked: sidebar.sh("blueman-manager & disown")
       }
@@ -325,7 +343,7 @@ PanelWindow {
       ClickButton {
         small: true
         tip: "Sound (pavucontrol)"
-        iconName: "audio-volume-high"
+        iconNames: [ "audio-volume-high", "multimedia-volume-control", "pavucontrol" ]
         fallbackText: "S"
         onClicked: sidebar.sh("pavucontrol & disown")
       }
@@ -333,9 +351,9 @@ PanelWindow {
       ClickButton {
         small: true
         tip: "Power (wlogout)"
-        iconName: "system-shutdown"
+        iconNames: [ "system-shutdown", "shutdown", "system-log-out" ]
         fallbackText: "⏻"
-        iconColor: sidebar.danger
+        textColor: sidebar.danger
         onClicked: sidebar.sh("wlogout & disown")
       }
     }
@@ -351,7 +369,6 @@ PanelWindow {
           required property int index
           width: 9; height: 9
           radius: 5
-
           property int ws: index + 1
           property bool isActive: Hyprland.focusedWorkspace && (Hyprland.focusedWorkspace.id === ws)
 
@@ -372,7 +389,7 @@ PanelWindow {
       }
     }
 
-    // --- ALWAYS visible mini player (shows "No player" if none) ---
+    // Mini player: ALWAYS visible
     Rectangle {
       Layout.alignment: Qt.AlignHCenter
       width: 40
@@ -383,7 +400,6 @@ PanelWindow {
       border.width: 1
       clip: true
 
-      // subtle hover anim
       property bool hovered: false
       opacity: hovered ? 1.0 : 0.92
       Behavior on opacity { NumberAnimation { duration: 160 } }
@@ -424,7 +440,7 @@ PanelWindow {
           ClickButton {
             small: true
             tip: "Prev"
-            iconName: "media-skip-backward"
+            iconNames: [ "media-skip-backward", "go-previous" ]
             fallbackText: "⟨"
             onClicked: sidebar.mpris("previous")
           }
@@ -432,7 +448,9 @@ PanelWindow {
           ClickButton {
             small: true
             tip: sidebar.playing ? "Pause" : "Play"
-            iconName: sidebar.playing ? "media-playback-pause" : "media-playback-start"
+            iconNames: sidebar.playing
+              ? [ "media-playback-pause", "media-pause" ]
+              : [ "media-playback-start", "media-playback-play", "media-play" ]
             fallbackText: sidebar.playing ? "||" : "▶"
             onClicked: sidebar.mpris("play-pause")
           }
@@ -440,7 +458,7 @@ PanelWindow {
           ClickButton {
             small: true
             tip: "Next"
-            iconName: "media-skip-forward"
+            iconNames: [ "media-skip-forward", "go-next" ]
             fallbackText: "⟩"
             onClicked: sidebar.mpris("next")
           }
