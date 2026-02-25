@@ -11,14 +11,14 @@ PanelWindow {
   implicitWidth: 52
   color: "transparent"
 
-  // ---- theme (dark grey) ----
-  property color bg: "#111111"
-  property color panel: "#171717"
-  property color border: "#2b2b2b"
-  property color text: "#f0f0f0"
-  property color subtext: "#a6a6a6"
-  property color accent: "#d9d9d9"
-  property color accent2: "#8b5cf6" // small highlight
+  // darker grey, less “bluish”
+  property color panel: "#151515"
+  property color bg: "#0f0f0f"
+  property color border: "#2a2a2a"
+  property color text: "#f2f2f2"
+  property color subtext: "#a8a8a8"
+  property color accent: "#ffffff"
+  property color accent2: "#9f7cff" // tiny highlight
   property color danger: "#ffffff"
 
   property int radiusOuter: 18
@@ -34,19 +34,11 @@ PanelWindow {
     onTriggered: sidebar.now = new Date()
   }
 
-  // ---- processes ----
+  // processes
   Process { id: runner }
-  Process { id: nmproc }
-  Process { id: btproc }
   Process { id: mprisPoll }
   Process { id: mprisCtl }
 
-  property bool wifiOn: false
-  property int wifiStrength: 0
-  property string wifiName: ""
-  property bool btOn: false
-
-  // ---- mpris ----
   property bool hasPlayer: false
   property string playerName: ""
   property string trackTitle: ""
@@ -58,21 +50,6 @@ PanelWindow {
     runner.exec({ command: [ "sh", "-lc", cmd ] });
   }
 
-  function refreshWifi() {
-    nmproc.exec({ command: [ "sh", "-lc", "nmcli -t -f WIFI g 2>/dev/null || true" ] });
-  }
-  function refreshWifiDetails() {
-    nmproc.exec({ command: [ "sh", "-lc",
-      "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true"
-    ]});
-  }
-  function refreshBt() {
-    btproc.exec({ command: [ "sh", "-lc",
-      "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true"
-    ]});
-  }
-
-  // Choose the *playing* player first; else prefer spotify; else first available.
   function refreshMpris() {
     mprisPoll.exec({
       command: [ "sh", "-lc",
@@ -80,12 +57,8 @@ PanelWindow {
           "playerctl -a status --format '{{playerName}}|{{status}}' 2>/dev/null " +
           "| awk -F'|' '$2==\"Playing\"{print $1; exit}'" +
         "); " +
-        "if [ -z \"$P\" ]; then " +
-          "P=$(playerctl -l 2>/dev/null | grep -i spotify | head -n1); " +
-        "fi; " +
-        "if [ -z \"$P\" ]; then " +
-          "P=$(playerctl -l 2>/dev/null | head -n1); " +
-        "fi; " +
+        "if [ -z \"$P\" ]; then P=$(playerctl -l 2>/dev/null | grep -i spotify | head -n1); fi; " +
+        "if [ -z \"$P\" ]; then P=$(playerctl -l 2>/dev/null | head -n1); fi; " +
         "if [ -z \"$P\" ]; then exit 0; fi; " +
         "playerctl -p \"$P\" metadata --format '{{playerName}}|{{status}}|{{artist}}|{{title}}' 2>/dev/null || true"
       ]
@@ -101,39 +74,7 @@ PanelWindow {
     interval: 1200
     running: true
     repeat: true
-    onTriggered: {
-      refreshWifi()
-      refreshWifiDetails()
-      refreshBt()
-      refreshMpris()
-    }
-  }
-
-  Connections {
-    target: nmproc
-    function onFinished(exitCode, stdout, stderr) {
-      const out = String(stdout || "").trim();
-
-      if (out === "enabled" || out === "disabled") {
-        sidebar.wifiOn = (out === "enabled");
-        return;
-      }
-
-      if (out.includes(":")) {
-        const parts = out.split(":");
-        sidebar.wifiName = parts[0] || "";
-        const sig = parseInt(parts[1] || "0", 10);
-        sidebar.wifiStrength = isNaN(sig) ? 0 : sig;
-      }
-    }
-  }
-
-  Connections {
-    target: btproc
-    function onFinished(exitCode, stdout, stderr) {
-      const out = String(stdout || "").trim().toLowerCase();
-      sidebar.btOn = (out === "yes" || out === "true" || out === "on");
-    }
+    onTriggered: refreshMpris()
   }
 
   Connections {
@@ -158,28 +99,20 @@ PanelWindow {
     }
   }
 
-  // Try multiple icon names, because theme coverage differs a lot.
-  function resolveIcon(names) {
-    for (let i = 0; i < names.length; i++) {
-      const p = Quickshell.iconPath(names[i]);
-      if (p && p.length > 0) return p;
-    }
-    return "";
+  function asset(name) {
+    // Sidebar.qml is in components/, assets/ is sibling of components/
+    return Qt.resolvedUrl("../assets/" + name);
   }
 
-  // ---- nav items ----
+  // nav with custom icons
   property var navItems: [
-    { icons: [ "view-app-grid", "applications-all", "applications" ], tip: "Apps", cmd: "rofi -show drun" },
-    { icons: [ "system-search", "edit-find", "search" ], tip: "Search", cmd: "rofi -show drun" },
-    // Browser -> zen-browser
-    { icons: [ "zen-browser", "zen", "firefox", "internet-web-browser" ], tip: "Browser",
-      cmd: "command -v zen-browser >/dev/null && zen-browser || command -v zen >/dev/null && zen || zen-browser"
-    },
-    { icons: [ "utilities-terminal", "terminal", "org.gnome.Terminal" ], tip: "Terminal", cmd: "ghostty" },
-    { icons: [ "system-file-manager", "folder", "org.gnome.Nautilus" ], tip: "Files", cmd: "nautilus" }
+    { icon: "apps.svg", tip: "Apps", cmd: "rofi -show drun" },
+    { icon: "search.svg", tip: "Search", cmd: "rofi -show drun" },
+    { icon: "browser.svg", tip: "Browser", cmd: "zen-browser" },
+    { icon: "terminal.svg", tip: "Terminal", cmd: "ghostty" },
+    { icon: "files.svg", tip: "Files", cmd: "nautilus" }
   ]
 
-  // ---- panel body ----
   Item {
     id: body
     anchors.fill: parent
@@ -211,15 +144,12 @@ PanelWindow {
 
   mask: Region { item: body }
 
-  // ---- reusable button ----
-  component ClickButton : Item {
+  component IconButton : Item {
     id: root
     property string tip: ""
-    property var iconNames: []
-    property string fallbackText: ""
+    property string iconFile: ""
     property bool active: false
     property bool small: false
-    property color textColor: sidebar.text
     signal clicked()
 
     width: small ? 38 : 40
@@ -227,42 +157,27 @@ PanelWindow {
 
     property bool hovered: false
     property bool pressed: false
-    property string iconPath: resolveIcon(iconNames)
 
     Rectangle {
       anchors.fill: parent
       radius: 16
-      color: root.active ? sidebar.accent : sidebar.bg
-      border.color: root.active ? sidebar.accent : sidebar.border
+      color: root.active ? sidebar.bg : sidebar.bg
+      border.color: root.active ? sidebar.accent2 : sidebar.border
       border.width: 1
       opacity: root.hovered ? 1.0 : 0.96
       scale: root.pressed ? 0.96 : (root.hovered ? 1.03 : 1.0)
       Behavior on scale { NumberAnimation { duration: 110; easing.type: Easing.OutCubic } }
       Behavior on opacity { NumberAnimation { duration: 140 } }
+      Behavior on border.color { ColorAnimation { duration: 160 } }
     }
 
-    Item {
+    Image {
       anchors.centerIn: parent
       width: small ? 18 : 20
       height: small ? 18 : 20
-
-      Image {
-        anchors.fill: parent
-        source: root.iconPath
-        visible: source !== ""
-        fillMode: Image.PreserveAspectFit
-        smooth: true
-        opacity: 0.95
-      }
-
-      Text {
-        anchors.centerIn: parent
-        visible: root.iconPath === ""
-        text: root.fallbackText && root.fallbackText.length > 0 ? root.fallbackText : "?"
-        color: root.textColor
-        font.pixelSize: small ? 10 : 11
-        font.weight: 800
-      }
+      source: asset(root.iconFile)
+      smooth: true
+      opacity: 0.95
     }
 
     MouseArea {
@@ -286,13 +201,12 @@ PanelWindow {
     anchors.margins: 8
     spacing: 10
 
-    // Top menu button (instead of "A")
-    ClickButton {
+    // top menu
+    IconButton {
       Layout.alignment: Qt.AlignHCenter
       tip: "Menu"
-      iconNames: [ "open-menu-symbolic", "open-menu", "application-menu", "view-more" ]
-      fallbackText: "≡"
-      onClicked: sidebar.sh("rofi -show drun")
+      iconFile: "menu.svg"
+      onClicked: sh("rofi -show drun")
     }
 
     // nav buttons
@@ -302,16 +216,14 @@ PanelWindow {
 
       Repeater {
         model: sidebar.navItems.length
-        delegate: ClickButton {
+        delegate: IconButton {
           required property int index
           tip: sidebar.navItems[index].tip
-          iconNames: sidebar.navItems[index].icons
-          fallbackText: tip.length > 0 ? tip[0].toUpperCase() : "?"
+          iconFile: sidebar.navItems[index].icon
           active: sidebar.activeIndex === index
           onClicked: {
             sidebar.activeIndex = index
-            const cmd = sidebar.navItems[index].cmd
-            if (cmd && cmd.length > 0) sidebar.sh(cmd)
+            sh(sidebar.navItems[index].cmd + " & disown")
           }
         }
       }
@@ -319,46 +231,41 @@ PanelWindow {
 
     Item { Layout.fillHeight: true }
 
-    // Quick controls (launch tools)
+    // quick actions (custom icons)
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 9
 
-      ClickButton {
+      IconButton {
         small: true
-        tip: "WiFi (nm-applet)"
-        iconNames: [ "network-wireless", "networkmanager", "nm-device-wireless" ]
-        fallbackText: "W"
-        onClicked: sidebar.sh("nm-applet & disown")
+        tip: "WiFi"
+        iconFile: "wifi.svg"
+        onClicked: sh("nm-applet & disown")
       }
 
-      ClickButton {
+      IconButton {
         small: true
-        tip: "Bluetooth (blueman)"
-        iconNames: [ "bluetooth", "blueman", "preferences-system-bluetooth" ]
-        fallbackText: "B"
-        onClicked: sidebar.sh("blueman-manager & disown")
+        tip: "Bluetooth"
+        iconFile: "bluetooth.svg"
+        onClicked: sh("blueman-manager & disown")
       }
 
-      ClickButton {
+      IconButton {
         small: true
-        tip: "Sound (pavucontrol)"
-        iconNames: [ "audio-volume-high", "multimedia-volume-control", "pavucontrol" ]
-        fallbackText: "S"
-        onClicked: sidebar.sh("pavucontrol & disown")
+        tip: "Sound"
+        iconFile: "sound.svg"
+        onClicked: sh("pavucontrol & disown")
       }
 
-      ClickButton {
+      IconButton {
         small: true
-        tip: "Power (wlogout)"
-        iconNames: [ "system-shutdown", "shutdown", "system-log-out" ]
-        fallbackText: "⏻"
-        textColor: sidebar.danger
-        onClicked: sidebar.sh("wlogout & disown")
+        tip: "Power"
+        iconFile: "power.svg"
+        onClicked: sh("wlogout & disown")
       }
     }
 
-    // workspaces
+    // workspace dots
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 7
@@ -389,7 +296,7 @@ PanelWindow {
       }
     }
 
-    // Mini player: ALWAYS visible
+    // Mini player always visible (clean)
     Rectangle {
       Layout.alignment: Qt.AlignHCenter
       width: 40
@@ -437,36 +344,31 @@ PanelWindow {
         Row {
           spacing: 6
 
-          ClickButton {
+          IconButton {
             small: true
             tip: "Prev"
-            iconNames: [ "media-skip-backward", "go-previous" ]
-            fallbackText: "⟨"
-            onClicked: sidebar.mpris("previous")
+            iconFile: "prev.svg"
+            onClicked: mpris("previous")
           }
 
-          ClickButton {
+          IconButton {
             small: true
             tip: sidebar.playing ? "Pause" : "Play"
-            iconNames: sidebar.playing
-              ? [ "media-playback-pause", "media-pause" ]
-              : [ "media-playback-start", "media-playback-play", "media-play" ]
-            fallbackText: sidebar.playing ? "||" : "▶"
-            onClicked: sidebar.mpris("play-pause")
+            iconFile: sidebar.playing ? "pause.svg" : "play.svg"
+            onClicked: mpris("play-pause")
           }
 
-          ClickButton {
+          IconButton {
             small: true
             tip: "Next"
-            iconNames: [ "media-skip-forward", "go-next" ]
-            fallbackText: "⟩"
-            onClicked: sidebar.mpris("next")
+            iconFile: "next.svg"
+            onClicked: mpris("next")
           }
         }
       }
     }
 
-    // bottom: label + time
+    // bottom label + time
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 9
