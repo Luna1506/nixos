@@ -3,7 +3,6 @@
 let
   cfg = config.programs.quickshellBarDock;
 
-  # Build a single config dir in the store containing all QML files
   configName = cfg.configName;
 
   quickshellConfigDir =
@@ -34,13 +33,13 @@ in
     configName = lib.mkOption {
       type = lib.types.str;
       default = "default";
-      description = "Quickshell config name (directory under ~/.config/quickshell/).";
+      description = "Quickshell config name under ~/.config/quickshell/.";
     };
 
     autostart = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Start Quickshell via the Home Manager quickshell systemd user unit.";
+      description = "Start Quickshell via systemd user service.";
     };
 
     extraPackages = lib.mkOption {
@@ -51,24 +50,33 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = cfg.extraPackages;
+    home.packages = [ cfg.package ] ++ cfg.extraPackages;
 
+    # Deploy config directory as a single bundled store dir -> HM links it into ~/.config/quickshell/<name>
     programs.quickshell = {
       enable = true;
       package = cfg.package;
-
       activeConfig = configName;
-
-      # IMPORTANT: configs.<name> is an ABSOLUTE PATH to a directory
       configs.${configName} = quickshellConfigDir;
-
-      systemd.target = "graphical-session.target";
     };
 
-    # Optional: if you want to “disable autostart” later, we’d override systemd
-    assertions = lib.optional (!cfg.autostart) {
-      assertion = true;
-      message = "autostart=false: start quickshell manually with `quickshell -c ${configName}`.";
+    # Re-add our own unit (since HM one doesn’t exist in your setup)
+    systemd.user.services.quickshell = lib.mkIf cfg.autostart {
+      Unit = {
+        Description = "Quickshell bar + dock";
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+      };
+
+      Service = {
+        ExecStart = "${cfg.package}/bin/quickshell -c ${configName}";
+        Restart = "on-failure";
+        RestartSec = 1;
+      };
+
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
     };
   };
 }
