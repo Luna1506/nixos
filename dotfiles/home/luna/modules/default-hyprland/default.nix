@@ -12,10 +12,10 @@
     ./ghostty.nix
     ./hyprlock.nix
     ./hyprpaper.nix
-    ./nwg-dock.nix
+    #./nwg-dock.nix
     ./starship.nix
     ./theme.nix
-    ./waybar.nix
+    #./waybar.nix
     ./wofi.nix
   ];
 
