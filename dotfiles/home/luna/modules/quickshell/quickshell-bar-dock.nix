@@ -1,17 +1,17 @@
 { config, lib, pkgs, ... }:
 
 let
-  cfg = config.programs.quickshell;
+  cfg = config.programs.quickshellBarDock;
 
+  # Files live next to this module (same folder tree), so we can reference them directly:
   fileText = path: builtins.readFile path;
 
-  # Config folder name under ~/.config/quickshell/<name>
   configName = cfg.configName;
   targetDir = ".config/quickshell/${configName}";
 in
 {
-  options.programs.quickshell = {
-    enable = lib.mkEnableOption "Quickshell bar + dock";
+  options.programs.quickshellBarDock = {
+    enable = lib.mkEnableOption "Quickshell bar + dock (custom module, no name clash)";
 
     package = lib.mkOption {
       type = lib.types.package;
