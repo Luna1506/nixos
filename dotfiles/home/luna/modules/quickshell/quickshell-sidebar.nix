@@ -20,7 +20,6 @@ in
       default = pkgs.quickshell;
     };
 
-    # IMPORTANT: default to "sidebar" (not "default")
     configName = lib.mkOption {
       type = lib.types.str;
       default = "sidebar";
@@ -33,7 +32,18 @@ in
 
     extraPackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
-      default = [ pkgs.rofi pkgs.hyprlock pkgs.networkmanager pkgs.bluez pkgs.hyprland ];
+      default = [
+        pkgs.rofi
+        pkgs.hyprlock
+        pkgs.hyprland
+        pkgs.networkmanager
+        pkgs.networkmanagerapplet
+        pkgs.bluez
+        pkgs.blueman
+        pkgs.pavucontrol
+        pkgs.wlogout
+        pkgs.playerctl
+      ];
     };
   };
 
