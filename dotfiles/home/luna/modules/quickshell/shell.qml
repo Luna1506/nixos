@@ -4,6 +4,5 @@ import Quickshell
 import "components" as C
 
 ShellRoot {
-  C.Bar {}
-  C.Dock {}
+  C.Sidebar {}
 }
