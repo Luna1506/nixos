@@ -24,7 +24,11 @@
     ./modules/quickshell
   ];
 
-  #programs.quickshellBarDock.enable = true;
+  programs.quickshellBarDock = {
+    enable = true;
+    autostart = true;
+    configName = "default";
+  };
 
   programs.quickshellOverview = {
     enable = true;
