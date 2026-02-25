@@ -3,7 +3,6 @@
 let
   cfg = config.programs.quickshellBarDock;
 
-  # Files live next to this module (same folder tree), so we can reference them directly:
   fileText = path: builtins.readFile path;
 
   configName = cfg.configName;
@@ -41,35 +40,35 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.package ] ++ cfg.extraPackages;
 
-    # Deploy Quickshell config files declaratively
+    # Root files (IMPORTANT: no subdir imports needed)
     home.file."${targetDir}/shell.qml".text =
       fileText ./shell.qml;
 
-    home.file."${targetDir}/components/Bar.qml".text =
+    home.file."${targetDir}/Bar.qml".text =
       fileText ./components/Bar.qml;
 
-    home.file."${targetDir}/components/Dock.qml".text =
+    home.file."${targetDir}/Dock.qml".text =
       fileText ./components/Dock.qml;
 
-    home.file."${targetDir}/components/GlassRect.qml".text =
+    home.file."${targetDir}/GlassRect.qml".text =
       fileText ./components/GlassRect.qml;
 
-    home.file."${targetDir}/components/IconButton.qml".text =
+    home.file."${targetDir}/IconButton.qml".text =
       fileText ./components/IconButton.qml;
 
-    home.file."${targetDir}/components/WorkspaceSwitcher.qml".text =
+    home.file."${targetDir}/WorkspaceSwitcher.qml".text =
       fileText ./components/WorkspaceSwitcher.qml;
 
-    home.file."${targetDir}/components/MprisMini.qml".text =
+    home.file."${targetDir}/MprisMini.qml".text =
       fileText ./components/MprisMini.qml;
 
-    home.file."${targetDir}/components/BluetoothIndicator.qml".text =
+    home.file."${targetDir}/BluetoothIndicator.qml".text =
       fileText ./components/BluetoothIndicator.qml;
 
-    home.file."${targetDir}/components/WifiIndicator.qml".text =
+    home.file."${targetDir}/WifiIndicator.qml".text =
       fileText ./components/WifiIndicator.qml;
 
-    home.file."${targetDir}/components/Tray.qml".text =
+    home.file."${targetDir}/Tray.qml".text =
       fileText ./components/Tray.qml;
 
     systemd.user.services.quickshell = lib.mkIf cfg.autostart {
