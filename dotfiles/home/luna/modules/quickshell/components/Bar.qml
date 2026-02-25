@@ -8,6 +8,10 @@ import Quickshell.Bluetooth
 
 PanelWindow {
   id: bar
+
+  // Safety: make sure the surface itself is transparent
+  color: "transparent"
+
   anchors { top: true; left: true; right: true }
   implicitHeight: 34
 
