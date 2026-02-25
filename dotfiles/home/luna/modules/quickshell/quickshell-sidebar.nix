@@ -13,7 +13,6 @@ let
     cp -f ${./components/Sidebar.qml} "$out/components/Sidebar.qml"
     cp -f ${./components/TopPopup.qml} "$out/components/TopPopup.qml"
 
-    # copy all assets (svg/png)
     cp -rf ${./assets}/* "$out/assets/" 2>/dev/null || true
   '';
 in
@@ -74,7 +73,7 @@ in
       };
 
       Service = {
-        ExecStart = "${cfg.package}/bin/quickshell -c ${configName}";
+        ExecStart = "${cfg.package}/bin/quickshell --path ${quickshellConfigDir}/shell.qml";
         Restart = "on-failure";
         RestartSec = 1;
       };
