@@ -2,7 +2,6 @@
 
 let
   cfg = config.programs.quickshellBarDock;
-
   configName = cfg.configName;
 
   quickshellConfigDir = pkgs.runCommand "quickshell-${configName}" { } ''
@@ -10,10 +9,7 @@ let
     mkdir -p "$out/components"
 
     cp -f ${./shell.qml} "$out/shell.qml"
-
-    # only sidebar bits
-    cp -f ${./components/SideBar.qml} "$out/components/SideBar.qml"
-    cp -f ${./components/GlassRect.qml} "$out/components/GlassRect.qml"
+    cp -f ${./components/Sidebar.qml} "$out/components/Sidebar.qml"
   '';
 in
 {
@@ -23,25 +19,21 @@ in
     package = lib.mkOption {
       type = lib.types.package;
       default = pkgs.quickshell;
-      description = "Quickshell package to use.";
     };
 
     configName = lib.mkOption {
       type = lib.types.str;
       default = "default";
-      description = "Quickshell config name under ~/.config/quickshell/.";
     };
 
     autostart = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Start sidebar via systemd user service.";
     };
 
     extraPackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
-      default = [ pkgs.rofi pkgs.hyprlock pkgs.hyprland ];
-      description = "Runtime tools used by the sidebar.";
+      default = [ pkgs.rofi pkgs.hyprlock pkgs.networkmanager pkgs.bluez pkgs.hyprland ];
     };
   };
 
@@ -57,7 +49,6 @@ in
       configs.${configName} = quickshellConfigDir;
     };
 
-    # IMPORTANT: unique unit name
     systemd.user.services.quickshell-sidebar = lib.mkIf cfg.autostart {
       Unit = {
         Description = "Quickshell Sidebar";
