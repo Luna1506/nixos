@@ -21,7 +21,9 @@
     ./modules/cursor.nix
     ./modules/neovim.nix
     ./modules/nerdfetch-bash.nix
-    ./modules/quickshell/default.nix
+    ./modules/quickshell
   ];
+
+  programs.quickshellBarDock.enable = true;
 }
 
