@@ -8,27 +8,19 @@ import Quickshell.Io
 PanelWindow {
   id: sidebar
 
-  // PanelWindow anchors are bools (shell anchors)
   anchors { top: true; bottom: true; left: true }
-
-  // thinner
   implicitWidth: 52
-
-  // keep transparent; panel draws its own background
   color: "transparent"
 
-  // make it focusable just in case (keyboard focus); not required for clicks but harmless
-  focusable: false
-
-  // --- theme (dark) ---
-  property color bg: "#0f1117"
-  property color panel: "#121725"
-  property color border: "#222a3a"
-  property color text: "#e7e9ef"
-  property color subtext: "#9aa3b2"
-  property color accent: "#8b5cf6"
-  property color ok: "#22c55e"
-  property color warn: "#f59e0b"
+  // --- dark grey theme (less blue) ---
+  property color bg: "#101010"
+  property color panel: "#151515"
+  property color border: "#2a2a2a"
+  property color text: "#eeeeee"
+  property color subtext: "#a7a7a7"
+  property color accent: "#bfbfbf"   // neutral highlight instead of purple/blue
+  property color ok: "#dcdcdc"
+  property color warn: "#ffffff"     // power should be white
 
   property int activeIndex: 0
 
@@ -42,19 +34,20 @@ PanelWindow {
   property string wifiName: ""
   property bool btOn: false
 
+  // IMPORTANT: Process.exec uses { command: ["sh","-lc", "..."] }, not "arguments"
   function sh(cmd) {
     if (!cmd || cmd.length === 0) return;
-    runner.exec({ arguments: [ "sh", "-lc", cmd ] });
+    runner.exec({ command: [ "sh", "-lc", cmd ] });
   }
 
   function refreshWifi() {
-    nmproc.exec({ arguments: [ "sh", "-lc", "nmcli -t -f WIFI g 2>/dev/null || true" ] });
+    nmproc.exec({ command: [ "sh", "-lc", "nmcli -t -f WIFI g 2>/dev/null || true" ] });
   }
   function refreshWifiDetails() {
-    nmproc.exec({ arguments: [ "sh", "-lc", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true" ] });
+    nmproc.exec({ command: [ "sh", "-lc", "nmcli -t -f ACTIVE,SSID,SIGNAL dev wifi | awk -F: '$1==\"yes\"{print $2\":\"$3; exit}' 2>/dev/null || true" ] });
   }
   function refreshBt() {
-    btproc.exec({ arguments: [ "sh", "-lc", "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true" ] });
+    btproc.exec({ command: [ "sh", "-lc", "bluetoothctl show 2>/dev/null | awk -F': ' '/Powered:/{print $2; exit}' || true" ] });
   }
 
   Timer {
@@ -73,19 +66,18 @@ PanelWindow {
     function onFinished(exitCode, stdout, stderr) {
       const out = String(stdout || "").trim();
 
-      // first command: nmcli -t -f WIFI g  -> "enabled"/"disabled"
+      // nmcli -t -f WIFI g -> enabled/disabled
       if (out === "enabled" || out === "disabled") {
         sidebar.wifiOn = (out === "enabled");
         return;
       }
 
-      // second command returns "SSID:SIGNAL"
+      // "SSID:SIGNAL"
       if (out.includes(":")) {
         const parts = out.split(":");
         sidebar.wifiName = parts[0] || "";
         const sig = parseInt(parts[1] || "0", 10);
         sidebar.wifiStrength = isNaN(sig) ? 0 : sig;
-        return;
       }
     }
   }
@@ -103,7 +95,6 @@ PanelWindow {
     return p ? p : "";
   }
 
-  // Sidebar items (cmd may be empty; still highlights)
   property var items: [
     { icon: "view-app-grid", tip: "Apps", cmd: "rofi -show drun" },
     { icon: "system-search", tip: "Search", cmd: "rofi -show drun" },
@@ -119,7 +110,6 @@ PanelWindow {
     id: body
     anchors.fill: parent
 
-    // We use a rounded rect and then "square off" the left side by covering it.
     Rectangle {
       id: roundedBg
       anchors.fill: parent
@@ -129,17 +119,16 @@ PanelWindow {
       border.width: 1
     }
 
-    // Square-off strip on the LEFT to remove rounding on the screen-edge side
+    // square-off left side
     Rectangle {
       anchors.left: parent.left
       anchors.top: parent.top
       anchors.bottom: parent.bottom
-      width: 18  // must be >= radius
+      width: 18
       color: sidebar.panel
-      border.color: "transparent"
     }
 
-    // also square the border on the left edge
+    // left border line
     Rectangle {
       anchors.left: parent.left
       anchors.top: parent.top
@@ -149,9 +138,8 @@ PanelWindow {
     }
   }
 
-  // IMPORTANT: Explicit click mask so the panel reliably receives clicks.
-  // Only the body area is clickable; clicks outside pass through.
-  mask: Region { item: body }  // :contentReference[oaicite:1]{index=1}
+  // click mask: only the body is clickable
+  mask: Region { item: body }  // controls what is clickable :contentReference[oaicite:1]{index=1}
 
   ColumnLayout {
     anchors.fill: parent
@@ -201,7 +189,7 @@ PanelWindow {
             color: active ? sidebar.accent : sidebar.bg
             border.color: active ? sidebar.accent : sidebar.border
             border.width: 1
-            opacity: hovered ? 1.0 : 0.94
+            opacity: hovered ? 1.0 : 0.95
           }
 
           Item {
@@ -230,8 +218,7 @@ PanelWindow {
           MouseArea {
             anchors.fill: parent
             hoverEnabled: true
-            // make sure we actually accept the click
-            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+            acceptedButtons: Qt.LeftButton
             onEntered: hovered = true
             onExited: hovered = false
             onClicked: {
@@ -255,12 +242,11 @@ PanelWindow {
 
     Item { Layout.fillHeight: true }
 
-    // status: wifi + bt
+    // wifi + bt
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 9
 
-      // wifi
       Item {
         width: 40; height: 40
         property bool hovered: false
@@ -271,13 +257,13 @@ PanelWindow {
           color: sidebar.bg
           border.color: sidebar.border
           border.width: 1
-          opacity: hovered ? 1.0 : 0.94
+          opacity: hovered ? 1.0 : 0.95
         }
 
         Text {
           anchors.centerIn: parent
           text: sidebar.wifiOn ? "📶" : "⨯"
-          color: sidebar.wifiOn ? sidebar.ok : sidebar.subtext
+          color: sidebar.wifiOn ? sidebar.text : sidebar.subtext
           font.pixelSize: 15
         }
 
@@ -289,14 +275,8 @@ PanelWindow {
           onExited: parent.hovered = false
           onClicked: sidebar.sh("nmcli r wifi " + (sidebar.wifiOn ? "off" : "on"))
         }
-
-        ToolTip.visible: hovered
-        ToolTip.text: sidebar.wifiOn
-          ? ("WiFi: " + (sidebar.wifiName || "connected") + " (" + sidebar.wifiStrength + "%)")
-          : "WiFi: off"
       }
 
-      // bt
       Item {
         width: 40; height: 40
         property bool hovered: false
@@ -307,13 +287,13 @@ PanelWindow {
           color: sidebar.bg
           border.color: sidebar.border
           border.width: 1
-          opacity: hovered ? 1.0 : 0.94
+          opacity: hovered ? 1.0 : 0.95
         }
 
         Text {
           anchors.centerIn: parent
           text: "ᛒ"
-          color: sidebar.btOn ? sidebar.ok : sidebar.subtext
+          color: sidebar.btOn ? sidebar.text : sidebar.subtext
           font.pixelSize: 17
           font.weight: 800
         }
@@ -326,13 +306,10 @@ PanelWindow {
           onExited: parent.hovered = false
           onClicked: sidebar.sh("bluetoothctl power " + (sidebar.btOn ? "off" : "on"))
         }
-
-        ToolTip.visible: hovered
-        ToolTip.text: sidebar.btOn ? "Bluetooth: on" : "Bluetooth: off"
       }
     }
 
-    // workspaces (dots)
+    // workspaces
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 7
@@ -347,10 +324,10 @@ PanelWindow {
           property int ws: index + 1
           property bool isActive: Hyprland.focusedWorkspace && (Hyprland.focusedWorkspace.id === ws)
 
-          color: isActive ? sidebar.accent : sidebar.bg
-          border.color: isActive ? sidebar.accent : sidebar.border
+          color: isActive ? sidebar.text : sidebar.bg
+          border.color: sidebar.border
           border.width: 1
-          opacity: isActive ? 1.0 : 0.50
+          opacity: isActive ? 1.0 : 0.45
 
           MouseArea {
             anchors.fill: parent
@@ -436,7 +413,7 @@ PanelWindow {
           color: sidebar.bg
           border.color: sidebar.border
           border.width: 1
-          opacity: hovered ? 1.0 : 0.94
+          opacity: hovered ? 1.0 : 0.95
         }
 
         Text {
