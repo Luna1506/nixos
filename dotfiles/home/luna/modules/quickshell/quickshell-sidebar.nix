@@ -10,6 +10,14 @@ let
     cp -f ${./shell.qml} "$out/shell.qml"
     cp -f ${./components/Sidebar.qml} "$out/components/Sidebar.qml"
   '';
+
+  xdgDataDirs = lib.concatStringsSep ":" [
+    "${pkgs.hicolor-icon-theme}/share"
+    "${pkgs.adwaita-icon-theme}/share"
+    "${pkgs.papirus-icon-theme}/share"
+    "%h/.nix-profile/share"
+    "/nix/var/nix/profiles/default/share"
+  ];
 in
 {
   options.programs.quickshellBarDock = {
@@ -35,7 +43,6 @@ in
       default = [
         pkgs.rofi
         pkgs.hyprlock
-        pkgs.hyprland
         pkgs.networkmanager
         pkgs.networkmanagerapplet
         pkgs.bluez
@@ -43,6 +50,11 @@ in
         pkgs.pavucontrol
         pkgs.wlogout
         pkgs.playerctl
+
+        # icons
+        pkgs.hicolor-icon-theme
+        pkgs.adwaita-icon-theme
+        pkgs.papirus-icon-theme
       ];
     };
   };
@@ -70,6 +82,11 @@ in
         ExecStart = "${cfg.package}/bin/quickshell -c ${configName}";
         Restart = "on-failure";
         RestartSec = 1;
+
+        # Make sure icon themes are discoverable in this systemd environment
+        Environment = [
+          "XDG_DATA_DIRS=${xdgDataDirs}"
+        ];
       };
 
       Install = {
