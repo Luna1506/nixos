@@ -25,9 +25,10 @@ PanelWindow {
   property int radiusOuter: 18
   property int activeTab: 0 // 0 Dashboard, 1 Media, 2 Performance, 3 Workspaces
 
-  // Center-ish like the video
+  // Center-ish like the video (PanelWindow positioning via anchors, not x/y)
   anchors.horizontalCenter: screen ? screen.horizontalCenter : undefined
-  y: 12
+  anchors.top: screen ? screen.top : undefined
+  anchors.topMargin: 12
 
   Process { id: runner }
   Process { id: perfPoll }
@@ -84,7 +85,6 @@ PanelWindow {
   function refreshPerf() {
     perfPoll.exec({
       command: [ "sh", "-lc",
-        // Best-effort parsing. Works on many setups; if something is missing it falls back to --
         "CPU=$(sensors 2>/dev/null | awk '/Package id 0:|Tctl:|CPU Temperature:/{gsub(/[+°C]/,\"\"); print $2; exit}'); " +
         "GPU=$(sensors 2>/dev/null | awk '/edge:/{gsub(/[+°C]/,\"\"); print $2; exit}'); " +
         "MEM=$(free -m | awk '/Mem:/ {print $3\"|\"$2}'); " +
@@ -166,13 +166,11 @@ PanelWindow {
 
   mask: Region { item: body }
 
-  // Close on click outside is compositor-dependent; provide a close button
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 14
     spacing: 12
 
-    // Tabs row (like video)
     RowLayout {
       Layout.fillWidth: true
       spacing: 14
@@ -240,14 +238,12 @@ PanelWindow {
       }
     }
 
-    // Content area
     StackLayout {
       id: stack
       Layout.fillWidth: true
       Layout.fillHeight: true
       currentIndex: topPopup.activeTab
 
-      // Dashboard (simple, clean)
       Item {
         ColumnLayout {
           anchors.fill: parent
@@ -325,7 +321,7 @@ PanelWindow {
                 font.weight: 800
               }
               Text {
-                text: "Wenn hier was nicht 1:1 aussieht: meistens sind es Fonts/Icons oder dein Wallpaper-Contrast. Das könnte helfen, wenn du die gleichen SVGs nutzt wie im Video."
+                text: "Wenn hier was nicht 1:1 aussieht: oft sind es Fonts/Icons oder Wallpaper-Contrast. Das könnte helfen, wenn du die gleichen SVGs nutzt."
                 wrapMode: Text.WordWrap
                 color: topPopup.subtext
                 font.pixelSize: 11
@@ -335,7 +331,6 @@ PanelWindow {
         }
       }
 
-      // Media (video-like card)
       Item {
         RowLayout {
           anchors.fill: parent
@@ -453,7 +448,7 @@ PanelWindow {
 
               Text { text: "Media"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
               Text {
-                text: "Das ist absichtlich clean gehalten. Wenn du das exakt wie im Video willst (Radial Visualizer + scrubber), sag Bescheid – das könnte man als Canvas/Shader nachbauen."
+                text: "Clean gehalten – wenn du exakt Video-Style (Visualizer/Scrubber) willst, müsste man das extra bauen."
                 wrapMode: Text.WordWrap
                 color: topPopup.subtext
                 font.pixelSize: 11
@@ -463,7 +458,6 @@ PanelWindow {
         }
       }
 
-      // Performance (3 circles like video)
       Item {
         RowLayout {
           anchors.fill: parent
@@ -527,7 +521,6 @@ PanelWindow {
         }
       }
 
-      // Workspaces
       Item {
         ColumnLayout {
           anchors.fill: parent
