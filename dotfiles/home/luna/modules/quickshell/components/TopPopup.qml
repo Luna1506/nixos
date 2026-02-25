@@ -8,7 +8,7 @@ import Quickshell.Io
 PanelWindow {
   id: topPopup
 
-  // Quickshell 0.2.1: PanelWindow anchors are boolean only. NO topMargin here.
+  // PanelWindow anchors: boolean only in 0.2.1
   anchors {
     top: true
     left: true
@@ -151,7 +151,7 @@ PanelWindow {
     }
   }
 
-  // Overlay fills the full window; we place the "card" with normal QtQuick margins
+  // Overlay fills the full window; "card" is positioned with normal QtQuick margins
   Item {
     anchors.fill: parent
 
@@ -175,8 +175,6 @@ PanelWindow {
           border.width: 1
         }
       }
-
-      mask: Region { item: body }
 
       ColumnLayout {
         anchors.fill: parent
@@ -326,240 +324,39 @@ PanelWindow {
 
           // Media
           Item {
-            RowLayout {
-              anchors.fill: parent
-              spacing: 14
-
-              Rectangle {
-                width: 260
-                Layout.fillHeight: true
-                radius: 16
-                color: topPopup.bg
-                border.color: topPopup.border
-                border.width: 1
-
-                Column {
-                  anchors.fill: parent
-                  anchors.margins: 14
-                  spacing: 10
-
-                  Rectangle {
-                    width: 200
-                    height: 200
-                    radius: 100
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "#141414"
-                    border.color: topPopup.accent2
-                    border.width: 1
-                    clip: true
-
-                    Image {
-                      anchors.fill: parent
-                      source: topPopup.artUrl
-                      fillMode: Image.PreserveAspectCrop
-                      visible: topPopup.artUrl && topPopup.artUrl.length > 0
-                    }
-
-                    Text {
-                      anchors.centerIn: parent
-                      visible: !(topPopup.artUrl && topPopup.artUrl.length > 0)
-                      text: "♪"
-                      color: topPopup.subtext
-                      font.pixelSize: 48
-                      font.weight: 900
-                    }
-                  }
-
-                  Text {
-                    text: topPopup.hasPlayer
-                      ? (topPopup.trackTitle && topPopup.trackTitle.length ? topPopup.trackTitle : topPopup.playerName)
-                      : "No player"
-                    color: topPopup.text
-                    font.pixelSize: 14
-                    font.weight: 800
-                    elide: Text.ElideRight
-                  }
-
-                  Text {
-                    text: topPopup.trackArtist
-                    visible: topPopup.hasPlayer && topPopup.trackArtist && topPopup.trackArtist.length
-                    color: topPopup.subtext
-                    font.pixelSize: 11
-                    elide: Text.ElideRight
-                  }
-
-                  Row {
-                    spacing: 10
-
-                    Rectangle {
-                      width: 56; height: 38; radius: 12
-                      color: "#141414"
-                      border.color: topPopup.border
-                      border.width: 1
-                      Text { anchors.centerIn: parent; text: "⏮"; color: topPopup.subtext; font.pixelSize: 14; font.weight: 900 }
-                      MouseArea { anchors.fill: parent; onClicked: topPopup.mpris("previous") }
-                    }
-
-                    Rectangle {
-                      width: 56; height: 38; radius: 12
-                      color: "#141414"
-                      border.color: topPopup.accent2
-                      border.width: 1
-                      Text { anchors.centerIn: parent; text: topPopup.playing ? "⏸" : "▶"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
-                      MouseArea { anchors.fill: parent; onClicked: topPopup.mpris("play-pause") }
-                    }
-
-                    Rectangle {
-                      width: 56; height: 38; radius: 12
-                      color: "#141414"
-                      border.color: topPopup.border
-                      border.width: 1
-                      Text { anchors.centerIn: parent; text: "⏭"; color: topPopup.subtext; font.pixelSize: 14; font.weight: 900 }
-                      MouseArea { anchors.fill: parent; onClicked: topPopup.mpris("next") }
-                    }
-                  }
-                }
-              }
-
-              Rectangle {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                radius: 16
-                color: topPopup.bg
-                border.color: topPopup.border
-                border.width: 1
-
-                Column {
-                  anchors.fill: parent
-                  anchors.margins: 14
-                  spacing: 10
-
-                  Text { text: "Media"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
-                  Text {
-                    text: "Wenn du hier Video-Style Visualizer willst, müsste man das extra als Shader/Canvas bauen."
-                    wrapMode: Text.WordWrap
-                    color: topPopup.subtext
-                    font.pixelSize: 11
-                  }
-                }
-              }
+            Text {
+              anchors.centerIn: parent
+              text: topPopup.hasPlayer ? (topPopup.trackTitle.length ? topPopup.trackTitle : topPopup.playerName) : "No player"
+              color: topPopup.text
+              font.pixelSize: 14
+              font.weight: 800
             }
           }
 
           // Performance
           Item {
-            RowLayout {
-              anchors.fill: parent
-              spacing: 14
-
-              component Gauge: Rectangle {
-                property string big: "--"
-                property string label: ""
-                property string sub: ""
-                width: 260
-                Layout.fillHeight: true
-                radius: 16
-                color: topPopup.bg
-                border.color: topPopup.border
-                border.width: 1
-
-                Column {
-                  anchors.fill: parent
-                  anchors.margins: 14
-                  spacing: 10
-
-                  Rectangle {
-                    width: 200
-                    height: 200
-                    radius: 100
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "#141414"
-                    border.color: topPopup.accent2
-                    border.width: 1
-
-                    Text { anchors.centerIn: parent; text: big; color: topPopup.text; font.pixelSize: 22; font.weight: 900 }
-                  }
-
-                  Text { text: label; color: topPopup.subtext; font.pixelSize: 12; font.weight: 800; horizontalAlignment: Text.AlignHCenter; width: parent.width }
-                  Text { text: sub; color: topPopup.subtext; font.pixelSize: 10; horizontalAlignment: Text.AlignHCenter; width: parent.width }
-                }
-              }
-
-              Gauge { big: topPopup.gpuTemp === "--" ? "--" : (topPopup.gpuTemp + "°C"); label: "GPU temp"; sub: "best-effort via sensors" }
-              Gauge { big: topPopup.cpuTemp === "--" ? "--" : (topPopup.cpuTemp + "°C"); label: "CPU temp"; sub: "best-effort via sensors" }
-              Gauge { big: (topPopup.memUsed !== "--" && topPopup.memTotal !== "--") ? (topPopup.memUsed + "MiB") : "--"; label: "Memory"; sub: (topPopup.memTotal !== "--" ? (topPopup.memTotal + "MiB total") : "") }
+            Text {
+              anchors.centerIn: parent
+              text: "CPU: " + topPopup.cpuTemp + "°C  •  GPU: " + topPopup.gpuTemp + "°C  •  RAM: " + topPopup.memUsed + "/" + topPopup.memTotal + " MiB"
+              color: topPopup.subtext
+              font.pixelSize: 12
             }
           }
 
           // Workspaces
           Item {
-            ColumnLayout {
-              anchors.fill: parent
-              spacing: 12
-
-              Rectangle {
-                Layout.fillWidth: true
-                height: 70
-                radius: 16
-                color: topPopup.bg
-                border.color: topPopup.border
-                border.width: 1
-
-                Row {
-                  anchors.centerIn: parent
-                  spacing: 10
-                  Text { text: "Active workspace:"; color: topPopup.subtext; font.pixelSize: 12; font.weight: 800 }
-                  Text { text: Hyprland.focusedWorkspace ? String(Hyprland.focusedWorkspace.id) : "--"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
-                }
-              }
-
-              Rectangle {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                radius: 16
-                color: topPopup.bg
-                border.color: topPopup.border
-                border.width: 1
-
-                GridLayout {
-                  anchors.fill: parent
-                  anchors.margins: 14
-                  columns: 5
-                  rowSpacing: 10
-                  columnSpacing: 10
-
-                  Repeater {
-                    model: 10
-                    delegate: Rectangle {
-                      required property int index
-                      property int ws: index + 1
-                      property bool isActive: Hyprland.focusedWorkspace && (Hyprland.focusedWorkspace.id === ws)
-
-                      width: 140
-                      height: 70
-                      radius: 14
-                      color: "#141414"
-                      border.color: isActive ? topPopup.accent2 : topPopup.border
-                      border.width: 1
-                      opacity: isActive ? 1.0 : 0.92
-
-                      Text {
-                        anchors.centerIn: parent
-                        text: "Workspace " + ws
-                        color: isActive ? topPopup.text : topPopup.subtext
-                        font.pixelSize: 12
-                        font.weight: 900
-                      }
-
-                      MouseArea { anchors.fill: parent; onClicked: Hyprland.dispatch("workspace " + ws) }
-                    }
-                  }
-                }
-              }
+            Text {
+              anchors.centerIn: parent
+              text: Hyprland.focusedWorkspace ? ("Workspace " + Hyprland.focusedWorkspace.id) : "Workspace --"
+              color: topPopup.subtext
+              font.pixelSize: 12
             }
           }
         }
       }
     }
   }
+
+  // IMPORTANT: mask belongs on PanelWindow (works like in Sidebar.qml)
+  mask: Region { item: body }
 }
