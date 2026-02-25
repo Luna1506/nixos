@@ -5,15 +5,14 @@ let
 
   configName = cfg.configName;
 
-  # REAL directory tree with REAL files (not symlinks)
   quickshellConfigDir = pkgs.runCommand "quickshell-${configName}" { } ''
     set -eu
     mkdir -p "$out/components"
 
     cp -f ${./shell.qml} "$out/shell.qml"
 
-    # Only what Sidebar needs:
-    cp -f ${./components/Sidebar.qml} "$out/components/Sidebar.qml"
+    # only sidebar bits
+    cp -f ${./components/SideBar.qml} "$out/components/SideBar.qml"
     cp -f ${./components/GlassRect.qml} "$out/components/GlassRect.qml"
   '';
 in
@@ -36,13 +35,13 @@ in
     autostart = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Start Quickshell via systemd user service.";
+      description = "Start sidebar via systemd user service.";
     };
 
     extraPackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
-      default = [ pkgs.rofi pkgs.hyprlock ];
-      description = "Runtime tools used by the sidebar (rofi, hyprlock, etc).";
+      default = [ pkgs.rofi pkgs.hyprlock pkgs.hyprland ];
+      description = "Runtime tools used by the sidebar.";
     };
   };
 
@@ -58,9 +57,10 @@ in
       configs.${configName} = quickshellConfigDir;
     };
 
-    systemd.user.services.quickshell = lib.mkIf cfg.autostart {
+    # IMPORTANT: unique unit name
+    systemd.user.services.quickshell-sidebar = lib.mkIf cfg.autostart {
       Unit = {
-        Description = "Quickshell sidebar";
+        Description = "Quickshell Sidebar";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
       };

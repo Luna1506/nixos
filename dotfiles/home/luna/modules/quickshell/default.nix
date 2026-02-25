@@ -1,7 +1,7 @@
 { ... }:
 {
   imports = [
-    ./quickshell-bar-dock.nix
+    ./quickshell-sidebar.nix
     ./overview.nix
   ];
 }
