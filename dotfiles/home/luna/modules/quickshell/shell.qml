@@ -1,7 +1,9 @@
 import QtQuick
 import Quickshell
 
+import "components" as C
+
 ShellRoot {
-  Bar {}
-  Dock {}
+  C.Bar {}
+  C.Dock {}
 }

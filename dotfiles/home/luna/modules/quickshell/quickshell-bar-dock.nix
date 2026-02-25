@@ -6,11 +6,10 @@ let
   fileText = path: builtins.readFile path;
 
   configName = cfg.configName;
-  targetDir = ".config/quickshell/${configName}";
 in
 {
   options.programs.quickshellBarDock = {
-    enable = lib.mkEnableOption "Quickshell bar + dock (custom module, no name clash)";
+    enable = lib.mkEnableOption "Quickshell bar + dock (wrapper around HM programs.quickshell)";
 
     package = lib.mkOption {
       type = lib.types.package;
@@ -21,72 +20,57 @@ in
     configName = lib.mkOption {
       type = lib.types.str;
       default = "default";
-      description = "Quickshell config directory name under ~/.config/quickshell/.";
+      description = "Quickshell config name (directory under ~/.config/quickshell/).";
     };
 
     autostart = lib.mkOption {
       type = lib.types.bool;
       default = true;
-      description = "Start Quickshell via systemd user service.";
+      description = "Start Quickshell via the Home Manager quickshell systemd user unit.";
     };
 
     extraPackages = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ pkgs.networkmanager pkgs.bluez pkgs.playerctl ];
-      description = "Extra runtime tools; nmcli (wifi), bluez, playerctl optional.";
+      description = "Runtime tools; nmcli (wifi), bluez, playerctl optional.";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ cfg.package ] ++ cfg.extraPackages;
+    home.packages = cfg.extraPackages;
 
-    # Root files (IMPORTANT: no subdir imports needed)
-    home.file."${targetDir}/shell.qml".text =
-      fileText ./shell.qml;
+    # IMPORTANT: use the official HM quickshell module to bundle config into one store dir
+    programs.quickshell = {
+      enable = true;
+      package = cfg.package;
 
-    home.file."${targetDir}/Bar.qml".text =
-      fileText ./components/Bar.qml;
+      activeConfig = configName;
 
-    home.file."${targetDir}/Dock.qml".text =
-      fileText ./components/Dock.qml;
+      configs.${configName} = {
+        "shell.qml" = fileText ./shell.qml;
 
-    home.file."${targetDir}/GlassRect.qml".text =
-      fileText ./components/GlassRect.qml;
-
-    home.file."${targetDir}/IconButton.qml".text =
-      fileText ./components/IconButton.qml;
-
-    home.file."${targetDir}/WorkspaceSwitcher.qml".text =
-      fileText ./components/WorkspaceSwitcher.qml;
-
-    home.file."${targetDir}/MprisMini.qml".text =
-      fileText ./components/MprisMini.qml;
-
-    home.file."${targetDir}/BluetoothIndicator.qml".text =
-      fileText ./components/BluetoothIndicator.qml;
-
-    home.file."${targetDir}/WifiIndicator.qml".text =
-      fileText ./components/WifiIndicator.qml;
-
-    home.file."${targetDir}/Tray.qml".text =
-      fileText ./components/Tray.qml;
-
-    systemd.user.services.quickshell = lib.mkIf cfg.autostart {
-      Unit = {
-        Description = "Quickshell bar + dock";
-        PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session.target" ];
+        # Keep components in a real subdir; relative import works because HM bundles them together.
+        "components/Bar.qml" = fileText ./components/Bar.qml;
+        "components/Dock.qml" = fileText ./components/Dock.qml;
+        "components/GlassRect.qml" = fileText ./components/GlassRect.qml;
+        "components/IconButton.qml" = fileText ./components/IconButton.qml;
+        "components/WorkspaceSwitcher.qml" = fileText ./components/WorkspaceSwitcher.qml;
+        "components/MprisMini.qml" = fileText ./components/MprisMini.qml;
+        "components/BluetoothIndicator.qml" = fileText ./components/BluetoothIndicator.qml;
+        "components/WifiIndicator.qml" = fileText ./components/WifiIndicator.qml;
+        "components/Tray.qml" = fileText ./components/Tray.qml;
       };
 
-      Service = {
-        ExecStart = "${cfg.package}/bin/quickshell -c ${configName}";
-        Restart = "on-failure";
-        RestartSec = 1;
-      };
+      # HM module provides the user unit; hook it to a reasonable target
+      systemd.target = "graphical-session.target";
+    };
 
-      Install = {
-        WantedBy = [ "graphical-session.target" ];
-      };
+    # If you want to disable autostart, we simply don't enable the unit via HM:
+    # (Some HM versions do this via systemd.enable; if your HM doesn't support it,
+    # you can just set autostart=false and manually run quickshell.)
+    assertions = lib.optional (!cfg.autostart) {
+      assertion = true;
+      message = "autostart=false: start quickshell manually with `quickshell -c ${configName}`.";
     };
   };
 }
