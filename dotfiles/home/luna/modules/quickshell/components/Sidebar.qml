@@ -11,14 +11,17 @@ PanelWindow {
   implicitWidth: 52
   color: "transparent"
 
-  // darker grey, less “bluish”
+  signal toggleTopPopup()
+  signal requestTopTab(int idx)
+
+  // Dark theme
   property color panel: "#151515"
   property color bg: "#0f0f0f"
   property color border: "#2a2a2a"
   property color text: "#f2f2f2"
   property color subtext: "#a8a8a8"
   property color accent: "#ffffff"
-  property color accent2: "#9f7cff" // tiny highlight
+  property color accent2: "#9f7cff"
   property color danger: "#ffffff"
 
   property int radiusOuter: 18
@@ -44,6 +47,7 @@ PanelWindow {
   property string trackTitle: ""
   property string trackArtist: ""
   property bool playing: false
+  property string artUrl: ""
 
   function sh(cmd) {
     if (!cmd || cmd.length === 0) return;
@@ -60,7 +64,7 @@ PanelWindow {
         "if [ -z \"$P\" ]; then P=$(playerctl -l 2>/dev/null | grep -i spotify | head -n1); fi; " +
         "if [ -z \"$P\" ]; then P=$(playerctl -l 2>/dev/null | head -n1); fi; " +
         "if [ -z \"$P\" ]; then exit 0; fi; " +
-        "playerctl -p \"$P\" metadata --format '{{playerName}}|{{status}}|{{artist}}|{{title}}' 2>/dev/null || true"
+        "playerctl -p \"$P\" metadata --format '{{playerName}}|{{status}}|{{artist}}|{{title}}|{{mpris:artUrl}}' 2>/dev/null || true"
       ]
     });
   }
@@ -87,6 +91,7 @@ PanelWindow {
         sidebar.trackArtist = ""
         sidebar.trackTitle = ""
         sidebar.playing = false
+        sidebar.artUrl = ""
         return
       }
       const parts = out.split("|")
@@ -95,6 +100,7 @@ PanelWindow {
       sidebar.playing = (status === "playing")
       sidebar.trackArtist = parts[2] || ""
       sidebar.trackTitle = parts[3] || ""
+      sidebar.artUrl = parts[4] || ""
       sidebar.hasPlayer = sidebar.playerName.length > 0
     }
   }
@@ -104,7 +110,16 @@ PanelWindow {
     return Qt.resolvedUrl("../assets/" + name);
   }
 
-  // nav with custom icons
+  // sidebar buttons (these can open popup tabs similar to video)
+  // 0 Dashboard, 1 Media, 2 Performance, 3 Workspaces
+  property var topTabs: [
+    { icon: "menu.svg", tip: "Dashboard", tab: 0 },
+    { icon: "play.svg", tip: "Media", tab: 1 },
+    { icon: "cpu.svg", tip: "Performance", tab: 2 },
+    { icon: "workspaces.svg", tip: "Workspaces", tab: 3 }
+  ]
+
+  // nav with custom icons (launchers)
   property var navItems: [
     { icon: "apps.svg", tip: "Apps", cmd: "rofi -show drun" },
     { icon: "search.svg", tip: "Search", cmd: "rofi -show drun" },
@@ -161,7 +176,7 @@ PanelWindow {
     Rectangle {
       anchors.fill: parent
       radius: 16
-      color: root.active ? sidebar.bg : sidebar.bg
+      color: sidebar.bg
       border.color: root.active ? sidebar.accent2 : sidebar.border
       border.width: 1
       opacity: root.hovered ? 1.0 : 0.96
@@ -201,12 +216,23 @@ PanelWindow {
     anchors.margins: 8
     spacing: 10
 
-    // top menu
-    IconButton {
+    // Top popup shortcuts like the video tabs
+    ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
-      tip: "Menu"
-      iconFile: "menu.svg"
-      onClicked: sh("rofi -show drun")
+      spacing: 9
+
+      Repeater {
+        model: sidebar.topTabs.length
+        delegate: IconButton {
+          required property int index
+          tip: sidebar.topTabs[index].tip
+          iconFile: sidebar.topTabs[index].icon
+          active: false
+          onClicked: {
+            sidebar.requestTopTab(sidebar.topTabs[index].tab)
+          }
+        }
+      }
     }
 
     // nav buttons
@@ -231,7 +257,7 @@ PanelWindow {
 
     Item { Layout.fillHeight: true }
 
-    // quick actions (custom icons)
+    // quick actions
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
       spacing: 9
@@ -296,7 +322,7 @@ PanelWindow {
       }
     }
 
-    // Mini player always visible (clean)
+    // Mini player (always visible)
     Rectangle {
       Layout.alignment: Qt.AlignHCenter
       width: 40
@@ -316,6 +342,7 @@ PanelWindow {
         hoverEnabled: true
         onEntered: parent.hovered = true
         onExited: parent.hovered = false
+        onClicked: sidebar.requestTopTab(1) // Media tab
       }
 
       Column {

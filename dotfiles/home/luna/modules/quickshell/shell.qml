@@ -3,6 +3,19 @@ import Quickshell
 
 import "components" as C
 
-ShellRoot {
-  C.Sidebar {}
+Item {
+  C.Sidebar {
+    id: sidebar
+    onToggleTopPopup: topPopup.visible = !topPopup.visible
+    onRequestTopTab: (idx) => {
+      topPopup.visible = true
+      topPopup.activeTab = idx
+    }
+  }
+
+  C.TopPopup {
+    id: topPopup
+    visible: false
+    onCloseRequested: visible = false
+  }
 }

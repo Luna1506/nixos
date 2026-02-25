@@ -11,6 +11,7 @@ let
 
     cp -f ${./shell.qml} "$out/shell.qml"
     cp -f ${./components/Sidebar.qml} "$out/components/Sidebar.qml"
+    cp -f ${./components/TopPopup.qml} "$out/components/TopPopup.qml"
 
     # copy all assets (svg/png)
     cp -rf ${./assets}/* "$out/assets/" 2>/dev/null || true
@@ -46,6 +47,9 @@ in
         pkgs.pavucontrol
         pkgs.wlogout
         pkgs.playerctl
+        pkgs.lm_sensors
+        pkgs.coreutils
+        pkgs.procps
       ];
     };
   };
