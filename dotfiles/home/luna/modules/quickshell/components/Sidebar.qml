@@ -7,14 +7,23 @@ import Quickshell.Io
 
 PanelWindow {
   id: sidebar
+
+  // PanelWindow anchors are bools (shell anchors)
   anchors { top: true; bottom: true; left: true }
-  implicitWidth: 64
+
+  // thinner
+  implicitWidth: 52
+
+  // keep transparent; panel draws its own background
   color: "transparent"
 
+  // make it focusable just in case (keyboard focus); not required for clicks but harmless
+  focusable: false
+
   // --- theme (dark) ---
-  property color bg: "#11131a"
-  property color panel: "#141824"
-  property color border: "#242b3a"
+  property color bg: "#0f1117"
+  property color panel: "#121725"
+  property color border: "#222a3a"
   property color text: "#e7e9ef"
   property color subtext: "#9aa3b2"
   property color accent: "#8b5cf6"
@@ -64,11 +73,13 @@ PanelWindow {
     function onFinished(exitCode, stdout, stderr) {
       const out = String(stdout || "").trim();
 
+      // first command: nmcli -t -f WIFI g  -> "enabled"/"disabled"
       if (out === "enabled" || out === "disabled") {
         sidebar.wifiOn = (out === "enabled");
         return;
       }
 
+      // second command returns "SSID:SIGNAL"
       if (out.includes(":")) {
         const parts = out.split(":");
         sidebar.wifiName = parts[0] || "";
@@ -92,6 +103,7 @@ PanelWindow {
     return p ? p : "";
   }
 
+  // Sidebar items (cmd may be empty; still highlights)
   property var items: [
     { icon: "view-app-grid", tip: "Apps", cmd: "rofi -show drun" },
     { icon: "system-search", tip: "Search", cmd: "rofi -show drun" },
@@ -102,27 +114,58 @@ PanelWindow {
     { icon: "view-grid", tip: "Overview", cmd: "" }
   ]
 
-  Rectangle {
+  // --- PANEL BODY (right side rounded, left side square) ---
+  Item {
+    id: body
     anchors.fill: parent
-    radius: 22
-    color: sidebar.panel
-    border.color: sidebar.border
-    border.width: 1
+
+    // We use a rounded rect and then "square off" the left side by covering it.
+    Rectangle {
+      id: roundedBg
+      anchors.fill: parent
+      radius: 18
+      color: sidebar.panel
+      border.color: sidebar.border
+      border.width: 1
+    }
+
+    // Square-off strip on the LEFT to remove rounding on the screen-edge side
+    Rectangle {
+      anchors.left: parent.left
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      width: 18  // must be >= radius
+      color: sidebar.panel
+      border.color: "transparent"
+    }
+
+    // also square the border on the left edge
+    Rectangle {
+      anchors.left: parent.left
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      width: 1
+      color: sidebar.border
+    }
   }
+
+  // IMPORTANT: Explicit click mask so the panel reliably receives clicks.
+  // Only the body area is clickable; clicks outside pass through.
+  mask: Region { item: body }  // :contentReference[oaicite:1]{index=1}
 
   ColumnLayout {
     anchors.fill: parent
-    anchors.margins: 10
-    spacing: 12
+    anchors.margins: 8
+    spacing: 10
 
     // top circle "A"
     Item {
       Layout.alignment: Qt.AlignHCenter
-      width: 46; height: 46
+      width: 40; height: 40
 
       Rectangle {
         anchors.fill: parent
-        radius: 23
+        radius: 20
         color: sidebar.bg
         border.color: sidebar.border
         border.width: 1
@@ -132,7 +175,7 @@ PanelWindow {
         anchors.centerIn: parent
         text: "A"
         color: sidebar.text
-        font.pixelSize: 16
+        font.pixelSize: 14
         font.weight: 800
       }
     }
@@ -140,13 +183,13 @@ PanelWindow {
     // buttons
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
-      spacing: 10
+      spacing: 9
 
       Repeater {
         model: sidebar.items.length
         delegate: Item {
           required property int index
-          width: 46; height: 46
+          width: 40; height: 40
 
           property var data: sidebar.items[index]
           property bool hovered: false
@@ -154,16 +197,16 @@ PanelWindow {
 
           Rectangle {
             anchors.fill: parent
-            radius: 18
+            radius: 16
             color: active ? sidebar.accent : sidebar.bg
             border.color: active ? sidebar.accent : sidebar.border
             border.width: 1
-            opacity: hovered ? 1.0 : 0.95
+            opacity: hovered ? 1.0 : 0.94
           }
 
           Item {
             anchors.centerIn: parent
-            width: 22; height: 22
+            width: 20; height: 20
 
             Image {
               anchors.fill: parent
@@ -179,7 +222,7 @@ PanelWindow {
               visible: sidebar.iconOrEmpty(data.icon) === ""
               text: (data.tip && data.tip.length > 0) ? data.tip[0].toUpperCase() : "?"
               color: sidebar.text
-              font.pixelSize: 12
+              font.pixelSize: 11
               font.weight: 800
             }
           }
@@ -187,14 +230,18 @@ PanelWindow {
           MouseArea {
             anchors.fill: parent
             hoverEnabled: true
+            // make sure we actually accept the click
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
             onEntered: hovered = true
             onExited: hovered = false
             onClicked: {
               sidebar.activeIndex = index
+
               if (data.tip === "Overview") {
                 Hyprland.dispatch("togglespecialworkspace overview")
                 return
               }
+
               if (data.cmd && data.cmd.length > 0) sidebar.sh(data.cmd)
             }
           }
@@ -211,32 +258,33 @@ PanelWindow {
     // status: wifi + bt
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
-      spacing: 10
+      spacing: 9
 
       // wifi
       Item {
-        width: 46; height: 46
+        width: 40; height: 40
         property bool hovered: false
 
         Rectangle {
           anchors.fill: parent
-          radius: 18
+          radius: 16
           color: sidebar.bg
           border.color: sidebar.border
           border.width: 1
-          opacity: hovered ? 1.0 : 0.95
+          opacity: hovered ? 1.0 : 0.94
         }
 
         Text {
           anchors.centerIn: parent
           text: sidebar.wifiOn ? "📶" : "⨯"
           color: sidebar.wifiOn ? sidebar.ok : sidebar.subtext
-          font.pixelSize: 16
+          font.pixelSize: 15
         }
 
         MouseArea {
           anchors.fill: parent
           hoverEnabled: true
+          acceptedButtons: Qt.LeftButton
           onEntered: parent.hovered = true
           onExited: parent.hovered = false
           onClicked: sidebar.sh("nmcli r wifi " + (sidebar.wifiOn ? "off" : "on"))
@@ -250,29 +298,30 @@ PanelWindow {
 
       // bt
       Item {
-        width: 46; height: 46
+        width: 40; height: 40
         property bool hovered: false
 
         Rectangle {
           anchors.fill: parent
-          radius: 18
+          radius: 16
           color: sidebar.bg
           border.color: sidebar.border
           border.width: 1
-          opacity: hovered ? 1.0 : 0.95
+          opacity: hovered ? 1.0 : 0.94
         }
 
         Text {
           anchors.centerIn: parent
           text: "ᛒ"
           color: sidebar.btOn ? sidebar.ok : sidebar.subtext
-          font.pixelSize: 18
+          font.pixelSize: 17
           font.weight: 800
         }
 
         MouseArea {
           anchors.fill: parent
           hoverEnabled: true
+          acceptedButtons: Qt.LeftButton
           onEntered: parent.hovered = true
           onExited: parent.hovered = false
           onClicked: sidebar.sh("bluetoothctl power " + (sidebar.btOn ? "off" : "on"))
@@ -286,13 +335,13 @@ PanelWindow {
     // workspaces (dots)
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
-      spacing: 8
+      spacing: 7
 
       Repeater {
         model: 10
         delegate: Rectangle {
           required property int index
-          width: 10; height: 10
+          width: 9; height: 9
           radius: 5
 
           property int ws: index + 1
@@ -301,10 +350,11 @@ PanelWindow {
           color: isActive ? sidebar.accent : sidebar.bg
           border.color: isActive ? sidebar.accent : sidebar.border
           border.width: 1
-          opacity: isActive ? 1.0 : 0.55
+          opacity: isActive ? 1.0 : 0.50
 
           MouseArea {
             anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
             onClicked: Hyprland.dispatch("workspace " + ws)
           }
         }
@@ -314,46 +364,46 @@ PanelWindow {
     // bottom: label + time + power
     ColumnLayout {
       Layout.alignment: Qt.AlignHCenter
-      spacing: 10
+      spacing: 9
 
       Item {
-        width: 46
-        height: 120
+        width: 40
+        height: 105
         Text {
           anchors.centerIn: parent
           rotation: 90
           text: "Desktop"
           color: sidebar.subtext
-          font.pixelSize: 12
+          font.pixelSize: 11
           font.weight: 700
         }
       }
 
       Item {
-        width: 46
-        height: 110
+        width: 40
+        height: 100
 
         Column {
           anchors.centerIn: parent
-          spacing: 6
+          spacing: 5
 
           Text {
             text: Qt.formatDateTime(new Date(), "dd")
             color: sidebar.text
-            font.pixelSize: 14
-            width: 46
+            font.pixelSize: 13
+            width: 40
             horizontalAlignment: Text.AlignHCenter
           }
           Text {
             text: Qt.formatDateTime(new Date(), "MM")
             color: sidebar.subtext
-            font.pixelSize: 11
-            width: 46
+            font.pixelSize: 10
+            width: 40
             horizontalAlignment: Text.AlignHCenter
           }
 
           Rectangle {
-            width: 18; height: 1
+            width: 16; height: 1
             radius: 1
             color: sidebar.border
             anchors.horizontalCenter: parent.horizontalCenter
@@ -362,43 +412,44 @@ PanelWindow {
           Text {
             text: Qt.formatDateTime(new Date(), "HH")
             color: sidebar.text
-            font.pixelSize: 13
-            width: 46
+            font.pixelSize: 12
+            width: 40
             horizontalAlignment: Text.AlignHCenter
           }
           Text {
             text: Qt.formatDateTime(new Date(), "mm")
             color: sidebar.subtext
-            font.pixelSize: 11
-            width: 46
+            font.pixelSize: 10
+            width: 40
             horizontalAlignment: Text.AlignHCenter
           }
         }
       }
 
       Item {
-        width: 46; height: 46
+        width: 40; height: 40
         property bool hovered: false
 
         Rectangle {
           anchors.fill: parent
-          radius: 18
+          radius: 16
           color: sidebar.bg
           border.color: sidebar.border
           border.width: 1
-          opacity: hovered ? 1.0 : 0.95
+          opacity: hovered ? 1.0 : 0.94
         }
 
         Text {
           anchors.centerIn: parent
           text: "⏻"
           color: sidebar.warn
-          font.pixelSize: 18
+          font.pixelSize: 17
         }
 
         MouseArea {
           anchors.fill: parent
           hoverEnabled: true
+          acceptedButtons: Qt.LeftButton
           onEntered: parent.hovered = true
           onExited: parent.hovered = false
           onClicked: sidebar.sh('printf "lock\\nlogout\\nreboot\\npoweroff\\n" | rofi -dmenu -p Power | xargs -r -I{} sh -lc \'case "{}" in lock) hyprlock ;; logout) hyprctl dispatch exit ;; reboot) systemctl reboot ;; poweroff) systemctl poweroff ;; esac\'')
