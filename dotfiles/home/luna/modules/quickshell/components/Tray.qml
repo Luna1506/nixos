@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Services.SystemTray
 
 RowLayout {
-  id: root
   spacing: 6
 
   Repeater {

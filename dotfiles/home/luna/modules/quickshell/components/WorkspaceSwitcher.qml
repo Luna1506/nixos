@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import Quickshell.Hyprland
 
 RowLayout {
-  id: root
   spacing: 6
 
   Repeater {

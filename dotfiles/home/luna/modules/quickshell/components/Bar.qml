@@ -6,8 +6,6 @@ import Quickshell.Hyprland
 import Quickshell.Services.Mpris
 import Quickshell.Bluetooth
 
-import "."
-
 PanelWindow {
   id: bar
   anchors { top: true; left: true; right: true }
@@ -24,9 +22,7 @@ PanelWindow {
     anchors.margins: 8
     spacing: 10
 
-    WorkspaceSwitcher {
-      Layout.alignment: Qt.AlignVCenter
-    }
+    WorkspaceSwitcher { Layout.alignment: Qt.AlignVCenter }
 
     Item { Layout.fillWidth: true }
 

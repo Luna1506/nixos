@@ -21,7 +21,7 @@ RowLayout {
           "sh", "-lc",
           "nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '$1==\"yes\"{print $2; exit}'"
         ],
-        onExited: function(code, _status, stdout, _stderr) {
+        onExited: function(_code, _status, stdout, _stderr) {
           const out = (stdout || "").trim()
           root.connected = out.length > 0
           root.ssid = out
