@@ -24,6 +24,14 @@
     ./modules/quickshell
   ];
 
-  programs.quickshellBarDock.enable = true;
+  #programs.quickshellBarDock.enable = true;
+
+  programs.quickshellOverview = {
+    enable = true;
+
+    # nach dem fakeSha256-run ersetzen:
+    rev = "main"; # besser: commit hash pinnen
+    sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  };
 }
 
