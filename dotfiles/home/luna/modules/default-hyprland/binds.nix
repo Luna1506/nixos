@@ -17,6 +17,7 @@
       "$mainMod SHIFT, E, exit"
       "$mainMod, Y, exec, ~/test.sh"
       "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+      "$mainMod SHIFT, TAB, exec, qs ipc -c overview call overview toggle"
       "$mainMod, 1, workspace, 1"
       "$mainMod, 2, workspace, 2"
       "$mainMod, 3, workspace, 3"
