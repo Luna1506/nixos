@@ -5,20 +5,28 @@ let
 
   configName = cfg.configName;
 
-  quickshellConfigDir =
-    pkgs.linkFarm "quickshell-${configName}" [
-      { name = "shell.qml"; path = ./shell.qml; }
+  # IMPORTANT:
+  # We must create a REAL directory tree with REAL files (not symlinks).
+  # Otherwise QML resolves imports relative to the canonical store file path
+  # (e.g. /nix/store/...-shell.qml) and `import "components"` becomes /nix/store/components.
+  quickshellConfigDir = pkgs.runCommand "quickshell-${configName}" { } ''
+    set -eu
+    mkdir -p "$out/components"
 
-      { name = "components/Bar.qml"; path = ./components/Bar.qml; }
-      { name = "components/Dock.qml"; path = ./components/Dock.qml; }
-      { name = "components/GlassRect.qml"; path = ./components/GlassRect.qml; }
-      { name = "components/IconButton.qml"; path = ./components/IconButton.qml; }
-      { name = "components/WorkspaceSwitcher.qml"; path = ./components/WorkspaceSwitcher.qml; }
-      { name = "components/MprisMini.qml"; path = ./components/MprisMini.qml; }
-      { name = "components/BluetoothIndicator.qml"; path = ./components/BluetoothIndicator.qml; }
-      { name = "components/WifiIndicator.qml"; path = ./components/WifiIndicator.qml; }
-      { name = "components/Tray.qml"; path = ./components/Tray.qml; }
-    ];
+    # root
+    cp -f ${./shell.qml} "$out/shell.qml"
+
+    # components
+    cp -f ${./components/Bar.qml} "$out/components/Bar.qml"
+    cp -f ${./components/Dock.qml} "$out/components/Dock.qml"
+    cp -f ${./components/GlassRect.qml} "$out/components/GlassRect.qml"
+    cp -f ${./components/IconButton.qml} "$out/components/IconButton.qml"
+    cp -f ${./components/WorkspaceSwitcher.qml} "$out/components/WorkspaceSwitcher.qml"
+    cp -f ${./components/MprisMini.qml} "$out/components/MprisMini.qml"
+    cp -f ${./components/BluetoothIndicator.qml} "$out/components/BluetoothIndicator.qml"
+    cp -f ${./components/WifiIndicator.qml} "$out/components/WifiIndicator.qml"
+    cp -f ${./components/Tray.qml} "$out/components/Tray.qml"
+  '';
 in
 {
   options.programs.quickshellBarDock = {
@@ -52,7 +60,12 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.package ] ++ cfg.extraPackages;
 
-    # Deploy config directory as a single bundled store dir -> HM links it into ~/.config/quickshell/<name>
+    # Make absolutely sure Quickshell sees the config in a "valid config path"
+    # and that the directory is an actual tree (not symlink farm).
+    xdg.configFile."quickshell/${configName}".source = quickshellConfigDir;
+
+    # Keep programs.quickshell enabled if you want its integration,
+    # but the critical part is the directory above.
     programs.quickshell = {
       enable = true;
       package = cfg.package;
@@ -60,7 +73,7 @@ in
       configs.${configName} = quickshellConfigDir;
     };
 
-    # Re-add our own unit (since HM one doesn’t exist in your setup)
+    # Your own unit (since you confirmed no quickshell unit exists via HM in your setup)
     systemd.user.services.quickshell = lib.mkIf cfg.autostart {
       Unit = {
         Description = "Quickshell bar + dock";
