@@ -7,7 +7,14 @@ import Quickshell.Io
 
 PanelWindow {
   id: topPopup
-  anchors { top: true }
+
+  // IMPORTANT: define anchors only ONCE (otherwise "Property value set multiple times")
+  anchors {
+    top: true
+    horizontalCenter: true
+    topMargin: 12
+  }
+
   implicitWidth: 900
   implicitHeight: 520
   color: "transparent"
@@ -24,11 +31,6 @@ PanelWindow {
 
   property int radiusOuter: 18
   property int activeTab: 0 // 0 Dashboard, 1 Media, 2 Performance, 3 Workspaces
-
-  // Center-ish like the video (PanelWindow positioning via anchors, not x/y)
-  anchors.horizontalCenter: screen ? screen.horizontalCenter : undefined
-  anchors.top: screen ? screen.top : undefined
-  anchors.topMargin: 12
 
   Process { id: runner }
   Process { id: perfPoll }
@@ -239,11 +241,11 @@ PanelWindow {
     }
 
     StackLayout {
-      id: stack
       Layout.fillWidth: true
       Layout.fillHeight: true
       currentIndex: topPopup.activeTab
 
+      // Dashboard
       Item {
         ColumnLayout {
           anchors.fill: parent
@@ -265,12 +267,7 @@ PanelWindow {
               ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
-                Text {
-                  text: "Quick"
-                  color: topPopup.text
-                  font.pixelSize: 14
-                  font.weight: 800
-                }
+                Text { text: "Quick"; color: topPopup.text; font.pixelSize: 14; font.weight: 800 }
                 Text {
                   text: "Date: " + Qt.formatDateTime(topPopup.now, "dd.MM.yyyy") + "  •  Time: " + Qt.formatDateTime(topPopup.now, "HH:mm")
                   color: topPopup.subtext
@@ -293,10 +290,7 @@ PanelWindow {
                   Text { text: "rofi -show drun"; color: topPopup.subtext; font.pixelSize: 10; horizontalAlignment: Text.AlignHCenter; width: parent.width }
                 }
 
-                MouseArea {
-                  anchors.fill: parent
-                  onClicked: topPopup.sh("rofi -show drun")
-                }
+                MouseArea { anchors.fill: parent; onClicked: topPopup.sh("rofi -show drun") }
               }
             }
           }
@@ -314,14 +308,9 @@ PanelWindow {
               anchors.margins: 14
               spacing: 10
 
+              Text { text: "Tip"; color: topPopup.text; font.pixelSize: 13; font.weight: 800 }
               Text {
-                text: "Tip"
-                color: topPopup.text
-                font.pixelSize: 13
-                font.weight: 800
-              }
-              Text {
-                text: "Wenn hier was nicht 1:1 aussieht: oft sind es Fonts/Icons oder Wallpaper-Contrast. Das könnte helfen, wenn du die gleichen SVGs nutzt."
+                text: "Wenn es optisch nicht passt: Icons/Fonts/Wallpaper-Contrast sind meist die Ursache."
                 wrapMode: Text.WordWrap
                 color: topPopup.subtext
                 font.pixelSize: 11
@@ -331,6 +320,7 @@ PanelWindow {
         }
       }
 
+      // Media
       Item {
         RowLayout {
           anchors.fill: parent
@@ -411,13 +401,7 @@ PanelWindow {
                   color: "#141414"
                   border.color: topPopup.accent2
                   border.width: 1
-                  Text {
-                    anchors.centerIn: parent
-                    text: topPopup.playing ? "⏸" : "▶"
-                    color: topPopup.text
-                    font.pixelSize: 14
-                    font.weight: 900
-                  }
+                  Text { anchors.centerIn: parent; text: topPopup.playing ? "⏸" : "▶"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
                   MouseArea { anchors.fill: parent; onClicked: topPopup.mpris("play-pause") }
                 }
 
@@ -448,7 +432,7 @@ PanelWindow {
 
               Text { text: "Media"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
               Text {
-                text: "Clean gehalten – wenn du exakt Video-Style (Visualizer/Scrubber) willst, müsste man das extra bauen."
+                text: "Wenn du hier Video-Style Visualizer willst, müsste man das extra als Shader/Canvas bauen."
                 wrapMode: Text.WordWrap
                 color: topPopup.subtext
                 font.pixelSize: 11
@@ -458,6 +442,7 @@ PanelWindow {
         }
       }
 
+      // Performance
       Item {
         RowLayout {
           anchors.fill: parent
@@ -488,30 +473,11 @@ PanelWindow {
                 border.color: topPopup.accent2
                 border.width: 1
 
-                Text {
-                  anchors.centerIn: parent
-                  text: big
-                  color: topPopup.text
-                  font.pixelSize: 22
-                  font.weight: 900
-                }
+                Text { anchors.centerIn: parent; text: big; color: topPopup.text; font.pixelSize: 22; font.weight: 900 }
               }
 
-              Text {
-                text: label
-                color: topPopup.subtext
-                font.pixelSize: 12
-                font.weight: 800
-                horizontalAlignment: Text.AlignHCenter
-                width: parent.width
-              }
-              Text {
-                text: sub
-                color: topPopup.subtext
-                font.pixelSize: 10
-                horizontalAlignment: Text.AlignHCenter
-                width: parent.width
-              }
+              Text { text: label; color: topPopup.subtext; font.pixelSize: 12; font.weight: 800; horizontalAlignment: Text.AlignHCenter; width: parent.width }
+              Text { text: sub; color: topPopup.subtext; font.pixelSize: 10; horizontalAlignment: Text.AlignHCenter; width: parent.width }
             }
           }
 
@@ -521,6 +487,7 @@ PanelWindow {
         }
       }
 
+      // Workspaces
       Item {
         ColumnLayout {
           anchors.fill: parent
@@ -538,12 +505,7 @@ PanelWindow {
               anchors.centerIn: parent
               spacing: 10
               Text { text: "Active workspace:"; color: topPopup.subtext; font.pixelSize: 12; font.weight: 800 }
-              Text {
-                text: Hyprland.focusedWorkspace ? String(Hyprland.focusedWorkspace.id) : "--"
-                color: topPopup.text
-                font.pixelSize: 14
-                font.weight: 900
-              }
+              Text { text: Hyprland.focusedWorkspace ? String(Hyprland.focusedWorkspace.id) : "--"; color: topPopup.text; font.pixelSize: 14; font.weight: 900 }
             }
           }
 
@@ -585,10 +547,7 @@ PanelWindow {
                     font.weight: 900
                   }
 
-                  MouseArea {
-                    anchors.fill: parent
-                    onClicked: Hyprland.dispatch("workspace " + ws)
-                  }
+                  MouseArea { anchors.fill: parent; onClicked: Hyprland.dispatch("workspace " + ws) }
                 }
               }
             }
