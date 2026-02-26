@@ -1,3 +1,4 @@
+// ~/nixos/dotfiles/home/luna/modules/quickshell/caelestia-shell/modules/IdleMonitors.qml
 pragma ComponentBehavior: Bound
 
 import "lock"
@@ -11,6 +12,10 @@ Scope {
     id: root
 
     required property Lock lock
+
+    // Keep the same "enabled" logic so other code can still bind to it.
+    // NOTE: Idle timeouts are disabled on Quickshell 0.2.1 because IdleMonitor
+    // is not available there.
     readonly property bool enabled: !Config.general.idle.inhibitWhenAudio || !Players.list.some(p => p.isPlaying)
 
     function handleIdleAction(action: var): void {
@@ -36,16 +41,9 @@ Scope {
         onUnlockRequested: root.lock.lock.unlock()
     }
 
-    Variants {
-        model: Config.general.idle.timeouts
-
-        IdleMonitor {
-            required property var modelData
-
-            enabled: root.enabled && (modelData.enabled ?? true)
-            timeout: modelData.timeout
-            respectInhibitors: modelData.respectInhibitors ?? true
-            onIsIdleChanged: root.handleIdleAction(isIdle ? modelData.idleAction : modelData.returnAction)
-        }
-    }
+    // Quickshell 0.2.1 compatibility:
+    // IdleMonitor does not exist -> disable idle timeout handling for now.
+    //
+    // If you later upgrade Quickshell to a version that provides IdleMonitor,
+    // you can restore the original Variants + IdleMonitor block here.
 }
