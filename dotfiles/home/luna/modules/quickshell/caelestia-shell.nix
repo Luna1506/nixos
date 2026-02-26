@@ -6,24 +6,49 @@ let
   # vendored repo folder next to this module
   upstream = ./caelestia-shell;
 
-  # Build a derived source tree that also provides a QML module "Caelestia"
-  # so that `import Caelestia` works.
+  # Build a derived source tree that also provides QML modules:
+  #   import Caelestia
+  #   import Caelestia.Services
+  #   import Caelestia.Utils
   derivedSource = pkgs.runCommand "hm_caelestiashell" { } ''
         set -eu
         mkdir -p "$out"
         cp -R ${upstream}/. "$out/"
 
-        # Provide a QML module directory for: `import Caelestia`
+        # --------------------------
+        # Module: Caelestia
+        # --------------------------
         mkdir -p "$out/Caelestia"
         cat > "$out/Caelestia/qmldir" <<'EOF'
     module Caelestia
 
-    # Minimal exports to satisfy the first failing import chain.
-    # If Caelestia later complains about more missing types,
-    # we can add them here.
+    # Core config/types (based on what your error chain references)
     Config 1.0 ../config/Config.qml
     Appearance 1.0 ../config/Appearance.qml
     AppearanceConfig 1.0 ../config/AppearanceConfig.qml
+    UserPaths 1.0 ../config/UserPaths.qml
+    EOF
+
+        # --------------------------
+        # Module: Caelestia.Services
+        # --------------------------
+        mkdir -p "$out/Caelestia/Services"
+        cat > "$out/Caelestia/Services/qmldir" <<'EOF'
+    module Caelestia.Services
+
+    Audio 1.0 ../../services/Audio.qml
+    EOF
+
+        # --------------------------
+        # Module: Caelestia.Utils
+        # --------------------------
+        mkdir -p "$out/Caelestia/Utils"
+        cat > "$out/Caelestia/Utils/qmldir" <<'EOF'
+    module Caelestia.Utils
+
+    Icons 1.0 ../../utils/Icons.qml
+    Images 1.0 ../../utils/Images.qml
+    NetworkConnection 1.0 ../../utils/NetworkConnection.qml
     EOF
   '';
 
@@ -66,10 +91,9 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.quickshellPackage ] ++ cfg.extraPackages;
 
-    # Deploy derived tree (with Caelestia/qmldir) to ~/.config/quickshell/caelestia
+    # Deploy derived tree (with Caelestia/* modules) to ~/.config/quickshell/caelestia
     xdg.configFile."quickshell/caelestia".source = derivedSource;
 
-    # Optional overrides
     xdg.configFile."caelestia/shell.json" = lib.mkIf (settingsJsonText != null) {
       text = settingsJsonText;
     };
@@ -80,13 +104,13 @@ in
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
 
-        # IMPORTANT: StartLimitIntervalSec belongs in [Unit], not [Service]
+        # belongs in [Unit], not [Service]
         StartLimitIntervalSec = 0;
       };
 
       Service = {
         Environment = [
-          # Let Qt find `Caelestia/qmldir` inside the deployed tree
+          # QML import roots – must include the folder that contains "Caelestia/"
           "QML_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/modules:${xdgConfigPath}/components:${xdgConfigPath}/config"
           "QML2_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/modules:${xdgConfigPath}/components:${xdgConfigPath}/config"
         ];
