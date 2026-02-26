@@ -2,7 +2,12 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
-import Quickshell.Wayland as QW
+
+// NOTE:
+// Some Quickshell builds don't ship an IdleInhibitor QML type.
+// This stub keeps the Caelestia API working so the shell can start.
+// If you later confirm the correct type name/module for your Quickshell,
+// you can re-enable the real inhibitor implementation.
 
 Singleton {
     id: root
@@ -22,18 +27,6 @@ Singleton {
         property date enabledSince
 
         reloadableId: "idleInhibitor"
-    }
-
-    QW.IdleInhibitor {
-        enabled: props.enabled
-
-        // Minimal window, kein Region/Mask, damit es nicht an fehlenden Typen scheitert
-        window: PanelWindow {
-            implicitWidth: 0
-            implicitHeight: 0
-            visible: false
-            color: "transparent"
-        }
     }
 
     IpcHandler {
