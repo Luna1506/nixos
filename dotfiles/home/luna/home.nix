@@ -21,7 +21,7 @@
     ./modules/cursor.nix
     ./modules/neovim.nix
     ./modules/nerdfetch-bash.nix
-    ./modules/quickshell/caelestia-shell.nix
+    #  ./modules/quickshell/caelestia-shell.nix
   ];
 
   programs.caelestiaShell = {

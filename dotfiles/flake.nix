@@ -18,15 +18,6 @@
       url = "path:./flakes/flutter-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    caelestia-shell = {
-      url = "path:./home/luna/modules/quickshell/caelestia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-
-      # sorgt dafür, dass Caelestia/Quickshell nicht mit anderem nixpkgs/Qt baut
-      inputs.quickshell.inputs.nixpkgs.follows = "nixpkgs";
-      inputs.caelestia-cli.inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
@@ -52,16 +43,6 @@
         };
 
         modules = [
-          # 🔧 IMPORTANT: Quickshell aus dem Caelestia-Input verwenden
-          ({ ... }: {
-            nixpkgs.overlays = [
-              (final: prev: {
-                # Quickshell aus dem Caelestia-Shell Flake (typischerweise master / passender API-Stand)
-                quickshell = inputs.caelestia-shell.inputs.quickshell.packages.${system}.default;
-              })
-            ];
-          })
-
           ./hosts/laptop/default.nix
 
           home-manager.nixosModules.home-manager
@@ -80,15 +61,5 @@
           }
         ];
       };
-
-      packages.${system} = {
-        caelestia-shell = inputs.caelestia-shell.packages.${system}.caelestia-shell;
-        caelestia-shell-debug = inputs.caelestia-shell.packages.${system}.debug;
-        caelestia-shell-with-cli = inputs.caelestia-shell.packages.${system}.with-cli;
-
-        default = self.packages.${system}.caelestia-shell;
-      };
-
-      homeManagerModules = inputs.caelestia-shell.homeManagerModules or { };
     };
 }
