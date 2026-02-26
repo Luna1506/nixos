@@ -2,7 +2,7 @@ pragma Singleton
 
 import Quickshell
 import Quickshell.Io
-import Quickshell.Wayland
+import Quickshell.Wayland as QW
 
 Singleton {
     id: root
@@ -24,13 +24,13 @@ Singleton {
         reloadableId: "idleInhibitor"
     }
 
-    IdleInhibitor {
+    QW.IdleInhibitor {
         enabled: props.enabled
-        window: PanelWindow {
+        window: QW.PanelWindow {
             implicitWidth: 0
             implicitHeight: 0
             color: "transparent"
-            mask: Region {}
+            mask: QW.Region {}
         }
     }
 
