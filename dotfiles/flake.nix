@@ -52,6 +52,16 @@
         };
 
         modules = [
+          # 🔧 IMPORTANT: Quickshell aus dem Caelestia-Input verwenden
+          ({ ... }: {
+            nixpkgs.overlays = [
+              (final: prev: {
+                # Quickshell aus dem Caelestia-Shell Flake (typischerweise master / passender API-Stand)
+                quickshell = inputs.caelestia-shell.inputs.quickshell.packages.${system}.default;
+              })
+            ];
+          })
+
           ./hosts/laptop/default.nix
 
           home-manager.nixosModules.home-manager
