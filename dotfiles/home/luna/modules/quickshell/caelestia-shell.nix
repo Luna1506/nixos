@@ -3,12 +3,27 @@
 let
   cfg = config.programs.caelestiaShell;
 
-  # Dein vendortes Repo
+  # vendored repo directory (has its own flake.nix)
   src = ./caelestia-shell;
 
-  # Baue das Caelestia Plugin/Package über deren Nix-Definition
-  # (Das ist genau dafür da: QML Modul "Caelestia" + Services wie BeatTracker/CavaProvider)
-  caelestiaPkg = pkgs.callPackage (src + "/nix/default.nix") { };
+  system = pkgs.stdenv.hostPlatform.system;
+
+  # IMPORTANT: Use a path-based flake reference
+  caelestiaFlake = builtins.getFlake ("path:" + toString src);
+
+  # pick a package from the flake outputs
+  pkgsOut = caelestiaFlake.packages.${system} or { };
+
+  caelestiaPkg =
+    if pkgsOut ? default then pkgsOut.default
+    else if pkgsOut ? caelestia-shell then pkgsOut."caelestia-shell"
+    else if pkgsOut ? shell then pkgsOut.shell
+    else
+      throw ''
+        Could not find a suitable package in caelestia-shell flake outputs.
+        Try: (cd ${toString src}; nix flake show)
+        Then pick one of: packages.${system}.default / packages.${system}.<name>
+      '';
 
   xdgConfigPath = "${config.xdg.configHome}/quickshell/caelestia";
   shellQml = "${xdgConfigPath}/shell.qml";
@@ -47,14 +62,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Install Quickshell + Caelestia plugin package (+ optional extras)
     home.packages = [ cfg.quickshellPackage caelestiaPkg ] ++ cfg.extraPackages;
 
-    # Deploy nur die Config/QML nach ~/.config/quickshell/caelestia
-    # (Das Plugin kommt aus caelestiaPkg)
+    # Deploy config/QML tree
     xdg.configFile."quickshell/caelestia".source = src;
 
-    # Optional overrides
     xdg.configFile."caelestia/shell.json" = lib.mkIf (settingsJsonText != null) {
       text = settingsJsonText;
     };
@@ -68,10 +80,6 @@ in
       };
 
       Service = {
-        # Wichtig:
-        # - QML_IMPORT_PATH muss das Plugin-QML sehen (Caelestia module)
-        # - QT_PLUGIN_PATH hilft Qt, das native Plugin zu finden
-        # Pfade können je nach Build leicht variieren, aber das ist der übliche Qt6-Layout.
         Environment = [
           "QML_IMPORT_PATH=${caelestiaPkg}/lib/qt-6/qml:${xdgConfigPath}"
           "QML2_IMPORT_PATH=${caelestiaPkg}/lib/qt-6/qml:${xdgConfigPath}"
@@ -83,9 +91,7 @@ in
         RestartSec = 1;
       };
 
-      Install = {
-        WantedBy = [ "graphical-session.target" ];
-      };
+      Install = { WantedBy = [ "graphical-session.target" ]; };
     };
   };
 }
