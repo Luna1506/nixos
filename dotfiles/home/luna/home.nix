@@ -21,21 +21,11 @@
     ./modules/cursor.nix
     ./modules/neovim.nix
     ./modules/nerdfetch-bash.nix
-    ./modules/quickshell
+    ./modules/quickshell/caelestia-shell.nix
   ];
 
-  programs.quickshellBarDock = {
+  programs.caelestiaShell = {
     enable = true;
-    autostart = true;
-    configName = "default";
-  };
-
-  programs.quickshellOverview = {
-    enable = true;
-
-    # nach dem fakeSha256-run ersetzen:
-    rev = "master"; # besser: commit hash pinnen
-    sha256 = "sha256-Y9VJTv62yR3rjIdZz1SJEL9ithL6CnFiTBU1zs8b6+U=";
   };
 }
 
