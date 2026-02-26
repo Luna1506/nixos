@@ -6,49 +6,52 @@ let
   # vendored repo folder next to this module
   upstream = ./caelestia-shell;
 
-  # Build a derived source tree that also provides QML modules:
-  #   import Caelestia
-  #   import Caelestia.Services
-  #   import Caelestia.Utils
   derivedSource = pkgs.runCommand "hm_caelestiashell" { } ''
         set -eu
         mkdir -p "$out"
         cp -R ${upstream}/. "$out/"
 
-        # --------------------------
-        # Module: Caelestia
-        # --------------------------
-        mkdir -p "$out/Caelestia"
+        # Create a proper QML module layout so `import Caelestia...` works AND
+        # sibling types (e.g. BeatTracker.qml, CavaProvider.qml) resolve correctly.
+        mkdir -p "$out/Caelestia" "$out/Caelestia/Services" "$out/Caelestia/Utils" "$out/Caelestia/Config"
+
+        # Mirror dirs into module dirs (copy, not symlink, to keep it simple in store)
+        if [ -d "$out/services" ]; then
+          cp -R "$out/services/." "$out/Caelestia/Services/"
+        fi
+        if [ -d "$out/utils" ]; then
+          cp -R "$out/utils/." "$out/Caelestia/Utils/"
+        fi
+        if [ -d "$out/config" ]; then
+          cp -R "$out/config/." "$out/Caelestia/Config/"
+        fi
+
+        # --- qmldir: Caelestia (root)
         cat > "$out/Caelestia/qmldir" <<'EOF'
     module Caelestia
 
-    # Core config/types (based on what your error chain references)
-    Config 1.0 ../config/Config.qml
-    Appearance 1.0 ../config/Appearance.qml
-    AppearanceConfig 1.0 ../config/AppearanceConfig.qml
-    UserPaths 1.0 ../config/UserPaths.qml
+    # expose config types via the module
+    Config 1.0 Config/Config.qml
+    Appearance 1.0 Config/Appearance.qml
+    AppearanceConfig 1.0 Config/AppearanceConfig.qml
+    UserPaths 1.0 Config/UserPaths.qml
     EOF
 
-        # --------------------------
-        # Module: Caelestia.Services
-        # --------------------------
-        mkdir -p "$out/Caelestia/Services"
+        # --- qmldir: Caelestia.Services
         cat > "$out/Caelestia/Services/qmldir" <<'EOF'
     module Caelestia.Services
 
-    Audio 1.0 ../../services/Audio.qml
+    # export entrypoints; siblings will resolve because they now live next to Audio.qml
+    Audio 1.0 Audio.qml
     EOF
 
-        # --------------------------
-        # Module: Caelestia.Utils
-        # --------------------------
-        mkdir -p "$out/Caelestia/Utils"
+        # --- qmldir: Caelestia.Utils
         cat > "$out/Caelestia/Utils/qmldir" <<'EOF'
     module Caelestia.Utils
 
-    Icons 1.0 ../../utils/Icons.qml
-    Images 1.0 ../../utils/Images.qml
-    NetworkConnection 1.0 ../../utils/NetworkConnection.qml
+    Icons 1.0 Icons.qml
+    Images 1.0 Images.qml
+    NetworkConnection 1.0 NetworkConnection.qml
     EOF
   '';
 
@@ -91,7 +94,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.quickshellPackage ] ++ cfg.extraPackages;
 
-    # Deploy derived tree (with Caelestia/* modules) to ~/.config/quickshell/caelestia
+    # Deploy derived tree (with proper module dirs) to ~/.config/quickshell/caelestia
     xdg.configFile."quickshell/caelestia".source = derivedSource;
 
     xdg.configFile."caelestia/shell.json" = lib.mkIf (settingsJsonText != null) {
@@ -104,15 +107,15 @@ in
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
 
-        # belongs in [Unit], not [Service]
+        # stop the "too quickly" spam while iterating
         StartLimitIntervalSec = 0;
       };
 
       Service = {
         Environment = [
-          # QML import roots – must include the folder that contains "Caelestia/"
-          "QML_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/modules:${xdgConfigPath}/components:${xdgConfigPath}/config"
-          "QML2_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/modules:${xdgConfigPath}/components:${xdgConfigPath}/config"
+          # Import root must contain the "Caelestia/" directory
+          "QML_IMPORT_PATH=${xdgConfigPath}"
+          "QML2_IMPORT_PATH=${xdgConfigPath}"
         ];
 
         ExecStart = "${cfg.quickshellPackage}/bin/quickshell --path ${shellQml}";
