@@ -19,7 +19,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    caelestia-shell.url = "path:./home/luna/modules/quickshell/caelestia-shell";
+    caelestia-shell = {
+      url = "path:./home/luna/modules/quickshell/caelestia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+      # falls caelestia-shell selbst quickshell als input hat:
+      # inputs.quickshell.inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
