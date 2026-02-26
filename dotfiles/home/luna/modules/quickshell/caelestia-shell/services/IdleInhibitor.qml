@@ -26,11 +26,13 @@ Singleton {
 
     QW.IdleInhibitor {
         enabled: props.enabled
-        window: QW.PanelWindow {
+
+        // Minimal window, kein Region/Mask, damit es nicht an fehlenden Typen scheitert
+        window: PanelWindow {
             implicitWidth: 0
             implicitHeight: 0
+            visible: false
             color: "transparent"
-            mask: QW.Region {}
         }
     }
 
