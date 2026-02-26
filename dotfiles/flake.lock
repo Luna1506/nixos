@@ -6,7 +6,6 @@
           "caelestia-shell"
         ],
         "nixpkgs": [
-          "caelestia-shell",
           "nixpkgs"
         ]
       },
@@ -150,7 +149,6 @@
     "quickshell": {
       "inputs": {
         "nixpkgs": [
-          "caelestia-shell",
           "nixpkgs"
         ]
       },
