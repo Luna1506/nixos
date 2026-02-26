@@ -38,28 +38,26 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    home.packages = [ cfg.quickshellPackage ] ++ cfg.extraPackages;
 
-    home.packages =
-      [ cfg.quickshellPackage ]
-      ++ cfg.extraPackages;
-
-    # Deploy entire vendored shell into ~/.config/quickshell/caelestia
+    # Deploy your vendored repo to ~/.config/quickshell/caelestia
     xdg.configFile."quickshell/caelestia".source = localSource;
 
-    # Optional user settings override
+    # Optional overrides
     xdg.configFile."caelestia/shell.json" = lib.mkIf (settingsJsonText != null) {
       text = settingsJsonText;
     };
 
     systemd.user.services.caelestia-shell = lib.mkIf cfg.autostart {
       Unit = {
-        Description = "Caelestia Shell";
+        Description = "Caelestia Shell (Quickshell)";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
       };
 
       Service = {
-        ExecStart = "${cfg.quickshellPackage}/bin/quicksshell --path ${shellQml}";
+        # NOTE: binary is quickshell (not quicksshell)
+        ExecStart = "${cfg.quickshellPackage}/bin/quickshell --path ${shellQml}";
         Restart = "on-failure";
         RestartSec = 1;
       };
