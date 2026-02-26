@@ -4,9 +4,29 @@ let
   cfg = config.programs.caelestiaShell;
 
   # vendored repo folder next to this module
-  localSource = ./caelestia-shell;
+  upstream = ./caelestia-shell;
 
-  # use the deployed config under XDG, not the raw repo path
+  # Build a derived source tree that also provides a QML module "Caelestia"
+  # so that `import Caelestia` works.
+  derivedSource = pkgs.runCommand "hm_caelestiashell" { } ''
+        set -eu
+        mkdir -p "$out"
+        cp -R ${upstream}/. "$out/"
+
+        # Provide a QML module directory for: `import Caelestia`
+        mkdir -p "$out/Caelestia"
+        cat > "$out/Caelestia/qmldir" <<'EOF'
+    module Caelestia
+
+    # Minimal exports to satisfy the first failing import chain.
+    # If Caelestia later complains about more missing types,
+    # we can add them here.
+    Config 1.0 ../config/Config.qml
+    Appearance 1.0 ../config/Appearance.qml
+    AppearanceConfig 1.0 ../config/AppearanceConfig.qml
+    EOF
+  '';
+
   xdgConfigPath = "${config.xdg.configHome}/quickshell/caelestia";
   shellQml = "${xdgConfigPath}/shell.qml";
 
@@ -46,10 +66,10 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.quickshellPackage ] ++ cfg.extraPackages;
 
-    # deploy vendored repo to ~/.config/quickshell/caelestia
-    xdg.configFile."quickshell/caelestia".source = localSource;
+    # Deploy derived tree (with Caelestia/qmldir) to ~/.config/quickshell/caelestia
+    xdg.configFile."quickshell/caelestia".source = derivedSource;
 
-    # optional overrides file
+    # Optional overrides
     xdg.configFile."caelestia/shell.json" = lib.mkIf (settingsJsonText != null) {
       text = settingsJsonText;
     };
@@ -59,24 +79,21 @@ in
         Description = "Caelestia Shell (Quickshell)";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
+
+        # IMPORTANT: StartLimitIntervalSec belongs in [Unit], not [Service]
+        StartLimitIntervalSec = 0;
       };
 
       Service = {
-        # Make Qt find "import Caelestia" inside your deployed config tree.
-        # Also include common subdirs used by Caelestia.
         Environment = [
-          "QML_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/config:${xdgConfigPath}/components:${xdgConfigPath}/modules"
-          "QML2_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/config:${xdgConfigPath}/components:${xdgConfigPath}/modules"
+          # Let Qt find `Caelestia/qmldir` inside the deployed tree
+          "QML_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/modules:${xdgConfigPath}/components:${xdgConfigPath}/config"
+          "QML2_IMPORT_PATH=${xdgConfigPath}:${xdgConfigPath}/modules:${xdgConfigPath}/components:${xdgConfigPath}/config"
         ];
 
-        # correct binary name: quickshell
         ExecStart = "${cfg.quickshellPackage}/bin/quickshell --path ${shellQml}";
-
         Restart = "on-failure";
         RestartSec = 1;
-
-        # avoid "start request repeated too quickly" while debugging
-        StartLimitIntervalSec = 0;
       };
 
       Install = {
