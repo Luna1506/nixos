@@ -24,8 +24,8 @@
     #  ./modules/quickshell/caelestia-shell.nix
   ];
 
-  programs.caelestiaShell = {
-    enable = true;
-  };
+  #programs.caelestiaShell = {
+  #  enable = true;
+  #};
 }
 
