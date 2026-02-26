@@ -1,119 +1,128 @@
-{ config, lib, pkgs, inputs ? null, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 let
   cfg = config.programs.caelestiaShell;
+
   system = pkgs.stdenv.hostPlatform.system;
 
-  # Deine vendorte Caelestia-QML Config im Repo:
-  # ~/nixos/dotfiles/home/luna/modules/quickshell/caelestia-shell/...
-  src = ./caelestia-shell;
+  # Du hast das Flake-Input ja schon in deiner flake.lock/flake.nix drin:
+  # inputs.caelestia-shell = { url = "path:./home/luna/modules/quickshell/caelestia-shell"; ... };
+  caelestiaFlake = inputs.caelestia-shell;
 
-  caelestiaFlake =
-    if inputs == null || !(inputs ? caelestia-shell)
-    then
-      throw ''
-        inputs.caelestia-shell is missing.
+  # Default Paket aus dem Caelestia-Shell flake
+  shellPkgDefault = caelestiaFlake.packages.${system}.default;
 
-        Add in your top-level flake inputs:
-          caelestia-shell.url = "path:./home/luna/modules/quickshell/caelestia-shell";
+  # Das Plugin hängt bei upstream als passthru.plugin dran (siehe nix/default.nix im repo).
+  pluginPkg =
+    if shellPkgDefault ? plugin then shellPkgDefault.plugin else null;
 
-        And pass inputs into home-manager via extraSpecialArgs.
-      ''
-    else inputs.caelestia-shell;
-
-  # Caelestia package (oft ist "with-cli" vollständiger, weil es extra Module/Services mitbringt)
-  caelestiaPkg =
-    if caelestiaFlake.packages.${system} ? with-cli
-    then caelestiaFlake.packages.${system}.with-cli
-    else caelestiaFlake.packages.${system}.default;
-
-  # WICHTIG: Quickshell passend zum Caelestia-Flake pinnen (statt pkgs.quickshell = 0.2.1)
-  pinnedQuickshell =
-    if (caelestiaFlake ? inputs) && (caelestiaFlake.inputs ? quickshell)
-    then caelestiaFlake.inputs.quickshell.packages.${system}.default
-    else pkgs.quickshell;
-
-  configName = "caelestia";
-
-  qmlPaths = [
-    "${caelestiaPkg}/lib/qt6/qml"
-    "${caelestiaPkg}/lib/qt-6/qml"
-    "${caelestiaPkg}/lib/qt6/imports"
-    "${caelestiaPkg}/lib/qt-6/imports"
-    # falls das package qml direkt irgendwo anders hinlegt:
-    "${caelestiaPkg}/qml"
+  # Mögliche Pfade (je nach qt6 layout in deinem Build)
+  mkQmlPath = p: [
+    "${p}/lib/qt-6/qml"
+    "${p}/lib/qt6/qml"
+    "${p}/lib/qt-6/qml/${""}" # harmless, nur damit man in logs sieht was gesetzt ist
   ];
 
-  pluginPaths = [
-    "${caelestiaPkg}/lib/qt6/plugins"
-    "${caelestiaPkg}/lib/qt-6/plugins"
-    "${caelestiaPkg}/lib/plugins"
+  mkQtPluginPath = p: [
+    "${p}/lib/qt-6/plugins"
+    "${p}/lib/qt6/plugins"
   ];
 
-  join = lib.concatStringsSep ":";
+  qmlImportPath =
+    lib.concatStringsSep ":"
+      (lib.unique (
+        (mkQmlPath shellPkgDefault)
+        ++ lib.optionals (pluginPkg != null) (mkQmlPath pluginPkg)
+      ));
+
+  qtPluginPath =
+    lib.concatStringsSep ":"
+      (lib.unique (
+        (mkQtPluginPath shellPkgDefault)
+        ++ lib.optionals (pluginPkg != null) (mkQtPluginPath pluginPkg)
+      ));
 
 in
 {
   options.programs.caelestiaShell = {
-    enable = lib.mkEnableOption "Caelestia Shell (Quickshell)";
+    enable = lib.mkEnableOption "Caelestia Shell (Quickshell config + plugin paths)";
 
-    quickshellPackage = lib.mkOption {
+    # Deine lokale Config im Repo (die du “dreist reingepackt” hast)
+    configDir = lib.mkOption {
+      type = lib.types.path;
+      default = ./caelestia-shell;
+      description = "Path to the caelestia-shell QML config directory (copied to ~/.config/quickshell/caelestia).";
+    };
+
+    package = lib.mkOption {
       type = lib.types.package;
-      default = pinnedQuickshell;
-      description = "Quickshell package used to run Caelestia Shell.";
+      default = shellPkgDefault;
+      description = "Caelestia shell package providing the QML plugin modules.";
     };
 
-    caelestiaPackage = lib.mkOption {
-      type = lib.types.package;
-      default = caelestiaPkg;
-      description = "Caelestia shell package providing QML modules/plugins.";
+    systemdTarget = lib.mkOption {
+      type = lib.types.str;
+      default = config.wayland.systemd.target or "graphical-session.target";
+      description = "Systemd target that starts the service.";
     };
 
-    autostart = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-    };
-
-    extraPackages = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
+    extraEnvironment = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
       default = [ ];
+      description = "Extra environment variables for the systemd user service.";
+      example = [ "QT_QPA_PLATFORMTHEME=qt6ct" ];
     };
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ cfg.quickshellPackage cfg.caelestiaPackage ] ++ cfg.extraPackages;
 
-    # Quickshell config in ~/.config/quickshell/caelestia
-    xdg.configFile."quickshell/${configName}".source = src;
+    # Deine QML Config in den XDG config Pfad deployen:
+    xdg.configFile."quickshell/caelestia".source = cfg.configDir;
 
-    systemd.user.services.caelestia-shell = lib.mkIf cfg.autostart {
+    # Optional: falls du Assets brauchst und QuickShell sie relativ erwartet
+    # xdg.configFile."quickshell/caelestia".recursive = true; # source ist directory => recursive implizit
+
+    systemd.user.services.caelestia-shell = {
       Unit = {
         Description = "Caelestia Shell (Quickshell)";
-        PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session.target" ];
+        After = [ cfg.systemdTarget ];
+        PartOf = [ cfg.systemdTarget ];
+
+        # StartLimit gehört hierhin, nicht in [Service]
+        StartLimitIntervalSec = 30;
+        StartLimitBurst = 5;
       };
 
       Service = {
         Type = "simple";
 
-        Environment = [
-          "XDG_CONFIG_HOME=${config.xdg.configHome}"
-
-          "QML_IMPORT_PATH=${join qmlPaths}"
-          "QML2_IMPORT_PATH=${join qmlPaths}"
-
-          "QT_PLUGIN_PATH=${join pluginPaths}"
-        ];
-
-        ExecStart = "${cfg.quickshellPackage}/bin/quickshell -c ${configName}";
+        # Wichtig: wir starten quickshell direkt auf deine Config (-c caelestia)
+        ExecStart = "${pkgs.quickshell}/bin/quickshell -c caelestia";
 
         Restart = "on-failure";
         RestartSec = 1;
+
+        Environment =
+          [
+            "XDG_CONFIG_HOME=${config.xdg.configHome}"
+            # DAS ist der eigentliche Fix: QML muss das Caelestia Plugin finden
+            "QML_IMPORT_PATH=${qmlImportPath}"
+            "QML2_IMPORT_PATH=${qmlImportPath}"
+            "QT_PLUGIN_PATH=${qtPluginPath}"
+            # Wayland erzwingen (kann helfen)
+            "QT_QPA_PLATFORM=wayland"
+          ]
+          ++ cfg.extraEnvironment;
       };
 
       Install = {
-        WantedBy = [ "graphical-session.target" ];
+        WantedBy = [ cfg.systemdTarget ];
       };
     };
+
+    home.packages = [
+      cfg.package
+      pkgs.quickshell
+    ];
   };
 }
