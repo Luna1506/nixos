@@ -23,7 +23,7 @@
       url = "path:./home/luna/modules/quickshell/caelestia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
 
-      # diese zwei sind oft der entscheidende Teil:
+      # sorgt dafür, dass Caelestia/Quickshell nicht mit anderem nixpkgs/Qt baut
       inputs.quickshell.inputs.nixpkgs.follows = "nixpkgs";
       inputs.caelestia-cli.inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -43,6 +43,7 @@
       luna-path = true;
     in
     {
+      # --- NixOS wie bisher ---
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         inherit system;
 
@@ -69,5 +70,15 @@
           }
         ];
       };
+
+      packages.${system} = {
+        caelestia-shell = inputs.caelestia-shell.packages.${system}.caelestia-shell;
+        caelestia-shell-debug = inputs.caelestia-shell.packages.${system}.debug;
+        caelestia-shell-with-cli = inputs.caelestia-shell.packages.${system}.with-cli;
+
+        default = self.packages.${system}.caelestia-shell;
+      };
+
+      homeManagerModules = inputs.caelestia-shell.homeManagerModules or { };
     };
 }
