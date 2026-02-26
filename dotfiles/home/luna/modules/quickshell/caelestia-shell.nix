@@ -1,29 +1,25 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs ? null, ... }:
 
 let
   cfg = config.programs.caelestiaShell;
 
-  # vendored repo directory (has its own flake.nix)
+  # vendored config dir (qml etc.)
   src = ./caelestia-shell;
 
   system = pkgs.stdenv.hostPlatform.system;
 
-  # IMPORTANT: Use a path-based flake reference
-  caelestiaFlake = builtins.getFlake ("path:" + toString src);
-
-  # pick a package from the flake outputs
-  pkgsOut = caelestiaFlake.packages.${system} or { };
-
+  # Get the built package from the locked flake input
   caelestiaPkg =
-    if pkgsOut ? default then pkgsOut.default
-    else if pkgsOut ? caelestia-shell then pkgsOut."caelestia-shell"
-    else if pkgsOut ? shell then pkgsOut.shell
-    else
+    if inputs == null || !(inputs ? caelestia-shell)
+    then
       throw ''
-        Could not find a suitable package in caelestia-shell flake outputs.
-        Try: (cd ${toString src}; nix flake show)
-        Then pick one of: packages.${system}.default / packages.${system}.<name>
-      '';
+        inputs.caelestia-shell is missing.
+        Add to your top-level flake inputs:
+          caelestia-shell.url = "path:./home/luna/modules/quickshell/caelestia-shell";
+        And pass inputs into home-manager extraSpecialArgs.
+      ''
+    else
+      inputs.caelestia-shell.packages.${system}.default;
 
   xdgConfigPath = "${config.xdg.configHome}/quickshell/caelestia";
   shellQml = "${xdgConfigPath}/shell.qml";
@@ -41,7 +37,6 @@ in
     quickshellPackage = lib.mkOption {
       type = lib.types.package;
       default = pkgs.quickshell;
-      description = "Quickshell package used to run the shell.";
     };
 
     autostart = lib.mkOption {
@@ -52,7 +47,6 @@ in
     settings = lib.mkOption {
       type = lib.types.nullOr lib.types.attrs;
       default = null;
-      description = "Written to ~/.config/caelestia/shell.json as JSON.";
     };
 
     extraPackages = lib.mkOption {
@@ -64,7 +58,6 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ cfg.quickshellPackage caelestiaPkg ] ++ cfg.extraPackages;
 
-    # Deploy config/QML tree
     xdg.configFile."quickshell/caelestia".source = src;
 
     xdg.configFile."caelestia/shell.json" = lib.mkIf (settingsJsonText != null) {
@@ -76,7 +69,6 @@ in
         Description = "Caelestia Shell (Quickshell)";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
-        StartLimitIntervalSec = 0;
       };
 
       Service = {
