@@ -58,6 +58,11 @@
     playerctl
     cliphist
     protonup-qt
+    cbonsai
+    lavat
+    nyancat
+    asciiquarium
+    npm
     # END AUTO PACKAGES
   ];
 

@@ -23,7 +23,6 @@
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
-
       username = "luna";
       fullname = "Luna Haiplick";
       nvidiaAlternative = true;
