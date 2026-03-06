@@ -20,7 +20,7 @@
     };
 
     liquid-glass = {
-      url = "path:./flakes/hypr-liquid-glass";
+      url = "path:./flakes/liquid-glass";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
