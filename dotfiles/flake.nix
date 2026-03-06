@@ -20,7 +20,7 @@
     };
 
     liquid-glass = {
-      url = "path:./flakes/liquid-glass";
+      url = "path:./flakes/liquid_glass";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
