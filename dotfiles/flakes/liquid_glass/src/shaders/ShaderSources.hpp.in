@@ -1,0 +1,15 @@
+#pragma once
+#include <string>
+
+// Auto-generiert von CMake – nicht manuell bearbeiten
+namespace Shaders {
+
+inline const std::string VERT_SRC = R"GLSL(
+@VERT_SHADER_SRC@
+)GLSL";
+
+inline const std::string FRAG_SRC = R"GLSL(
+@FRAG_SHADER_SRC@
+)GLSL";
+
+} // namespace Shaders

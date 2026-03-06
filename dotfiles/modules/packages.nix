@@ -62,7 +62,7 @@
     lavat
     nyancat
     asciiquarium
-    npm
+    nodejs
     # END AUTO PACKAGES
   ];
 

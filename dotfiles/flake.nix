@@ -18,6 +18,12 @@
       url = "path:./flakes/flutter-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    liquid-glass = {
+      url = "path:./flakes/hypr-liquid-glass";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
@@ -53,7 +59,7 @@
               import ./home/${username}/home.nix;
 
             home-manager.extraSpecialArgs = {
-              inherit inputs username fullname monitor zoom git-name git-email;
+              inherit inputs username fullname monitor zoom git-name git-email liquid-glass;
             };
 
             home-manager.backupFileExtension = "backup";

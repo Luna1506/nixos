@@ -1,4 +1,4 @@
-{ config, pkgs, zoom, ... }:
+{ inputs, config, pkgs, zoom, ... }:
 {
   imports = [
     ./vars.nix
@@ -19,6 +19,11 @@
     ./wofi.nix
   ];
 
-  wayland.windowManager.hyprland.enable = true;
+  wayland.windowManager.hyprland = {
+      enable = true;
+      plugins = [
+        inputs.liquid-glass.packages.${pkgs.system}.default
+      ];
+    };
 }
 
