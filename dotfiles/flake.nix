@@ -59,7 +59,7 @@
               import ./home/${username}/home.nix;
 
             home-manager.extraSpecialArgs = {
-              inherit inputs username fullname monitor zoom git-name git-email liquid-glass;
+              inherit inputs username fullname monitor zoom git-name git-email;
             };
 
             home-manager.backupFileExtension = "backup";
