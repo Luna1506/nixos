@@ -20,10 +20,7 @@
   ];
 
   wayland.windowManager.hyprland = {
-      enable = true;
-      plugins = [
-        inputs.liquid-glass.packages.${pkgs.system}.default
-      ];
-    };
+    enable = true;
+  };
 }
 
