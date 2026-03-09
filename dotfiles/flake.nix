@@ -18,12 +18,6 @@
       url = "path:./flakes/flutter-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    liquid-glass = {
-      url = "path:./flakes/liquid_glass";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
