@@ -63,6 +63,7 @@
     nyancat
     asciiquarium
     nodejs
+    claude-code
     # END AUTO PACKAGES
   ];
 
