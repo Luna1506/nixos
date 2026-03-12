@@ -5,13 +5,13 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/view/Window.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
-#include <hyprland/src/managers/HookSystemManager.hpp>
+#include <hyprland/src/event/EventBus.hpp>
 
 #include <string>
 #include <any>
 
 static void attachToWindow(PHLWINDOW pWindow);
-static SP<HOOK_CALLBACK_FN> s_cbOpen;
+static CHyprSignalListener s_cbOpen;
 
 APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
@@ -41,9 +41,8 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:noise_scale",  Hyprlang::FLOAT{280.f});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:rounding",     Hyprlang::INT{-1});
 
-    s_cbOpen = g_pHookSystem->hookDynamic("openWindow",
-        [](void*, SCallbackInfo&, std::any data) {
-            auto pWindow = std::any_cast<PHLWINDOW>(data);
+    s_cbOpen = Event::bus()->m_events.window.open.listen(
+        [](const PHLWINDOW& pWindow) {
             if (pWindow)
                 attachToWindow(pWindow);
         });
