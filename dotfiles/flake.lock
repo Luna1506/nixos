@@ -3,22 +3,18 @@
     "aquamarine": {
       "inputs": {
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
-          "hyprfrost",
           "hyprland",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -109,7 +105,6 @@
     "gitignore": {
       "inputs": {
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "pre-commit-hooks",
           "nixpkgs"
@@ -152,17 +147,14 @@
     "hyprcursor": {
       "inputs": {
         "hyprlang": [
-          "hyprfrost",
           "hyprland",
           "hyprlang"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -183,7 +175,9 @@
     },
     "hyprfrost": {
       "inputs": {
-        "hyprland": "hyprland",
+        "hyprland": [
+          "hyprland"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -201,17 +195,14 @@
     "hyprgraphics": {
       "inputs": {
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprutils"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -242,7 +233,6 @@
         "hyprwayland-scanner": "hyprwayland-scanner",
         "hyprwire": "hyprwire",
         "nixpkgs": [
-          "hyprfrost",
           "nixpkgs"
         ],
         "pre-commit-hooks": "pre-commit-hooks",
@@ -266,38 +256,31 @@
     "hyprland-guiutils": {
       "inputs": {
         "aquamarine": [
-          "hyprfrost",
           "hyprland",
           "aquamarine"
         ],
         "hyprgraphics": [
-          "hyprfrost",
           "hyprland",
           "hyprgraphics"
         ],
         "hyprlang": [
-          "hyprfrost",
           "hyprland",
           "hyprlang"
         ],
         "hyprtoolkit": "hyprtoolkit",
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
-          "hyprfrost",
           "hyprland",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -319,12 +302,10 @@
     "hyprland-protocols": {
       "inputs": {
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -346,17 +327,14 @@
     "hyprlang": {
       "inputs": {
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprutils"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -378,43 +356,36 @@
     "hyprtoolkit": {
       "inputs": {
         "aquamarine": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "aquamarine"
         ],
         "hyprgraphics": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "hyprgraphics"
         ],
         "hyprlang": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "hyprlang"
         ],
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "hyprland-guiutils",
           "systems"
@@ -437,12 +408,10 @@
     "hyprutils": {
       "inputs": {
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -464,12 +433,10 @@
     "hyprwayland-scanner": {
       "inputs": {
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -491,17 +458,14 @@
     "hyprwire": {
       "inputs": {
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprutils"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
@@ -557,7 +521,6 @@
         "flake-compat": "flake-compat",
         "gitignore": "gitignore",
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ]
@@ -582,6 +545,7 @@
         "flutter-dev": "flutter-dev",
         "home-manager": "home-manager",
         "hyprfrost": "hyprfrost",
+        "hyprland": "hyprland",
         "nixpkgs": "nixpkgs_2",
         "zen-browser": "zen-browser"
       }
@@ -619,32 +583,26 @@
     "xdph": {
       "inputs": {
         "hyprland-protocols": [
-          "hyprfrost",
           "hyprland",
           "hyprland-protocols"
         ],
         "hyprlang": [
-          "hyprfrost",
           "hyprland",
           "hyprlang"
         ],
         "hyprutils": [
-          "hyprfrost",
           "hyprland",
           "hyprutils"
         ],
         "hyprwayland-scanner": [
-          "hyprfrost",
           "hyprland",
           "hyprwayland-scanner"
         ],
         "nixpkgs": [
-          "hyprfrost",
           "hyprland",
           "nixpkgs"
         ],
         "systems": [
-          "hyprfrost",
           "hyprland",
           "systems"
         ]
