@@ -5,6 +5,7 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/view/Window.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
+#include <hyprland/src/managers/HookSystemManager.hpp>
 
 #include <string>
 #include <any>
@@ -40,8 +41,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:noise_scale",  Hyprlang::FLOAT{280.f});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:rounding",     Hyprlang::INT{-1});
 
-    s_cbOpen = HyprlandAPI::registerCallbackDynamic(
-        PHANDLE, "openWindow",
+    s_cbOpen = g_pHookSystem->hookDynamic("openWindow",
         [](void*, SCallbackInfo&, std::any data) {
             auto pWindow = std::any_cast<PHLWINDOW>(data);
             if (pWindow)
