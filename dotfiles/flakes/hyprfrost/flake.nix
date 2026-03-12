@@ -3,12 +3,12 @@
 
   # ── inputs ──────────────────────────────────────────────────────────────────
   inputs = {
-    nixpkgs.url   = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Pin to the same Hyprland the user is likely running.
     # Override via  `nix flake update hyprland`  or adjust the URL below.
     hyprland = {
-      url    = "github:hyprwm/Hyprland";
+      url = "github:hyprwm/Hyprland";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
@@ -23,13 +23,13 @@
       # Build the .so for a given system
       mkPlugin = system:
         let
-          pkgs      = nixpkgs.legacyPackages.${system};
-          hyprPkg   = hyprland.packages.${system}.hyprland;
+          pkgs = nixpkgs.legacyPackages.${system};
+          hyprPkg = hyprland.packages.${system}.hyprland;
         in
         pkgs.stdenv.mkDerivation {
-          pname   = "hyprfrost";
+          pname = "hyprfrost";
           version = "0.1.0";
-          src     = ./.;
+          src = ./.;
 
           nativeBuildInputs = with pkgs; [
             cmake
@@ -37,8 +37,8 @@
           ];
 
           buildInputs = with pkgs; [
-            hyprPkg          # provides hyprland.pc → include paths + cflags
-            mesa             # OpenGL ES headers (glesv2, egl)
+            hyprPkg # provides hyprland.pc → include paths + cflags
+            mesa # OpenGL ES headers (glesv2, egl)
             libGL
             wayland
             wayland-protocols
@@ -57,31 +57,38 @@
           '';
 
           meta = with pkgs.lib; {
-            description   = "macOS-style frosted-glass effect for Hyprland windows";
-            homepage      = "https://github.com/your-user/hyprfrost";
-            license       = licenses.mit;
-            maintainers   = [];
-            platforms     = [ "x86_64-linux" "aarch64-linux" ];
+            description = "macOS-style frosted-glass effect for Hyprland windows";
+            homepage = "https://github.com/your-user/hyprfrost";
+            license = licenses.mit;
+            maintainers = [ ];
+            platforms = [ "x86_64-linux" "aarch64-linux" ];
           };
         };
 
-    in {
+    in
+    {
       # ── per-system packages ────────────────────────────────────────────────
       packages = forAll (system: {
-        default  = mkPlugin system;
+        default = mkPlugin system;
         hyprfrost = mkPlugin system;
       });
 
       # ── devShell (for local hacking) ───────────────────────────────────────
       devShells = forAll (system:
         let
-          pkgs    = nixpkgs.legacyPackages.${system};
+          pkgs = nixpkgs.legacyPackages.${system};
           hyprPkg = hyprland.packages.${system}.hyprland;
-        in {
+        in
+        {
           default = pkgs.mkShell {
             nativeBuildInputs = with pkgs; [ cmake pkg-config clang-tools ];
-            buildInputs       = with pkgs; [
-              hyprPkg mesa libGL wayland wayland-protocols libdrm
+            buildInputs = with pkgs; [
+              hyprPkg
+              mesa
+              libGL
+              wayland
+              wayland-protocols
+              libdrm
             ];
             shellHook = ''
               echo "hyprfrost dev shell ready"
@@ -95,16 +102,17 @@
         let
           cfg = config.programs.hyprfrost;
           system = pkgs.system;
-          pkg    = self.packages.${system}.hyprfrost;
-        in {
+          pkg = self.packages.${system}.hyprfrost;
+        in
+        {
           options.programs.hyprfrost = {
             enable = lib.mkEnableOption
               "hyprfrost – frosted-glass effect for Hyprland";
 
             # ── Frosted-glass look ─────────────────────────────────────────
             tintColor = lib.mkOption {
-              type        = lib.types.str;
-              default     = "0.12 0.12 0.18";
+              type = lib.types.str;
+              default = "0.12 0.12 0.18";
               description = ''
                 Space-separated R G B float values (0.0–1.0) for the glass tint.
                 Example: "0.94 0.94 0.94" for a near-white macOS-style glass.
@@ -112,7 +120,7 @@
             };
 
             tintAlpha = lib.mkOption {
-              type    = lib.types.float;
+              type = lib.types.float;
               default = 0.55;
               description = ''
                 Opacity of the glass tint layer (0.0 = fully transparent,
@@ -121,7 +129,7 @@
             };
 
             noiseAmount = lib.mkOption {
-              type    = lib.types.float;
+              type = lib.types.float;
               default = 0.04;
               description = ''
                 Strength of the procedural frost grain (0 = disabled).
@@ -130,7 +138,7 @@
             };
 
             noiseScale = lib.mkOption {
-              type    = lib.types.float;
+              type = lib.types.float;
               default = 280.0;
               description = ''
                 Pixel size of the noise grid.  Smaller = finer grain (e.g. 180),
@@ -139,7 +147,7 @@
             };
 
             rounding = lib.mkOption {
-              type    = lib.types.int;
+              type = lib.types.int;
               default = -1;
               description = ''
                 Corner radius in pixels.  -1 inherits Hyprland's
@@ -152,7 +160,7 @@
             # automatically enable / configure it.
             blur = {
               enable = lib.mkOption {
-                type    = lib.types.bool;
+                type = lib.types.bool;
                 default = true;
                 description = ''
                   Automatically enable Hyprland decoration:blur when hyprfrost
@@ -161,37 +169,37 @@
               };
 
               size = lib.mkOption {
-                type    = lib.types.int;
+                type = lib.types.int;
                 default = 8;
                 description = "Blur kernel size (larger = blurrier).";
               };
 
               passes = lib.mkOption {
-                type    = lib.types.int;
+                type = lib.types.int;
                 default = 3;
                 description = "Number of blur passes (more = smoother).";
               };
 
               noise = lib.mkOption {
-                type    = lib.types.float;
+                type = lib.types.float;
                 default = 0.0117;
                 description = "Hyprland's built-in blur noise amount.";
               };
 
               contrast = lib.mkOption {
-                type    = lib.types.float;
+                type = lib.types.float;
                 default = 0.8916;
                 description = "Hyprland's built-in blur contrast.";
               };
 
               brightness = lib.mkOption {
-                type    = lib.types.float;
+                type = lib.types.float;
                 default = 0.8172;
                 description = "Hyprland's built-in blur brightness.";
               };
 
               vibrancy = lib.mkOption {
-                type    = lib.types.float;
+                type = lib.types.float;
                 default = 0.1696;
                 description = "Hyprland's built-in blur vibrancy.";
               };
@@ -202,7 +210,7 @@
             #   wayland.windowManager.hyprland.extraConfig =
             #     config.programs.hyprfrost.hyprlandConfig;
             hyprlandConfig = lib.mkOption {
-              type        = lib.types.str;
+              type = lib.types.str;
               description = "Generated Hyprland configuration snippet for hyprfrost.";
             };
           };
@@ -224,9 +232,9 @@
                 # space-separated "R G B" strings (builtins.splitVersion splits
                 # on "." and would produce wrong results here).
                 rgb = lib.splitString " " cfg.tintColor;
-                r   = builtins.elemAt rgb 0;
-                g   = builtins.elemAt rgb 1;
-                b   = builtins.elemAt rgb 2;
+                r = builtins.elemAt rgb 0;
+                g = builtins.elemAt rgb 1;
+                b = builtins.elemAt rgb 2;
               in
               ''
                 # ── hyprfrost plugin ──────────────────────────────────────────
@@ -266,17 +274,18 @@
       # Convenience wrapper for home-manager users.
       homeManagerModules.default = { config, pkgs, lib, ... }:
         let
-          cfg    = config.wayland.windowManager.hyprland.hyprfrost;
+          cfg = config.wayland.windowManager.hyprland.hyprfrost;
           system = pkgs.system;
-          pkg    = self.packages.${system}.hyprfrost;
-        in {
+          pkg = self.packages.${system}.hyprfrost;
+        in
+        {
           options.wayland.windowManager.hyprland.hyprfrost = {
-            enable      = lib.mkEnableOption "hyprfrost frosted-glass plugin";
-            tintColor   = lib.mkOption { type = lib.types.str;   default = "0.12 0.12 0.18"; };
-            tintAlpha   = lib.mkOption { type = lib.types.float; default = 0.55; };
+            enable = lib.mkEnableOption "hyprfrost frosted-glass plugin";
+            tintColor = lib.mkOption { type = lib.types.str; default = "0.12 0.12 0.18"; };
+            tintAlpha = lib.mkOption { type = lib.types.float; default = 0.55; };
             noiseAmount = lib.mkOption { type = lib.types.float; default = 0.04; };
-            noiseScale  = lib.mkOption { type = lib.types.float; default = 280.0; };
-            rounding    = lib.mkOption { type = lib.types.int;   default = -1; };
+            noiseScale = lib.mkOption { type = lib.types.float; default = 280.0; };
+            rounding = lib.mkOption { type = lib.types.int; default = -1; };
           };
 
           config = lib.mkIf cfg.enable {
@@ -285,10 +294,11 @@
             wayland.windowManager.hyprland.extraConfig =
               let
                 parts = lib.splitString " " cfg.tintColor;
-                r     = builtins.elemAt parts 0;
-                g     = builtins.elemAt parts 1;
-                b     = builtins.elemAt parts 2;
-              in ''
+                r = builtins.elemAt parts 0;
+                g = builtins.elemAt parts 1;
+                b = builtins.elemAt parts 2;
+              in
+              ''
                 plugin = ${pkg}/lib/hyprfrost/hyprfrost.so
                 plugin {
                   hyprfrost {
