@@ -1,4 +1,4 @@
-{ pkgs, username, ... }:
+{ inputs, pkgs, username, ... }:
 
 {
   home.username = username;
