@@ -1,3 +1,4 @@
+// ─── hyprfrost – main.cpp ─────────────────────────────────────────────────────
 #include "globals.hpp"
 #include "FrostedGlassDecoration.hpp"
 
@@ -9,9 +10,8 @@
 #include <any>
 
 static void attachToWindow(PHLWINDOW pWindow);
-static HOOK_CALLBACK_FN* s_cbOpen = nullptr;
+static SP<HOOK_CALLBACK_FN> s_cbOpen;
 
-// ZWINGEND ERFORDERLICH in modernen Hyprland-Versionen
 APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
 }
@@ -62,10 +62,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 }
 
 APICALL EXPORT void PLUGIN_EXIT() {
-    if (s_cbOpen) {
-        HyprlandAPI::unregisterCallback(PHANDLE, s_cbOpen);
-        s_cbOpen = nullptr;
-    }
+    s_cbOpen.reset();
 }
 
 static void attachToWindow(PHLWINDOW pWindow) {
