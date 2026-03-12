@@ -31,8 +31,14 @@ set_target_properties(hyprfrost PROPERTIES
 )
 
 # ── Include dirs ──────────────────────────────────────────────────────────────
+# hyprland.pc provides three -I paths (include, include/hyprland/protocols,
+# include/hyprland). We also add include/hyprland/src so that relative
+# includes inside Hyprland headers (e.g. "desktop/DesktopTypes.hpp" from
+# within render/OpenGL.hpp) resolve via the include search fallback.
+pkg_get_variable(HYPRLAND_PREFIX hyprland prefix)
 target_include_directories(hyprfrost PRIVATE
-    ${HYPRLAND_INCLUDE_DIRS}   # e.g. /nix/store/.../include/hyprland
+    ${HYPRLAND_INCLUDE_DIRS}
+    ${HYPRLAND_PREFIX}/hyprland/src
     ${EGL_INCLUDE_DIRS}
     ${GLESV2_INCLUDE_DIRS}
 )

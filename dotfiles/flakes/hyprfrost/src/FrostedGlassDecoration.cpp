@@ -8,7 +8,7 @@
 #include <hyprland/src/Compositor.hpp>          // g_pCompositor
 #include <hyprland/src/render/OpenGL.hpp>        // g_pHyprOpenGL
 #include <hyprland/src/helpers/Monitor.hpp>      // CMonitor
-#include <hyprland/src/desktop/Window.hpp>       // CWindow
+#include <hyprland/src/desktop/view/Window.hpp>  // CWindow
 
 #include <GLES3/gl32.h>
 #include <cstring>   // std::memcpy
@@ -35,8 +35,8 @@ SDecorationPositioningInfo CFrostedGlassDecoration::getPositioningInfo() {
     return SDecorationPositioningInfo{
         .policy          = DECORATION_POSITION_STICKY,
         .edges           = 0,
-        .desiredExtents  = {},   // zero-init: no edge space claimed
         .priority        = 9000,  // high number = low priority → drawn last in UNDER layer
+        .desiredExtents  = {},   // zero-init: no edge space claimed
         .reserved        = false,
     };
 }
@@ -64,15 +64,19 @@ std::string CFrostedGlassDecoration::getDisplayName() {
     return "Hyprfrost Frosted Glass";
 }
 
-void CFrostedGlassDecoration::updateRenderData() {
-    // Nothing to pre-compute per-frame outside of draw().
+void CFrostedGlassDecoration::updateWindow(PHLWINDOW) {
+    // Nothing to pre-compute per window update.
+}
+
+void CFrostedGlassDecoration::damageEntire() {
+    // Non-absolute decoration — nothing to do.
 }
 
 // ── draw ─────────────────────────────────────────────────────────────────────
 void CFrostedGlassDecoration::draw(PHLMONITOR pMonitor, float const& renderRatio) {
     auto pWindow = m_pWindow.lock();
     // m_bIsMapped is sufficient; isHidden() may not exist in all versions.
-    if (!pWindow || !pWindow->m_bIsMapped || pWindow->m_bHidden)
+    if (!pWindow || !pWindow->m_isMapped || pWindow->isHidden())
         return;
 
     // ── Read config values (cached static pointers → zero-overhead) ──────────
@@ -92,7 +96,7 @@ void CFrostedGlassDecoration::draw(PHLMONITOR pMonitor, float const& renderRatio
     // The window's main-surface box in global compositor space.
     CBox wb = pWindow->getWindowMainSurfaceBox();
     // Translate to monitor-local coords, then scale for HiDPI.
-    wb.translate(-pMonitor->vecPosition);
+    wb.translate(-pMonitor->m_position);
     wb.scale(renderRatio);
     wb.round();
 
@@ -100,7 +104,7 @@ void CFrostedGlassDecoration::draw(PHLMONITOR pMonitor, float const& renderRatio
     // Blending is GL_SRC_ALPHA / GL_ONE_MINUS_SRC_ALPHA (Hyprland default).
     // Rendering a coloured rect with alpha < 1 tints the blurred background.
     CHyprColor tint{*TINT_R, *TINT_G, *TINT_B, *TINT_A};
-    g_pHyprOpenGL->renderRect(&wb, tint, static_cast<int>(*ROUNDING));
+    g_pHyprOpenGL->renderRect(wb, tint, CHyprOpenGLImpl::SRectRenderData{.round = static_cast<int>(*ROUNDING)});
 
     // ── 2. Frost / grain overlay ──────────────────────────────────────────────
     if (*NOISE_AMOUNT > 0.001f && initGL()) {
@@ -116,8 +120,8 @@ void CFrostedGlassDecoration::renderNoise(
         float noiseAmount, float noiseScale, float opacity) {
 
     // Monitor pixel dimensions (used to map clip-space ↔ screen coords).
-    const float mW = static_cast<float>(pMonitor->vecPixelSize.x);
-    const float mH = static_cast<float>(pMonitor->vecPixelSize.y);
+    const float mW = static_cast<float>(pMonitor->m_pixelSize.x);
+    const float mH = static_cast<float>(pMonitor->m_pixelSize.y);
 
     // Box edges in clip space (y is flipped: OpenGL origin is bottom-left).
     const float x0 =  (box.x           / mW) * 2.0f - 1.0f;

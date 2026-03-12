@@ -24,7 +24,7 @@
       mkPlugin = system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          hyprPkg = hyprland.packages.${system}.hyprland;
+          hyprUnwrapped = hyprland.packages.${system}.hyprland-unwrapped;
         in
         pkgs.stdenv.mkDerivation {
           pname = "hyprfrost";
@@ -36,14 +36,12 @@
             pkg-config
           ];
 
-          buildInputs = with pkgs; [
-            hyprPkg # provides hyprland.pc → include paths + cflags
-            mesa # OpenGL ES headers (glesv2, egl)
+          # hyprUnwrapped.dev provides hyprland.pc + all Hyprland source headers.
+          # Its buildInputs satisfy all of hyprland.pc's Requires: transitively.
+          buildInputs = [ hyprUnwrapped.dev ] ++ hyprUnwrapped.buildInputs ++ (with pkgs; [
+            mesa
             libGL
-            wayland
-            wayland-protocols
-            libdrm
-          ];
+          ]);
 
           # cmake will pick up hyprland.pc via PKG_CONFIG_PATH (set by Nix)
           cmakeFlags = [ "-DCMAKE_BUILD_TYPE=Release" ];
@@ -77,19 +75,15 @@
       devShells = forAll (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          hyprPkg = hyprland.packages.${system}.hyprland;
+          hyprUnwrapped = hyprland.packages.${system}.hyprland-unwrapped;
         in
         {
           default = pkgs.mkShell {
             nativeBuildInputs = with pkgs; [ cmake pkg-config clang-tools ];
-            buildInputs = with pkgs; [
-              hyprPkg
+            buildInputs = [ hyprUnwrapped.dev ] ++ hyprUnwrapped.buildInputs ++ (with pkgs; [
               mesa
               libGL
-              wayland
-              wayland-protocols
-              libdrm
-            ];
+            ]);
             shellHook = ''
               echo "hyprfrost dev shell ready"
               echo "Build: cmake -B build && cmake --build build"

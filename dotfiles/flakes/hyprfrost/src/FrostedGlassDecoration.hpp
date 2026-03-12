@@ -17,7 +17,7 @@
 // Hyprland version compatibility: 0.44 – 0.46 (nixos-unstable, 2025-03).
 
 #include <GLES3/gl32.h>
-#include <hyprland/src/desktop/decorations/IHyprWindowDecoration.hpp>
+#include <hyprland/src/render/decorations/IHyprWindowDecoration.hpp>
 #include <hyprland/src/helpers/math/Math.hpp>
 
 class CFrostedGlassDecoration : public IHyprWindowDecoration {
@@ -30,7 +30,8 @@ class CFrostedGlassDecoration : public IHyprWindowDecoration {
     void                            onPositioningReply(const SDecorationPositioningReply&) override;
     void                            draw(PHLMONITOR, float const& renderRatio)    override;
     eDecorationType                 getDecorationType()                           override;
-    void                            updateRenderData()                            override;
+    void                            updateWindow(PHLWINDOW)                       override;
+    void                            damageEntire()                                override;
     eDecorationLayer                getDecorationLayer()                          override;
     uint64_t                        getDecorationFlags()                          override;
     std::string                     getDisplayName()                              override;

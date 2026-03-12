@@ -23,6 +23,12 @@
       url = "path:./flakes/hyprfrost";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    quickpanel = {
+      url = "path:./flakes/Quickpanel/";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
