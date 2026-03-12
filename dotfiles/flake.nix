@@ -19,9 +19,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     hyprfrost = {
       url = "path:./flakes/hyprfrost";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.hyprland.follows = "hyprland";
     };
     #quickpanel = {
     # url = "path:./flakes/Quickpanel/";
@@ -49,6 +55,7 @@
 
         specialArgs = {
           inherit inputs username fullname nvidiaAlternative monitor zoom git-name git-email luna-path;
+          hyprland = inputs.hyprland;
         };
 
         modules = [
