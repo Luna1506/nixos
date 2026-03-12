@@ -6,7 +6,6 @@
 
     extraPortals = with pkgs; [
       xdg-desktop-portal-gtk
-      xdg-desktop-portal-hyprland
     ];
 
     # Wichtig: In deinem NixOS-Modul erwartet xdg.portal.config pro Interface ein Attrset.
