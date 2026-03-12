@@ -18,9 +18,10 @@
       url = "path:./flakes/flutter-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
     hyprfrost = {
-      url = "path:./flakes//hyprfrost/";
+      url = "path:./flakes/hyprfrost";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.hyprland.follows = "hyprland"; # ← das hier hinzufügen
     };
   };
 
