@@ -22,7 +22,6 @@
     hyprfrost = {
       url = "path:./flakes/hyprfrost";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.hyprland.follows = "hyprland";
     };
     #quickpanel = {
     # url = "path:./flakes/Quickpanel/";
