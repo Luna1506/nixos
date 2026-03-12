@@ -2,7 +2,7 @@
 #include "FrostedGlassDecoration.hpp"
 
 #include <hyprland/src/Compositor.hpp>
-#include <hyprland/src/desktop/Window.hpp>
+#include <hyprland/src/desktop/view/Window.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
 
 #include <string>
