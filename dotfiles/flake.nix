@@ -20,7 +20,7 @@
     };
 
     hyprfrost = {
-      url = "path:../../projects/hyprfrost/";
+      url = "path:./flakes//hyprfrost/";
     };
   };
 
