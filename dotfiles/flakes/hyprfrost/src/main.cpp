@@ -1,45 +1,36 @@
-// ─── hyprfrost – main.cpp ─────────────────────────────────────────────────────
-//
-// Plugin entry / exit points + config registration + window-lifecycle hooks.
-//
-// How the plugin attaches itself
-// ───────────────────────────────
-//   • On load (PLUGIN_INIT) we register all config keys and hook into
-//     the window.open event via the EventBus signal API.
-//   • We also iterate existing windows so the effect applies immediately
-//     after the plugin is loaded at runtime (e.g. via `hyprpm`).
-
 #include "globals.hpp"
 #include "FrostedGlassDecoration.hpp"
 
-#include <hyprland/src/Compositor.hpp>           // g_pCompositor
-#include <hyprland/src/desktop/view/Window.hpp>
-#include <hyprland/src/event/EventBus.hpp>
+#include <hyprland/src/Compositor.hpp>
+#include <hyprland/src/desktop/Window.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
 
 #include <string>
+#include <any>
 
-// ── forward declarations ──────────────────────────────────────────────────────
 static void attachToWindow(PHLWINDOW pWindow);
+static HOOK_CALLBACK_FN* s_cbOpen = nullptr;
 
-// ── static signal listener (keep alive for the plugin lifetime) ───────────────
-static CHyprSignalListener s_cbOpen;
+// ZWINGEND ERFORDERLICH in modernen Hyprland-Versionen
+APICALL EXPORT std::string PLUGIN_API_VERSION() {
+    return HYPRLAND_API_VERSION;
+}
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PLUGIN_INIT
-// ─────────────────────────────────────────────────────────────────────────────
 APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     PHANDLE = handle;
 
-    // ── Hyprland API version guard ────────────────────────────────────────────
-    const std::string HYPR_API_VER = __hyprland_api_get_hash();
-    HyprlandAPI::addNotification(
-        PHANDLE,
-        "[hyprfrost] loaded (Hyprland API " + HYPR_API_VER + ")",
-        CHyprColor{0.2f, 0.9f, 0.5f, 1.f},
-        4000);
+    const std::string COMPOSITOR_HASH = __hyprland_api_get_hash();
+    const std::string CLIENT_HASH     = __hyprland_api_get_client_hash();
 
-    // ── Register config values ────────────────────────────────────────────────
+    if (COMPOSITOR_HASH != CLIENT_HASH) {
+        HyprlandAPI::addNotification(PHANDLE, "[hyprfrost] Version mismatch!",
+            CHyprColor{1.0f, 0.2f, 0.2f, 1.0f}, 5000);
+        throw std::runtime_error("[hyprfrost] Version mismatch");
+    }
+
+    HyprlandAPI::addNotification(PHANDLE, "[hyprfrost] loaded!",
+        CHyprColor{0.2f, 0.9f, 0.5f, 1.f}, 4000);
+
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:enabled",      Hyprlang::INT{1});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:tint_r",       Hyprlang::FLOAT{0.12f});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:tint_g",       Hyprlang::FLOAT{0.12f});
@@ -49,13 +40,14 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:noise_scale",  Hyprlang::FLOAT{280.f});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:rounding",     Hyprlang::INT{-1});
 
-    // ── Hook: window.open via EventBus ────────────────────────────────────────
-    s_cbOpen = Event::bus()->m_events.window.open.listen([](PHLWINDOW pWindow) {
-        if (pWindow)
-            attachToWindow(pWindow);
-    });
+    s_cbOpen = HyprlandAPI::registerCallbackDynamic(
+        PHANDLE, "openWindow",
+        [](void*, SCallbackInfo&, std::any data) {
+            auto pWindow = std::any_cast<PHLWINDOW>(data);
+            if (pWindow)
+                attachToWindow(pWindow);
+        });
 
-    // ── Attach to already-open windows (hot-load support) ────────────────────
     for (auto& pWindow : g_pCompositor->m_windows) {
         if (pWindow && pWindow->m_isMapped && !pWindow->isHidden())
             attachToWindow(pWindow);
@@ -69,16 +61,13 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PLUGIN_EXIT
-// ─────────────────────────────────────────────────────────────────────────────
 APICALL EXPORT void PLUGIN_EXIT() {
-    s_cbOpen.reset();
+    if (s_cbOpen) {
+        HyprlandAPI::unregisterCallback(PHANDLE, s_cbOpen);
+        s_cbOpen = nullptr;
+    }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// helpers
-// ─────────────────────────────────────────────────────────────────────────────
 static void attachToWindow(PHLWINDOW pWindow) {
     HyprlandAPI::addWindowDecoration(
         PHANDLE, pWindow,
