@@ -1,13 +1,12 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 {
-  # Hyprland als NixOS-Programm aktivieren
   programs.hyprland = {
     enable = true;
-    # xwayland ist meistens sinnvoll für Legacy Apps
+    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.system}.xdg-desktop-portal-hyprland;
     xwayland.enable = true;
   };
-
   # WICHTIG: diese Variablen müssen beim Start der Session gesetzt sein
   environment.sessionVariables = {
     # Damit Hyprland die richtige DRM-Karte nimmt (card1 statt simpledrm/card0)
