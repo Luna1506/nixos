@@ -24,10 +24,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    quickpanel = {
-      url = "path:./flakes/Quickpanel/";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    #quickpanel = {
+    # url = "path:./flakes/Quickpanel/";
+    #inputs.nixpkgs.follows = "nixpkgs";
+    #};
 
   };
 
