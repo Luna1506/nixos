@@ -145,6 +145,7 @@ WRAPPER
                 Restart   = "on-failure";
                 # Give Hyprland a second to start before launching
                 ExecStartPre = "${pkgs.coreutils}/bin/sleep 1";
+                Environment = [ "QT_QPA_PLATFORMTHEME=gtk3" ];
               };
               Install = {
                 WantedBy = [ "graphical-session.target" ];
