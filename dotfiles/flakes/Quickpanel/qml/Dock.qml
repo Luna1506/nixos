@@ -51,7 +51,6 @@ PanelWindow {
     // ── Layer-shell ───────────────────────────────────────────────────────────
     WlrLayershell.layer:         WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-    WlrLayershell.blur:          true
 
     // Only anchor bottom → compositor centres the window horizontally
     anchors.bottom: true
