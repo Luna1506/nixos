@@ -148,10 +148,7 @@
       -- Enable highlight via treesitter's built-in mechanism:
       vim.api.nvim_create_autocmd("FileType", {
         callback = function(ev)
-          local ok, parsers = pcall(require, "nvim-treesitter.parsers")
-          if ok and parsers.has_parser(ev.match) then
-            pcall(vim.treesitter.start, ev.buf)
-          end
+          pcall(vim.treesitter.start, ev.buf, ev.match)
         end,
       })
 
