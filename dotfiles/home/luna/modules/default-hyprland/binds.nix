@@ -7,7 +7,7 @@
       "$mainMod, M, exit"
       "$mainMod, E, exec, $fileManager"
       "$mainMod, T, togglefloating"
-      "$mainMod, R, exec, $menu"
+      "$mainMod, R, exec, qs ipc call applaunch toggle"
       "$mainMod, P, pin"
       "$mainMod, J, togglesplit"
       "$mainMod, F, fullscreen"

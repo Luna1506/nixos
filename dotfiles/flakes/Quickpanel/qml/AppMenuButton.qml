@@ -1,8 +1,8 @@
 // ─── AppMenuButton.qml ────────────────────────────────────────────────────────
-// 9-dot grid button that toggles wofi --show drun.
+// 9-dot grid button that toggles the AppLauncher via QS IPC.
 
+import Quickshell
 import QtQuick
-import Quickshell.Io
 
 Item {
     id: root
@@ -12,15 +12,7 @@ Item {
     implicitWidth:  panel.iconBase + 4
     implicitHeight: panel.dockHeight
 
-    property bool wofiOpen: false
-    property bool hovered:  false
-
-    // ── wofi process ──────────────────────────────────────────────────────────
-    Process {
-        id: wofiProc
-        command: ["wofi", "--show", "drun"]
-        onExited: code => { root.wofiOpen = false }
-    }
+    property bool hovered: false
 
     // ── Icon ──────────────────────────────────────────────────────────────────
     Rectangle {
@@ -63,18 +55,8 @@ Item {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
-
         onEntered: root.hovered = true
         onExited:  root.hovered = false
-
-        onClicked: {
-            if (root.wofiOpen) {
-                wofiProc.kill()
-                // wofiOpen reset to false by onExited
-            } else {
-                wofiProc.running = true
-                root.wofiOpen = true
-            }
-        }
+        onClicked: Quickshell.execDetached(["qs", "ipc", "call", "applaunch", "toggle"])
     }
 }

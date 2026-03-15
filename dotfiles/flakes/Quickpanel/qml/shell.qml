@@ -28,4 +28,7 @@ ShellRoot {
 
     // ── macOS-Dock (erscheint automatisch auf leeren Workspaces) ─────────────
     Dock {}
+
+    // ── App Launcher (SUPER+R / Dock-Button) ──────────────────────────────────
+    AppLauncher {}
 }

@@ -119,7 +119,7 @@ WRAPPER
             xdg.configFile =
               let
                 allFiles  = builtins.readDir qmlSrc;
-                dockFiles = [ "Dock.qml" "DockItem.qml" "PinnedItem.qml" "AppMenuButton.qml" ];
+                dockFiles = [ "Dock.qml" "DockItem.qml" "PinnedItem.qml" "AppMenuButton.qml" "AppLauncher.qml" "AppLauncherItem.qml" ];
                 filtered  = if cfg.dock.enable
                             then lib.filterAttrs (_: t: t == "regular") allFiles
                             else lib.filterAttrs (n: t: t == "regular" && !(builtins.elem n dockFiles)) allFiles;
