@@ -59,8 +59,8 @@ Item {
         implicitHeight: ttLabel.implicitHeight + 10
         radius:         8
 
-        color:        panel.cSurface
-        border.color: Qt.rgba(1, 1, 1, 0.10)
+        color:        Qt.rgba(0.10, 0.06, 0.18, 0.92)
+        border.color: Qt.rgba(0.627, 0.082, 0.996, 0.35)
         border.width: 1
 
         Text {
@@ -161,7 +161,7 @@ Item {
             anchors.fill: parent
             radius:       parent.radius
             color:        "transparent"
-            border.color: root.hovered ? Qt.rgba(1, 1, 1, 0.22) : "transparent"
+            border.color: root.hovered ? Qt.rgba(0.627, 0.082, 0.996, 0.60) : "transparent"
             border.width: 1
             Behavior on border.color { ColorAnimation { duration: 100 } }
         }
@@ -176,8 +176,8 @@ Item {
         }
         width: 6; height: 6; radius: 3
 
-        color:   root.isActive ? panel.cGreen : Qt.rgba(1, 1, 1, 0.30)
-        opacity: root.isActive ? 1.0 : 0.55
+        color:   root.isActive ? "#a855f7" : Qt.rgba(0.659, 0.333, 0.969, 0.30)
+        opacity: root.isActive ? 1.0 : 0.40
 
         Behavior on color   { ColorAnimation  { duration: 200 } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -211,8 +211,8 @@ Item {
         x: cx + scaledHalf - bw + 3
         y: cy - scaledHalf - 3
 
-        color:        panel.cOverlay
-        border.color: Qt.rgba(0, 0, 0, 0.45)
+        color:        Qt.rgba(0.627, 0.082, 0.996, 0.25)
+        border.color: "#A015FE"
         border.width: 1
 
         Text {
@@ -221,7 +221,7 @@ Item {
             text:             root.client.workspace ? root.client.workspace.id : ""
             font.pixelSize:   9
             font.weight:      Font.Bold
-            color:            panel.cSubtext
+            color:            "#D19CFF"
         }
     }
 

@@ -27,14 +27,14 @@ import QtQuick.Layouts
 PanelWindow {
     id: root
 
-    // ── Colour palette (matches quickpanel / hyprfrost) ───────────────────────
-    readonly property color cBase:    "#1e1e2e"
-    readonly property color cSurface: "#313244"
-    readonly property color cOverlay: "#45475a"
-    readonly property color cText:    "#cdd6f4"
-    readonly property color cSubtext: "#a6adc8"
-    readonly property color cAccent:  "#89b4fa"
-    readonly property color cGreen:   "#a6e3a1"
+    // ── Colour palette (matches QuickPanel purple theme) ─────────────────────
+    readonly property color cBase:    "#0d0d1a"
+    readonly property color cSurface: "#1a0a2e"
+    readonly property color cOverlay: "#2a1a4a"
+    readonly property color cText:    "#D19CFF"
+    readonly property color cSubtext: "#8a6aaa"
+    readonly property color cAccent:  "#a855f7"
+    readonly property color cGreen:   "#a855f7"
 
     // ── Sizing constants ──────────────────────────────────────────────────────
     readonly property int iconBase:    52
@@ -51,6 +51,7 @@ PanelWindow {
     // ── Layer-shell ───────────────────────────────────────────────────────────
     WlrLayershell.layer:         WlrLayer.Top
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+    WlrLayershell.blur:          true
 
     // Only anchor bottom → compositor centres the window horizontally
     anchors.bottom: true
@@ -110,7 +111,7 @@ PanelWindow {
             NumberAnimation { duration: 220; easing.type: Easing.OutCubic }
         }
 
-        // ── Frosted-glass pill ────────────────────────────────────────────────
+        // ── Blurred pill ──────────────────────────────────────────────────────
         Rectangle {
             id: pill
             anchors {
@@ -119,30 +120,13 @@ PanelWindow {
                 horizontalCenter: parent.horizontalCenter
             }
 
-            // dockPad left + dockPad right (row is anchored with leftMargin only)
             implicitWidth:  iconRow.implicitWidth + root.dockPad * 2
             implicitHeight: root.dockHeight
-            radius:         root.dockHeight / 2   // full pill
+            radius:         root.dockHeight / 2
 
-            // Same frosted-glass recipe as hyprfrost / quickpanel
-            color:        Qt.rgba(0.12, 0.12, 0.18, 0.72)
-            border.color: Qt.rgba(1, 1, 1, 0.13)
+            color:        Qt.rgba(0.05, 0.04, 0.10, 0.82)
+            border.color: "#A015FE"
             border.width: 1
-
-            // Specular top edge
-            Rectangle {
-                anchors {
-                    top:         parent.top
-                    left:        parent.left
-                    right:       parent.right
-                    topMargin:   1
-                    leftMargin:  root.dockHeight / 2
-                    rightMargin: root.dockHeight / 2
-                }
-                height: 1
-                color:  Qt.rgba(1, 1, 1, 0.18)
-                radius: 1
-            }
 
             // ── Icon row ──────────────────────────────────────────────────────
             RowLayout {
@@ -176,21 +160,6 @@ PanelWindow {
                         }
                     }
                 }
-            }
-
-            // Bottom shadow line
-            Rectangle {
-                anchors {
-                    bottom:       parent.bottom
-                    left:         parent.left
-                    right:        parent.right
-                    bottomMargin: 1
-                    leftMargin:   root.dockHeight / 2
-                    rightMargin:  root.dockHeight / 2
-                }
-                height: 1
-                color:  Qt.rgba(0, 0, 0, 0.25)
-                radius: 1
             }
         }
     }
