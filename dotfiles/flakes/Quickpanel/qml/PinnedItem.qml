@@ -124,19 +124,17 @@ Item {
             id: iconImage
             anchors.fill:    parent
             anchors.margins: 4
-            source:          "image://theme/" + (root.pinnedApp.class || "application-x-executable")
+            source: {
+                var name = root.pinnedApp.icon || root.pinnedApp.class || ""
+                if (!name) return ""
+                var p = Quickshell.iconPath(name, "")
+                if (!p) p = Quickshell.iconPath(name.toLowerCase(), "")
+                return p ? ("file://" + p) : ""
+            }
             fillMode:        Image.PreserveAspectFit
             smooth:          true
             mipmap:          true
             visible:         status === Image.Ready
-
-            property bool retried: false
-            onStatusChanged: {
-                if (status === Image.Error && !retried) {
-                    retried = true
-                    source = "image://theme/" + root.pinnedApp.class.toLowerCase()
-                }
-            }
         }
 
         // ── Letter fallback ───────────────────────────────────────────────────

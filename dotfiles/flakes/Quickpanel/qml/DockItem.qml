@@ -11,6 +11,7 @@
 //   • Workspace number badge (top-right) for windows on other workspaces.
 //   • Click → emits focusRequested(address); bounce animation as tactile ack.
 
+import Quickshell
 import QtQuick
 import QtQuick.Controls
 
@@ -126,20 +127,17 @@ Item {
             id: iconImage
             anchors.fill:    parent
             anchors.margins: 4
-            source:          "image://theme/" + ((root.client.lastIpcObject.class ?? "") || "application-x-executable")
+            source: {
+                var cls = (root.client.lastIpcObject.class ?? "") || ""
+                if (!cls) return ""
+                var p = Quickshell.iconPath(cls, "")
+                if (!p) p = Quickshell.iconPath(cls.toLowerCase(), "")
+                return p ? ("file://" + p) : ""
+            }
             fillMode:        Image.PreserveAspectFit
             smooth:          true
             mipmap:          true
             visible:         status === Image.Ready
-
-            // Retry with lowercase class on first failure
-            property bool retried: false
-            onStatusChanged: {
-                if (status === Image.Error && !retried) {
-                    retried = true
-                    source = "image://theme/" + ((root.client.lastIpcObject.class ?? "") || "").toLowerCase()
-                }
-            }
         }
 
         // ── Letter fallback ───────────────────────────────────────────────────

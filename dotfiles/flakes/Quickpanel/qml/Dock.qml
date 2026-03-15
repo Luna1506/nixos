@@ -47,11 +47,11 @@ PanelWindow {
 
     // ── Pinned apps ───────────────────────────────────────────────────────────
     readonly property var pinnedApps: [
-        { name: "Ghostty",     "class": "com.mitchellh.ghostty", exec: "ghostty" },
-        { name: "Zen Browser", "class": "zen",                   exec: "zen" },
-        { name: "Vesktop",     "class": "vesktop",               exec: "vesktop" },
-        { name: "Spotify",     "class": "spotify",               exec: "spotify" },
-        { name: "Steam",       "class": "steam",                 exec: "steam" },
+        { name: "Ghostty",     "class": "com.mitchellh.ghostty", icon: "com.mitchellh.ghostty", exec: "ghostty" },
+        { name: "Zen Browser", "class": "zen",                   icon: "zen-browser",           exec: "zen" },
+        { name: "Vesktop",     "class": "vesktop",               icon: "vesktop",               exec: "vesktop" },
+        { name: "Spotify",     "class": "spotify",               icon: "spotify",               exec: "spotify" },
+        { name: "Steam",       "class": "steam",                 icon: "steam",                 exec: "steam" },
     ]
 
     readonly property int openWindowCount: {
