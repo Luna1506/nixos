@@ -10,6 +10,7 @@
 //   • Active indicator dot when the app is running.
 //   • Click → focus if running, launch if not.
 
+import Quickshell
 import QtQuick
 import QtQuick.Controls
 import Quickshell.Hyprland
@@ -129,7 +130,7 @@ Item {
                 if (!name) return ""
                 var p = Quickshell.iconPath(name, "")
                 if (!p) p = Quickshell.iconPath(name.toLowerCase(), "")
-                return p ? ("file://" + p) : ""
+                return p || ""
             }
             fillMode:        Image.PreserveAspectFit
             smooth:          true

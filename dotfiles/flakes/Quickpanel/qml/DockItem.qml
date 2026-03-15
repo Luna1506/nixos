@@ -132,7 +132,7 @@ Item {
                 if (!cls) return ""
                 var p = Quickshell.iconPath(cls, "")
                 if (!p) p = Quickshell.iconPath(cls.toLowerCase(), "")
-                return p ? ("file://" + p) : ""
+                return p || ""
             }
             fillMode:        Image.PreserveAspectFit
             smooth:          true
