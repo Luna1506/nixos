@@ -5,13 +5,13 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/view/Window.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
-#include <hyprland/src/event/EventBus.hpp>
+#include <hyprland/src/managers/HookSystemManager.hpp>
 
 #include <string>
 #include <any>
 
 static void attachToWindow(PHLWINDOW pWindow);
-static CHyprSignalListener s_cbOpen;
+static SP<HOOK_CALLBACK_FN> s_cbOpen;
 
 APICALL EXPORT std::string PLUGIN_API_VERSION() {
     return HYPRLAND_API_VERSION;
@@ -24,9 +24,10 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     const std::string CLIENT_HASH     = __hyprland_api_get_client_hash();
 
     if (COMPOSITOR_HASH != CLIENT_HASH) {
-        HyprlandAPI::addNotification(PHANDLE, "[hyprfrost] Version mismatch!",
-            CHyprColor{1.0f, 0.2f, 0.2f, 1.0f}, 5000);
-        throw std::runtime_error("[hyprfrost] Version mismatch");
+        HyprlandAPI::addNotification(PHANDLE,
+            "[hyprfrost] hash mismatch: compositor=" + COMPOSITOR_HASH + " client=" + CLIENT_HASH,
+            CHyprColor{1.0f, 0.8f, 0.0f, 1.0f}, 8000);
+        // kein throw — wir schauen ob es trotzdem läuft
     }
 
     HyprlandAPI::addNotification(PHANDLE, "[hyprfrost] loaded!",
@@ -41,8 +42,9 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:noise_scale",  Hyprlang::FLOAT{280.f});
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:hyprfrost:rounding",     Hyprlang::INT{-1});
 
-    s_cbOpen = Event::bus()->m_events.window.open.listen(
-        [](const PHLWINDOW& pWindow) {
+    s_cbOpen = g_pHookSystem->hookDynamic("openWindow",
+        [](void*, SCallbackInfo&, std::any data) {
+            auto pWindow = std::any_cast<PHLWINDOW>(data);
             if (pWindow)
                 attachToWindow(pWindow);
         });
