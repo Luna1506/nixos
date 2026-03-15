@@ -144,36 +144,45 @@
       vim.api.nvim_set_hl(0, "CursorLineNr", { fg = "#ffffff", bold = true })
 
       -- ── Treesitter ────────────────────────────────────────────────────────────
-      require("nvim-treesitter.configs").setup({
-        highlight          = { enable = true },
-        indent             = { enable = true },
-        incremental_selection = {
-          enable  = true,
-          keymaps = {
-            init_selection    = "<C-space>",
-            node_incremental  = "<C-space>",
-            node_decremental  = "<bs>",
-          },
-        },
-        textobjects = {
-          select = {
-            enable    = true,
-            lookahead = true,
-            keymaps   = {
-              ["af"] = "@function.outer",
-              ["if"] = "@function.inner",
-              ["ac"] = "@class.outer",
-              ["ic"] = "@class.inner",
+      -- New API: highlight/indent are vim filetype plugins, not setup options.
+      -- Enable highlight via treesitter's built-in mechanism:
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function(ev)
+          local ok, parsers = pcall(require, "nvim-treesitter.parsers")
+          if ok and parsers.has_parser() then
+            vim.treesitter.start(ev.buf)
+          end
+        end,
+      })
+
+      -- Textobjects (separate plugin, keeps its own setup via nvim-treesitter.configs shim)
+      local ok_ts, ts_configs = pcall(require, "nvim-treesitter.configs")
+      if not ok_ts then
+        -- Fallback: textobjects setup via the textobjects plugin directly if available
+        ts_configs = nil
+      end
+      if ts_configs then
+        ts_configs.setup({
+          textobjects = {
+            select = {
+              enable    = true,
+              lookahead = true,
+              keymaps   = {
+                ["af"] = "@function.outer",
+                ["if"] = "@function.inner",
+                ["ac"] = "@class.outer",
+                ["ic"] = "@class.inner",
+              },
+            },
+            move = {
+              enable              = true,
+              set_jumps           = true,
+              goto_next_start     = { ["]f"] = "@function.outer", ["]c"] = "@class.outer" },
+              goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
             },
           },
-          move = {
-            enable              = true,
-            set_jumps           = true,
-            goto_next_start     = { ["]f"] = "@function.outer", ["]c"] = "@class.outer" },
-            goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
-          },
-        },
-      })
+        })
+      end
       require("treesitter-context").setup({ max_lines = 4 })
 
       -- ── Autopairs ────────────────────────────────────────────────────────────
@@ -422,11 +431,12 @@
       })
       vim.keymap.set("n", "<leader>gg", "<cmd>LazyGit<CR>", { desc = "LazyGit" })
 
-      -- ── Trouble (diagnostics panel) ───────────────────────────────────────────
+      -- ── Trouble v3 (diagnostics panel) ───────────────────────────────────────
       require("trouble").setup({})
-      vim.keymap.set("n", "<leader>xx", "<cmd>TroubleToggle<CR>",                  { desc = "Toggle Trouble" })
-      vim.keymap.set("n", "<leader>xw", "<cmd>TroubleToggle workspace_diagnostics<CR>", { desc = "Workspace Diagnostics" })
-      vim.keymap.set("n", "<leader>xd", "<cmd>TroubleToggle document_diagnostics<CR>",  { desc = "Document Diagnostics" })
+      vim.keymap.set("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>",           { desc = "Toggle Trouble" })
+      vim.keymap.set("n", "<leader>xw", "<cmd>Trouble diagnostics toggle filter.buf=0<CR>", { desc = "Buffer Diagnostics" })
+      vim.keymap.set("n", "<leader>xd", "<cmd>Trouble diagnostics<CR>",                  { desc = "Workspace Diagnostics" })
+      vim.keymap.set("n", "<leader>xs", "<cmd>Trouble symbols toggle<CR>",               { desc = "Symbols" })
 
       -- ── Todo comments ─────────────────────────────────────────────────────────
       require("todo-comments").setup({})
