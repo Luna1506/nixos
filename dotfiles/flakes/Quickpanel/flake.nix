@@ -58,7 +58,7 @@ WRAPPER
       homeManagerModules.default = { config, pkgs, lib, ... }:
         let
           cfg    = config.programs.quickpanel;
-          system = pkgs.system;
+          system = pkgs.stdenv.hostPlatform.system;
           qs     = quickshell.packages.${system}.default;
           pkg    = self.packages.${system}.default;
         in {

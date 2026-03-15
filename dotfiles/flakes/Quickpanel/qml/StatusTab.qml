@@ -43,14 +43,15 @@ Item {
     Process {
         id: batProc
         command: ["sh", "-c",
-            "upower -i $(upower -e | grep BAT | head -1) 2>/dev/null | grep -E 'percentage|state' | awk '{print $2}'"]
+            "echo $(cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | head -1); echo $(cat /sys/class/power_supply/BAT*/status 2>/dev/null | head -1)"]
         running: false
         stdout: SplitParser {
             splitMarker: "\n"
             onRead: function(line) {
                 var s = line.trim()
-                if (s.endsWith("%")) {
-                    root.batteryPct = parseInt(s)
+                var n = parseInt(s)
+                if (!isNaN(n) && s.match(/^\d+$/)) {
+                    root.batteryPct = n
                 } else if (s.length > 0) {
                     root.batteryStatus = s.charAt(0).toUpperCase() + s.slice(1)
                 }
