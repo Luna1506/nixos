@@ -21,7 +21,7 @@ Rectangle {
     property string statusMsg:       ""
 
     // ── Height calculation ────────────────────────────────────────────────────
-    readonly property int listMaxHeight: 200
+    readonly property int listMaxHeight: 400
     readonly property int scanBarHeight: 40
     readonly property int statusRowH:    24
 
