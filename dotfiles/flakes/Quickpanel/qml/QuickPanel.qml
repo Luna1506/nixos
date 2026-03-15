@@ -11,15 +11,15 @@ PanelWindow {
     id: root
 
     // ── Colours ───────────────────────────────────────────────────────────────
-    readonly property color cBase:       "#0a0a12"
-    readonly property color cCard:       "#11111f"
-    readonly property color cBorder:     "#1e1e3a"
+    readonly property color cBase:       "#0d0d1a"
+    readonly property color cCard:       "#12122a"
+    readonly property color cBorder:     "#2a1a4a"
     readonly property color cText:       "#e8e8ff"
     readonly property color cSubtext:    "#7070a0"
-    readonly property color cNeonCyan:   "#00f5ff"
-    readonly property color cNeonPink:   "#ff2d78"
-    readonly property color cNeonViolet: "#bf00ff"
-    readonly property color cNeonYellow: "#ffe600"
+    readonly property color cNeonCyan:   "#a855f7"
+    readonly property color cNeonPink:   "#9333ea"
+    readonly property color cNeonViolet: "#7c3aed"
+    readonly property color cNeonYellow: "#c084fc"
 
     // ── Layer-shell setup ─────────────────────────────────────────────────────
     // Overlay layer → appears above all normal windows.
@@ -52,7 +52,7 @@ PanelWindow {
         anchors.fill: parent
         color:        root.cBase
         radius:       16
-        border.color: root.cBorder
+        border.color: Qt.rgba(0.659, 0.333, 0.969, 0.4)
         border.width: 1
     }
 

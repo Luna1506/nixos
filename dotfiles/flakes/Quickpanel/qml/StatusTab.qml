@@ -1,6 +1,5 @@
 // ─── StatusTab.qml ────────────────────────────────────────────────────────────
-// Tab 1: Clock / Date, WiFi, Bluetooth, Battery.
-// Data is fetched via short-lived child processes (nmcli, bluetoothctl, upower).
+// Tab 1: Clock / Date, WiFi (dropdown), Bluetooth (dropdown), Battery.
 
 import Quickshell
 import Quickshell.Io
@@ -16,13 +15,6 @@ Item {
     implicitHeight: col.implicitHeight + 8
 
     // ── State ──────────────────────────────────────────────────────────────────
-    property string wifiSSID:     "—"
-    property bool   wifiConnected: false
-
-    property string btStatus:  "Off"
-    property string btDevice:  ""
-    property bool   btEnabled: false
-
     property int    batteryPct:     0
     property string batteryStatus:  "Unknown"   // Charging / Discharging / Full
 
@@ -30,15 +22,11 @@ Item {
     Timer {
         interval: 8000
         repeat:   true
-        running:  root.visible || true   // keep running even when hidden
+        running:  true
         triggeredOnStart: true
         onTriggered: {
-            wifiProc.running = false
-            wifiProc.running = true
-            btProc.running   = false
-            btProc.running   = true
-            batProc.running  = false
-            batProc.running  = true
+            batProc.running = false
+            batProc.running = true
         }
     }
 
@@ -51,45 +39,7 @@ Item {
         onTriggered: clockLabel.updateTime()
     }
 
-    // ─── Processes ─────────────────────────────────────────────────────────────
-
-    // WiFi: get active SSID
-    Process {
-        id: wifiProc
-        command: ["sh", "-c",
-            "nmcli -t -f active,ssid dev wifi 2>/dev/null | awk -F: '/^yes/{print $2}' | head -1"]
-        running: false
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: function(line) {
-                var s = line.trim()
-                if (s.length > 0) {
-                    root.wifiSSID      = s
-                    root.wifiConnected = true
-                } else {
-                    root.wifiSSID      = "Not connected"
-                    root.wifiConnected = false
-                }
-            }
-        }
-    }
-
-    // Bluetooth: powered + connected device name
-    Process {
-        id: btProc
-        command: ["sh", "-c",
-            "bluetoothctl show 2>/dev/null | grep -c 'Powered: yes'"]
-        running: false
-        stdout: SplitParser {
-            splitMarker: "\n"
-            onRead: function(line) {
-                root.btEnabled = (line.trim() === "1")
-                root.btStatus  = root.btEnabled ? "On" : "Off"
-            }
-        }
-    }
-
-    // Battery: percentage and status from upower
+    // ── Battery process ────────────────────────────────────────────────────────
     Process {
         id: batProc
         command: ["sh", "-c",
@@ -181,25 +131,16 @@ Item {
             }
         }
 
-        // ── WiFi ───────────────────────────────────────────────────────────────
-        StatusRow {
-            panel:      root.panel
-            icon:       root.wifiConnected ? "" : ""
-            iconColor:  root.wifiConnected ? panel.cNeonCyan : panel.cNeonPink
-            badgeColor: panel.cNeonCyan
-            label:      "WiFi"
-            value:      root.wifiSSID
+        // ── WiFi dropdown ──────────────────────────────────────────────────────
+        WifiDropdown {
+            Layout.fillWidth: true
+            panel: root.panel
         }
 
-        // ── Bluetooth ──────────────────────────────────────────────────────────
-        StatusRow {
-            panel:      root.panel
-            icon:       ""
-            iconColor:  root.btEnabled ? panel.cNeonPink : panel.cSubtext
-            badgeColor: panel.cNeonPink
-            label:      "Bluetooth"
-            value:      root.btStatus + (root.btDevice.length > 0
-                            ? "  ·  " + root.btDevice : "")
+        // ── Bluetooth dropdown ─────────────────────────────────────────────────
+        BluetoothDropdown {
+            Layout.fillWidth: true
+            panel: root.panel
         }
 
         // ── Battery ────────────────────────────────────────────────────────────
