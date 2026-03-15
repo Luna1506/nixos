@@ -192,14 +192,14 @@ Item {
                 // Previous
                 CtrlButton {
                     panel:  root.panel
-                    icon:   ""
+                    iconText:   ""
                     onClicked: root.runCmd("previous")
                 }
 
                 // Play / Pause
                 CtrlButton {
                     panel:     root.panel
-                    icon:      root.isPlaying ? "" : ""
+                    iconText:      root.isPlaying ? "" : ""
                     accent:    true
                     iconSize:  22
                     onClicked: root.runCmd("play-pause")
@@ -208,7 +208,7 @@ Item {
                 // Next
                 CtrlButton {
                     panel:  root.panel
-                    icon:   ""
+                    iconText:   ""
                     onClicked: root.runCmd("next")
                 }
 
@@ -222,7 +222,7 @@ Item {
                 // Stop
                 CtrlButton {
                     panel:  root.panel
-                    icon:   ""
+                    iconText:   ""
                     onClicked: root.runCmd("stop")
                 }
             }
