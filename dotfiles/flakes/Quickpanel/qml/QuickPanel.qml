@@ -12,15 +12,15 @@ PanelWindow {
     id: root
 
     // ── Colours ───────────────────────────────────────────────────────────────
-    readonly property color cBase:    "#1e1e2e"
-    readonly property color cSurface: "#313244"
-    readonly property color cOverlay: "#45475a"
-    readonly property color cText:    "#cdd6f4"
-    readonly property color cSubtext: "#a6adc8"
-    readonly property color cAccent:  "#89b4fa"
-    readonly property color cGreen:   "#a6e3a1"
-    readonly property color cRed:     "#f38ba8"
-    readonly property color cYellow:  "#f9e2af"
+    readonly property color cBase:       "#0a0a12"
+    readonly property color cCard:       "#11111f"
+    readonly property color cBorder:     "#1e1e3a"
+    readonly property color cText:       "#e8e8ff"
+    readonly property color cSubtext:    "#7070a0"
+    readonly property color cNeonCyan:   "#00f5ff"
+    readonly property color cNeonPink:   "#ff2d78"
+    readonly property color cNeonViolet: "#bf00ff"
+    readonly property color cNeonYellow: "#ffe600"
 
     // ── Layer-shell setup ─────────────────────────────────────────────────────
     // Overlay layer → appears above all normal windows.
@@ -35,13 +35,13 @@ PanelWindow {
     exclusiveZone: -1
 
     margins {
-        top:   52    // below a typical top bar
-        right: 12
+        top:   52
+        right: 14
     }
 
     // ── Size ──────────────────────────────────────────────────────────────────
-    implicitWidth:  360
-    implicitHeight: contentCol.implicitHeight + 24   // 12px top + 12px bottom
+    implicitWidth:  560
+    implicitHeight: contentCol.implicitHeight + 28
 
     // ── Close on Escape ───────────────────────────────────────────────────────
     Keys.onEscapePressed: root.visible = false
@@ -52,13 +52,9 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         color:        root.cBase
-        radius:       14
-        border.color: root.cOverlay
+        radius:       16
+        border.color: root.cBorder
         border.width: 1
-
-        // Drop shadow via a second rectangle behind
-        layer.enabled: true
-        layer.effect: null   // replace with MultiEffect if available
     }
 
     // ── Content ───────────────────────────────────────────────────────────────
@@ -68,58 +64,77 @@ PanelWindow {
             top:    parent.top
             left:   parent.left
             right:  parent.right
-            topMargin:    12
-            leftMargin:   12
-            rightMargin:  12
+            topMargin:    14
+            leftMargin:   14
+            rightMargin:  14
         }
         spacing: 0
 
-        // ── Tab bar ───────────────────────────────────────────────────────────
-        TabBar {
-            id: tabBar
+        // ── Custom Tab Toggle Bar ─────────────────────────────────────────────────
+        Item {
+            id: tabToggle
             Layout.fillWidth: true
             Layout.bottomMargin: 10
+            implicitHeight: 36
 
-            background: Rectangle {
-                color:  root.cSurface
-                radius: 8
-            }
+            property int currentIndex: 0
 
-            TabButton {
-                text: "  Status"
-                width: implicitWidth
+            // Animated neon underline indicator
+            Rectangle {
+                id: tabIndicator
+                width:  tabToggle.width / 2
+                height: 3
+                radius: 1.5
+                color:  root.cNeonCyan
+                anchors.bottom: parent.bottom
 
-                contentItem: Text {
-                    text:           parent.text
-                    color:          tabBar.currentIndex === 0
-                                        ? root.cAccent : root.cSubtext
-                    font.pixelSize: 13
-                    font.weight:    Font.Medium
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment:   Text.AlignVCenter
-                }
-                background: Rectangle {
-                    color:  tabBar.currentIndex === 0 ? root.cOverlay : "transparent"
-                    radius: 6
+                x: tabToggle.currentIndex * (tabToggle.width / 2)
+                Behavior on x {
+                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                 }
             }
 
-            TabButton {
-                text: "  Player"
-                width: implicitWidth
+            Row {
+                anchors.fill: parent
 
-                contentItem: Text {
-                    text:           parent.text
-                    color:          tabBar.currentIndex === 1
-                                        ? root.cAccent : root.cSubtext
-                    font.pixelSize: 13
-                    font.weight:    Font.Medium
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment:   Text.AlignVCenter
+                // Status tab button
+                Rectangle {
+                    width:  tabToggle.width / 2
+                    height: tabToggle.implicitHeight
+                    color:  "transparent"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text:  "  Status"
+                        font.pixelSize: 13
+                        font.weight:    Font.Medium
+                        color: tabToggle.currentIndex === 0 ? root.cNeonCyan : root.cSubtext
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: tabToggle.currentIndex = 0
+                    }
                 }
-                background: Rectangle {
-                    color:  tabBar.currentIndex === 1 ? root.cOverlay : "transparent"
-                    radius: 6
+
+                // Player tab button
+                Rectangle {
+                    width:  tabToggle.width / 2
+                    height: tabToggle.implicitHeight
+                    color:  "transparent"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text:  "  Player"
+                        font.pixelSize: 13
+                        font.weight:    Font.Medium
+                        color: tabToggle.currentIndex === 1 ? root.cNeonCyan : root.cSubtext
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: tabToggle.currentIndex = 1
+                    }
                 }
             }
         }
@@ -128,7 +143,7 @@ PanelWindow {
         StackLayout {
             Layout.fillWidth:  true
             Layout.fillHeight: true   // without this StackLayout collapses to 0
-            currentIndex:      tabBar.currentIndex
+            currentIndex:      tabToggle.currentIndex
 
             StatusTab {
                 panel: root
