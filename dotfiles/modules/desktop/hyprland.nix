@@ -3,7 +3,6 @@
 {
   programs.hyprland = {
     enable = true;
-    package = inputs.hyprland.packages.${pkgs.system}.hyprland;
     xwayland.enable = true;
   };
   # WICHTIG: diese Variablen müssen beim Start der Session gesetzt sein
