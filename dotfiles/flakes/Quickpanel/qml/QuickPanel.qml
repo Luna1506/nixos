@@ -188,20 +188,6 @@ PanelWindow {
             ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             ScrollBar.vertical.policy:   ScrollBar.AsNeeded
 
-            // Style the vertical scrollbar
-            ScrollBar.vertical: ScrollBar {
-                width: 6
-                contentItem: Rectangle {
-                    implicitWidth:  6
-                    implicitHeight: 50
-                    radius:         3
-                    color:          Qt.rgba(0.659, 0.333, 0.969, 0.5)
-                }
-                background: Rectangle {
-                    color: "transparent"
-                }
-            }
-
             StackLayout {
                 width:        parent.width
                 currentIndex: tabToggle.currentIndex
