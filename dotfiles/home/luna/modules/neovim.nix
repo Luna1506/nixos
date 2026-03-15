@@ -149,8 +149,8 @@
       vim.api.nvim_create_autocmd("FileType", {
         callback = function(ev)
           local ok, parsers = pcall(require, "nvim-treesitter.parsers")
-          if ok and parsers.has_parser() then
-            vim.treesitter.start(ev.buf)
+          if ok and parsers.has_parser(ev.match) then
+            pcall(vim.treesitter.start, ev.buf)
           end
         end,
       })
@@ -246,13 +246,25 @@
         rust_analyzer = {},
         dartls        = {},
         taplo         = {},
-        jdtls         = {},
       }
       for server, config in pairs(servers) do
         config.capabilities = capabilities
         config.on_attach    = on_attach
         lspconfig[server].setup(config)
       end
+      -- jdtls needs a per-project workspace; start it via FileType
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern  = "java",
+        callback = function()
+          local workspace = vim.fn.stdpath("data") .. "/jdtls-workspace/" ..
+                            vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+          lspconfig.jdtls.setup({
+            capabilities = capabilities,
+            on_attach    = on_attach,
+            cmd          = { "jdt-language-server", "-data", workspace },
+          })
+        end,
+      })
 
       -- ── Snippets ─────────────────────────────────────────────────────────────
       require("luasnip.loaders.from_vscode").lazy_load()
@@ -323,7 +335,7 @@
       require("conform").setup({
         formatters_by_ft = {
           lua        = { "stylua" },
-          nix        = { "nixpkgs_fmt" },
+          nix        = { "nixpkgs-fmt" },
           python     = { "isort", "black" },
           javascript = { "prettier" },
           typescript = { "prettier" },
@@ -331,7 +343,7 @@
           css        = { "prettier" },
           json       = { "prettier" },
           rust       = { "rustfmt" },
-          java       = { "google-java-format" },
+          java       = { "google_java_format" },
           dart       = { "dart_format" },
         },
         format_on_save = {
@@ -445,30 +457,34 @@
       -- ── Which-key ─────────────────────────────────────────────────────────────
       require("which-key").setup({})
 
-      -- ── Noice ────────────────────────────────────────────────────────────────
-      require("noice").setup({
-        lsp = {
-          override = {
-            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
-            ["vim.lsp.util.stylize_markdown"]                = true,
-            ["cmp.entry.get_documentation"]                  = true,
-          },
-        },
-        presets = {
-          bottom_search         = true,
-          command_palette       = true,
-          long_message_to_split = true,
-          inc_rename            = false,
-          lsp_doc_border        = true,
-        },
-      })
-
       -- ── Notify ───────────────────────────────────────────────────────────────
       require("notify").setup({
         background_colour = "#000000",
         render            = "compact",
         timeout           = 3000,
       })
+      vim.notify = require("notify")
+
+      -- ── Noice ────────────────────────────────────────────────────────────────
+      local ok_noice, noice = pcall(require, "noice")
+      if ok_noice then
+        noice.setup({
+          lsp = {
+            override = {
+              ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+              ["vim.lsp.util.stylize_markdown"]                = true,
+              ["cmp.entry.get_documentation"]                  = true,
+            },
+          },
+          presets = {
+            bottom_search         = true,
+            command_palette       = true,
+            long_message_to_split = true,
+            inc_rename            = false,
+            lsp_doc_border        = true,
+          },
+        })
+      end
 
       -- ── Dressing ─────────────────────────────────────────────────────────────
       require("dressing").setup({})
