@@ -155,7 +155,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text:             root.trackTitle
-                        font.pixelSize:   14
+                        font.pixelSize:   16
                         font.weight:      Font.SemiBold
                         color:            panel.cText
                         elide:            Text.ElideRight
