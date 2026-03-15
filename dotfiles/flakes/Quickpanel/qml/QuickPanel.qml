@@ -53,30 +53,43 @@ PanelWindow {
         radius:       16
     }
 
-    // Radial gradient – top-left: lila/violet
-    RadialGradient {
+    // Radial gradients via Canvas (no external imports needed)
+    Canvas {
         anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.rgba(0.627, 0.082, 0.996, 0.22) }  // #A015FE
-            GradientStop { position: 1.0; color: "transparent" }
-        }
-        horizontalOffset: -parent.width  * 0.3
-        verticalOffset:   -parent.height * 0.3
-        horizontalRadius:  parent.width  * 0.75
-        verticalRadius:    parent.height * 0.55
-    }
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
 
-    // Radial gradient – bottom-right: cyan/pink
-    RadialGradient {
-        anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.rgba(0.933, 0.286, 0.6, 0.16) }   // pink
-            GradientStop { position: 1.0; color: "transparent" }
+            // Top-left violet glow
+            var g1 = ctx.createRadialGradient(
+                width * 0.05, height * 0.05, 0,
+                width * 0.05, height * 0.05, width * 0.75
+            )
+            g1.addColorStop(0,   Qt.rgba(0.627, 0.082, 0.996, 0.30))
+            g1.addColorStop(1.0, Qt.rgba(0, 0, 0, 0))
+            ctx.fillStyle = g1
+            ctx.fillRect(0, 0, width, height)
+
+            // Bottom-right pink glow
+            var g2 = ctx.createRadialGradient(
+                width * 0.95, height * 0.90, 0,
+                width * 0.95, height * 0.90, width * 0.65
+            )
+            g2.addColorStop(0,   Qt.rgba(0.933, 0.286, 0.600, 0.22))
+            g2.addColorStop(1.0, Qt.rgba(0, 0, 0, 0))
+            ctx.fillStyle = g2
+            ctx.fillRect(0, 0, width, height)
+
+            // Center-left cyan accent
+            var g3 = ctx.createRadialGradient(
+                width * 0.1, height * 0.55, 0,
+                width * 0.1, height * 0.55, width * 0.4
+            )
+            g3.addColorStop(0,   Qt.rgba(0.659, 0.333, 0.969, 0.12))
+            g3.addColorStop(1.0, Qt.rgba(0, 0, 0, 0))
+            ctx.fillStyle = g3
+            ctx.fillRect(0, 0, width, height)
         }
-        horizontalOffset:  parent.width  * 0.35
-        verticalOffset:    parent.height * 0.35
-        horizontalRadius:  parent.width  * 0.65
-        verticalRadius:    parent.height * 0.5
     }
 
     // Border overlay (rounded rect on top of gradient)
