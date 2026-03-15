@@ -1,5 +1,5 @@
 // ─── BluetoothDropdown.qml ────────────────────────────────────────────────────
-// Expandable Bluetooth row: known + scanned devices, pair/connect/disconnect.
+// Expandable Bluetooth row with scrollable device list, scan + pair.
 
 import Quickshell
 import Quickshell.Io
@@ -15,12 +15,25 @@ Rectangle {
     property bool   expanded:        false
     property bool   btEnabled:       false
     property string connectedDevice: ""
-    property var    devices:         []   // [{name, mac, connected, paired}]
+    property var    devices:         []
     property bool   scanning:        false
     property string statusMsg:       ""
 
-    // ── Size ──────────────────────────────────────────────────────────────────
-    implicitHeight: headerRow.height + (expanded ? dropContent.implicitHeight : 0)
+    // ── Height calculation ────────────────────────────────────────────────────
+    readonly property int listMaxHeight: 200
+    readonly property int scanBarHeight: 40
+    readonly property int statusRowH:    24
+
+    implicitHeight: {
+        var h = headerRow.height
+        if (!expanded) return h
+        h += 9   // divider + spacing
+        h += scanBarHeight
+        h += Math.min(root.devices.length * 52, listMaxHeight)
+        if (statusMsg.length > 0) h += statusRowH
+        h += 10
+        return h
+    }
     clip: true
 
     Behavior on implicitHeight {
@@ -34,7 +47,6 @@ Rectangle {
 
     // ── Processes ──────────────────────────────────────────────────────────────
 
-    // Get powered state + connected device
     Process {
         id: statusProc
         command: ["sh", "-c", [
@@ -49,16 +61,14 @@ Rectangle {
             onRead: function(line) { statusProc.lines.push(line) }
         }
         onRunningChanged: {
-            if (running) {
-                lines = []
-            } else if (lines.length >= 1) {
+            if (running) { lines = [] }
+            else if (lines.length >= 1) {
                 root.btEnabled       = (lines[0].trim() === "1")
                 root.connectedDevice = lines.length >= 2 ? lines[1].trim() : ""
             }
         }
     }
 
-    // List known devices
     Process {
         id: devicesProc
         command: ["sh", "-c",
@@ -85,15 +95,11 @@ Rectangle {
             }
         }
         onRunningChanged: {
-            if (running) {
-                collected = []
-            } else {
-                root.devices = collected.slice()
-            }
+            if (running) { collected = [] }
+            else { root.devices = collected.slice() }
         }
     }
 
-    // Scan for 10 seconds
     Process {
         id: scanStartProc
         command: ["bluetoothctl", "scan", "on"]
@@ -105,8 +111,7 @@ Rectangle {
         interval: 10000
         repeat:   false
         onTriggered: {
-            scanStopProc.running = false
-            scanStopProc.running = true
+            scanStopProc.running = false; scanStopProc.running = true
         }
     }
 
@@ -117,38 +122,29 @@ Rectangle {
         onRunningChanged: {
             if (!running) {
                 root.scanning = false
-                devicesProc.running = false
-                devicesProc.running = true
+                devicesProc.running = false; devicesProc.running = true
             }
         }
     }
 
-    // Command runner (pair / connect / disconnect / trust)
     Process {
         id: cmdProc
         running: false
         onRunningChanged: {
             if (!running) {
                 root.statusMsg = ""
-                statusProc.running  = false
-                statusProc.running  = true
-                devicesProc.running = false
-                devicesProc.running = true
+                statusProc.running  = false; statusProc.running  = true
+                devicesProc.running = false; devicesProc.running = true
             }
         }
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
-    Component.onCompleted: {
-        statusProc.running = true
-    }
+    Component.onCompleted: { statusProc.running = true }
 
     onExpandedChanged: {
         if (expanded) {
-            statusProc.running  = false
-            statusProc.running  = true
-            devicesProc.running = false
-            devicesProc.running = true
+            statusProc.running  = false; statusProc.running  = true
+            devicesProc.running = false; devicesProc.running = true
         } else {
             scanning  = false
             statusMsg = ""
@@ -160,205 +156,171 @@ Rectangle {
     RowLayout {
         id: headerRow
         anchors { left: parent.left; right: parent.right }
-        height: 56
-        spacing: 10
+        height: 56; spacing: 10
+        anchors.leftMargin: 14; anchors.rightMargin: 14
 
-        anchors.leftMargin:  14
-        anchors.rightMargin: 14
-
-        // Icon badge
         Rectangle {
-            width:  32
-            height: 32
-            radius: 8
-            color:  Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.15)
-
+            width: 32; height: 32; radius: 8
+            color: Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.15)
             Text {
-                anchors.centerIn: parent
-                text:           ""
+                anchors.centerIn: parent; text: ""
                 font.pixelSize: 18
-                color:          root.btEnabled ? panel.cNeonPink : panel.cSubtext
+                color: root.btEnabled ? panel.cNeonPink : panel.cSubtext
             }
         }
 
-        Text {
-            text:           "Bluetooth"
-            font.pixelSize: 13
-            font.weight:    Font.Medium
-            color:          panel.cSubtext
-        }
+        Text { text: "Bluetooth"; font.pixelSize: 13; font.weight: Font.Medium; color: panel.cSubtext }
 
         Item { Layout.fillWidth: true }
 
         Text {
             text: root.connectedDevice.length > 0 ? root.connectedDevice
                   : (root.btEnabled ? "On" : "Off")
-            font.pixelSize: 13
-            color:          panel.cText
-            elide:          Text.ElideRight
-            Layout.maximumWidth: 160
+            font.pixelSize: 13; color: panel.cText
+            elide: Text.ElideRight; Layout.maximumWidth: 160
         }
 
         Text {
-            text:           root.expanded ? "" : ""
-            font.pixelSize: 12
-            color:          panel.cSubtext
+            text: root.expanded ? "" : ""
+            font.pixelSize: 12; color: panel.cSubtext
         }
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked:    root.expanded = !root.expanded
-        }
+        MouseArea { anchors.fill: parent; onClicked: root.expanded = !root.expanded }
     }
 
-    // ── Dropdown content ──────────────────────────────────────────────────────
-    ColumnLayout {
-        id: dropContent
+    // ── Dropdown body ─────────────────────────────────────────────────────────
+    Item {
+        id: dropBody
+        visible: root.expanded
         anchors {
             top:         headerRow.bottom
             left:        parent.left
             right:       parent.right
+            bottom:      parent.bottom
             leftMargin:  10
             rightMargin: 10
         }
-        spacing: 4
 
         // Divider
         Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color:  panel.cBorder
+            id: divider
+            anchors { top: parent.top; left: parent.left; right: parent.right }
+            height: 1; color: panel.cBorder
         }
 
-        // Scan button + spinner row
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 8
+        // Scan bar
+        Item {
+            id: scanBar
+            anchors { top: divider.bottom; left: parent.left; right: parent.right; topMargin: 4 }
+            height: root.scanBarHeight - 4
 
-            // Spinner
-            Item {
+            // Spinner + label
+            Row {
+                anchors { left: parent.left; verticalCenter: parent.verticalCenter }
+                spacing: 6
                 visible: root.scanning
-                width:   20
-                height:  20
 
                 Text {
-                    id: spinnerIcon
-                    anchors.centerIn: parent
-                    text:           ""
-                    font.pixelSize: 16
-                    color:          panel.cNeonPink
-
+                    id: spinnerIcon; text: ""; font.pixelSize: 16; color: panel.cNeonPink
                     RotationAnimation on rotation {
-                        running:  root.scanning
-                        from:     0
-                        to:       360
-                        duration: 1000
-                        loops:    Animation.Infinite
+                        running: root.scanning; from: 0; to: 360
+                        duration: 1000; loops: Animation.Infinite
                     }
                 }
+                Text { text: "Scanning…"; font.pixelSize: 12; color: panel.cNeonPink }
             }
-
-            Text {
-                visible:        root.scanning
-                text:           "Scanning…"
-                font.pixelSize: 12
-                color:          panel.cNeonPink
-            }
-
-            Item { Layout.fillWidth: true }
 
             // Scan button
             Rectangle {
-                implicitWidth:  90
-                implicitHeight: 28
-                radius:         6
-                color:          root.scanning
-                                ? Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.25)
-                                : Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.12)
-                border.color:   panel.cNeonPink
-                border.width:   1
+                anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+                implicitWidth: 90; implicitHeight: 28; radius: 6
+                color:        root.scanning
+                              ? Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.25)
+                              : Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.12)
+                border.color: panel.cNeonPink; border.width: 1
 
                 Text {
                     anchors.centerIn: parent
-                    text:           root.scanning ? "Scanning" : " Scan"
-                    font.pixelSize: 12
-                    color:          panel.cNeonPink
+                    text: root.scanning ? "Scanning" : " Scan"
+                    font.pixelSize: 12; color: panel.cNeonPink
                 }
-
                 MouseArea {
-                    anchors.fill: parent
-                    enabled:      !root.scanning
+                    anchors.fill: parent; enabled: !root.scanning
                     onClicked: {
                         root.scanning = true
-                        scanStartProc.running = false
-                        scanStartProc.running = true
+                        scanStartProc.running = false; scanStartProc.running = true
                         scanTimer.restart()
                     }
                 }
             }
         }
 
-        // Device list
-        Repeater {
-            model: root.devices
+        // Scrollable device list
+        ListView {
+            id: deviceList
+            anchors {
+                top:    scanBar.bottom
+                left:   parent.left
+                right:  parent.right
+                topMargin: 4
+            }
+            height:         Math.min(root.devices.length * 52, root.listMaxHeight)
+            clip:           true
+            model:          root.devices
+            spacing:        2
+            boundsBehavior: Flickable.StopAtBounds
+
+            ScrollBar.vertical: ScrollBar {
+                width: 4
+                contentItem: Rectangle {
+                    implicitWidth: 4; implicitHeight: 30; radius: 2
+                    color: Qt.rgba(0.933, 0.286, 0.6, 0.5)
+                }
+                background: Rectangle { color: "transparent" }
+            }
 
             delegate: Rectangle {
-                Layout.fillWidth: true
-                implicitHeight:   44
-                radius:           8
-                color: modelData.connected
-                       ? Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.12)
-                       : "transparent"
+                width:  deviceList.width
+                height: 50
+                radius: 8
+                color:  modelData.connected
+                        ? Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.15)
+                        : "transparent"
 
                 RowLayout {
                     anchors { fill: parent; leftMargin: 10; rightMargin: 10 }
                     spacing: 8
 
-                    // Device type icon
                     Text {
-                        text:           modelData.paired ? "" : ""
+                        text: modelData.paired ? "" : ""
                         font.pixelSize: 14
-                        color:          modelData.connected ? panel.cNeonPink : panel.cSubtext
+                        color: modelData.connected ? panel.cNeonPink : panel.cSubtext
                     }
 
                     ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 0
-
+                        Layout.fillWidth: true; spacing: 0
                         Text {
-                            text:           modelData.name
-                            font.pixelSize: 13
-                            color:          modelData.connected ? panel.cNeonPink : panel.cText
-                            elide:          Text.ElideRight
-                            Layout.fillWidth: true
+                            text: modelData.name; font.pixelSize: 13
+                            color: modelData.connected ? panel.cNeonPink : panel.cText
+                            elide: Text.ElideRight; Layout.fillWidth: true
                         }
-
                         Text {
-                            text:           modelData.connected ? "Connected"
-                                            : (modelData.paired ? "Paired" : "New device")
-                            font.pixelSize: 10
-                            color:          panel.cSubtext
+                            text: modelData.connected ? "Connected"
+                                  : (modelData.paired ? "Paired" : "New device")
+                            font.pixelSize: 10; color: panel.cSubtext
                         }
                     }
 
-                    // Action button
                     Rectangle {
-                        implicitWidth:  72
-                        implicitHeight: 26
-                        radius:         5
-                        color:          Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.15)
-                        border.color:   panel.cNeonPink
-                        border.width:   1
-
+                        implicitWidth: 76; implicitHeight: 26; radius: 5
+                        color:        Qt.rgba(panel.cNeonPink.r, panel.cNeonPink.g, panel.cNeonPink.b, 0.15)
+                        border.color: panel.cNeonPink; border.width: 1
                         Text {
                             anchors.centerIn: parent
                             text: modelData.connected ? "Disconnect"
                                   : (modelData.paired ? "Connect" : "Pair")
-                            font.pixelSize: 11
-                            color:          panel.cNeonPink
+                            font.pixelSize: 11; color: panel.cNeonPink
                         }
-
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
@@ -375,8 +337,7 @@ Rectangle {
                                         " && bluetoothctl pair " + modelData.mac +
                                         " && bluetoothctl connect " + modelData.mac]
                                 }
-                                cmdProc.running = false
-                                cmdProc.running = true
+                                cmdProc.running = false; cmdProc.running = true
                             }
                         }
                     }
@@ -386,23 +347,18 @@ Rectangle {
 
         // Empty state
         Text {
-            visible:          root.devices.length === 0 && !root.scanning
-            text:             "No devices found. Tap Scan."
-            font.pixelSize:   12
-            color:            panel.cSubtext
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 4
+            anchors { top: deviceList.bottom; horizontalCenter: parent.horizontalCenter; topMargin: 6 }
+            visible:        root.devices.length === 0 && !root.scanning
+            text:           "No devices found. Tap Scan."
+            font.pixelSize: 12; color: panel.cSubtext
         }
 
         // Status message
         Text {
-            visible:          root.statusMsg.length > 0
-            text:             root.statusMsg
-            font.pixelSize:   12
-            color:            panel.cNeonPink
-            Layout.alignment: Qt.AlignHCenter
+            anchors { top: deviceList.bottom; horizontalCenter: parent.horizontalCenter; topMargin: 6 }
+            visible:        root.statusMsg.length > 0
+            text:           root.statusMsg
+            font.pixelSize: 12; color: panel.cNeonPink
         }
-
-        Item { implicitHeight: 6 }
     }
 }

@@ -1,5 +1,5 @@
 // ─── WifiDropdown.qml ─────────────────────────────────────────────────────────
-// Expandable WiFi row: lists visible networks, connects with password if needed.
+// Expandable WiFi row with scrollable network list.
 
 import Quickshell
 import Quickshell.Io
@@ -16,13 +16,27 @@ Rectangle {
     property bool   expanded:      false
     property string connectedSSID: "—"
     property bool   connected:     false
-    property var    networks:      []   // [{ssid, signal, secured}]
+    property var    networks:      []
     property string selectedSSID:  ""
     property bool   needsPassword: false
     property string statusMsg:     ""
 
-    // ── Size ──────────────────────────────────────────────────────────────────
-    implicitHeight: headerRow.height + (expanded ? dropContent.implicitHeight : 0)
+    // ── Collapsed: only header. Expanded: header + fixed 200px list area. ──────
+    readonly property int listMaxHeight: 200
+    readonly property int pwRowHeight:   52
+    readonly property int statusRowH:    24
+    readonly property int dividerH:      9  // divider + spacing
+
+    implicitHeight: {
+        var h = headerRow.height
+        if (!expanded) return h
+        h += dividerH
+        h += Math.min(root.networks.length * 44, listMaxHeight)
+        if (needsPassword) h += pwRowHeight
+        if (statusMsg.length > 0) h += statusRowH
+        h += 10  // bottom padding
+        return h
+    }
     clip: true
 
     Behavior on implicitHeight {
@@ -36,7 +50,6 @@ Rectangle {
 
     // ── Processes ──────────────────────────────────────────────────────────────
 
-    // List visible networks
     Process {
         id: scanProc
         command: ["sh", "-c",
@@ -57,15 +70,11 @@ Rectangle {
             }
         }
         onRunningChanged: {
-            if (running) {
-                collected = []
-            } else {
-                root.networks = collected.slice()
-            }
+            if (running) { collected = [] }
+            else { root.networks = collected.slice() }
         }
     }
 
-    // Get current connection
     Process {
         id: statusProc
         command: ["sh", "-c",
@@ -75,44 +84,30 @@ Rectangle {
             splitMarker: "\n"
             onRead: function(line) {
                 var s = line.trim()
-                if (s.length > 0) {
-                    root.connectedSSID = s
-                    root.connected     = true
-                } else {
-                    root.connectedSSID = "Not connected"
-                    root.connected     = false
-                }
+                root.connectedSSID = s.length > 0 ? s : "Not connected"
+                root.connected     = s.length > 0
             }
         }
     }
 
-    // Connect / disconnect
     Process {
         id: connectProc
         running: false
         onRunningChanged: {
             if (!running) {
                 root.statusMsg = ""
-                statusProc.running = false
-                statusProc.running = true
-                scanProc.running   = false
-                scanProc.running   = true
+                statusProc.running = false; statusProc.running = true
+                scanProc.running   = false; scanProc.running   = true
             }
         }
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
-    Component.onCompleted: {
-        statusProc.running = true
-    }
+    Component.onCompleted: { statusProc.running = true }
 
-    // Refresh when expanded
     onExpandedChanged: {
         if (expanded) {
-            scanProc.running   = false
-            scanProc.running   = true
-            statusProc.running = false
-            statusProc.running = true
+            scanProc.running   = false; scanProc.running   = true
+            statusProc.running = false; statusProc.running = true
         } else {
             selectedSSID  = ""
             needsPassword = false
@@ -126,17 +121,12 @@ Rectangle {
         anchors { left: parent.left; right: parent.right }
         height: 56
         spacing: 10
-
         anchors.leftMargin:  14
         anchors.rightMargin: 14
 
-        // Icon badge
         Rectangle {
-            width:  32
-            height: 32
-            radius: 8
-            color:  Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.15)
-
+            width: 32; height: 32; radius: 8
+            color: Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.15)
             Text {
                 anchors.centerIn: parent
                 text:           root.connected ? "" : ""
@@ -146,64 +136,75 @@ Rectangle {
         }
 
         Text {
-            text:           "WiFi"
-            font.pixelSize: 13
-            font.weight:    Font.Medium
-            color:          panel.cSubtext
+            text: "WiFi"; font.pixelSize: 13; font.weight: Font.Medium; color: panel.cSubtext
         }
 
         Item { Layout.fillWidth: true }
 
         Text {
-            text:           root.connectedSSID
-            font.pixelSize: 13
-            color:          panel.cText
-            elide:          Text.ElideRight
-            Layout.maximumWidth: 180
+            text: root.connectedSSID; font.pixelSize: 13; color: panel.cText
+            elide: Text.ElideRight; Layout.maximumWidth: 180
         }
 
         Text {
-            text:           root.expanded ? "" : ""
-            font.pixelSize: 12
-            color:          panel.cSubtext
+            text: root.expanded ? "" : ""
+            font.pixelSize: 12; color: panel.cSubtext
         }
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked:    root.expanded = !root.expanded
-        }
+        MouseArea { anchors.fill: parent; onClicked: root.expanded = !root.expanded }
     }
 
-    // ── Dropdown content ──────────────────────────────────────────────────────
-    ColumnLayout {
-        id: dropContent
+    // ── Dropdown body ─────────────────────────────────────────────────────────
+    Item {
+        id: dropBody
+        visible:  root.expanded
         anchors {
             top:         headerRow.bottom
             left:        parent.left
             right:       parent.right
+            bottom:      parent.bottom
             leftMargin:  10
             rightMargin: 10
         }
-        spacing: 4
 
         // Divider
         Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color:  panel.cBorder
+            id: divider
+            anchors { top: parent.top; left: parent.left; right: parent.right }
+            height: 1; color: panel.cBorder
         }
 
-        // Network list
-        Repeater {
-            model: root.networks
+        // Scrollable network list
+        ListView {
+            id: networkList
+            anchors {
+                top:    divider.bottom
+                left:   parent.left
+                right:  parent.right
+                topMargin: 4
+            }
+            height:      Math.min(root.networks.length * 44, root.listMaxHeight)
+            clip:        true
+            model:       root.networks
+            spacing:     2
+            boundsBehavior: Flickable.StopAtBounds
+
+            ScrollBar.vertical: ScrollBar {
+                width: 4
+                contentItem: Rectangle {
+                    implicitWidth: 4; implicitHeight: 30; radius: 2
+                    color: Qt.rgba(0.659, 0.333, 0.969, 0.5)
+                }
+                background: Rectangle { color: "transparent" }
+            }
 
             delegate: Rectangle {
-                Layout.fillWidth: true
-                implicitHeight:   44
-                radius:           8
+                width:          networkList.width
+                height:         44
+                radius:         8
                 color: {
                     if (modelData.ssid === root.connectedSSID)
-                        return Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.12)
+                        return Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.15)
                     if (modelData.ssid === root.selectedSSID)
                         return Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.07)
                     return "transparent"
@@ -213,7 +214,6 @@ Rectangle {
                     anchors { fill: parent; leftMargin: 10; rightMargin: 10 }
                     spacing: 8
 
-                    // Signal strength bars
                     Text {
                         text: {
                             var s = modelData.signal
@@ -223,33 +223,23 @@ Rectangle {
                             return ""
                         }
                         font.pixelSize: 14
-                        color: modelData.ssid === root.connectedSSID
-                               ? panel.cNeonCyan : panel.cSubtext
+                        color: modelData.ssid === root.connectedSSID ? panel.cNeonCyan : panel.cSubtext
                     }
 
                     Text {
-                        text:           modelData.ssid
-                        font.pixelSize: 13
-                        color:          modelData.ssid === root.connectedSSID
-                                        ? panel.cNeonCyan : panel.cText
-                        elide:          Text.ElideRight
-                        Layout.fillWidth: true
+                        text: modelData.ssid; font.pixelSize: 13
+                        color: modelData.ssid === root.connectedSSID ? panel.cNeonCyan : panel.cText
+                        elide: Text.ElideRight; Layout.fillWidth: true
                     }
 
-                    // Lock icon if secured
                     Text {
-                        visible:        modelData.secured
-                        text:           ""
-                        font.pixelSize: 11
-                        color:          panel.cSubtext
+                        visible: modelData.secured; text: ""
+                        font.pixelSize: 11; color: panel.cSubtext
                     }
 
-                    // Connected indicator
                     Text {
-                        visible:        modelData.ssid === root.connectedSSID
-                        text:           ""
-                        font.pixelSize: 13
-                        color:          panel.cNeonCyan
+                        visible: modelData.ssid === root.connectedSSID; text: ""
+                        font.pixelSize: 13; color: panel.cNeonCyan
                     }
                 }
 
@@ -257,23 +247,19 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         if (modelData.ssid === root.connectedSSID) {
-                            // Disconnect
                             root.statusMsg     = "Disconnecting…"
                             root.selectedSSID  = ""
                             root.needsPassword = false
                             connectProc.command = ["nmcli", "dev", "disconnect", "wlan0"]
-                            connectProc.running = false
-                            connectProc.running = true
+                            connectProc.running = false; connectProc.running = true
                         } else {
                             root.selectedSSID  = modelData.ssid
                             root.needsPassword = modelData.secured
                             root.statusMsg     = ""
                             if (!modelData.secured) {
-                                // Connect directly (open network)
                                 root.statusMsg = "Connecting…"
                                 connectProc.command = ["nmcli", "dev", "wifi", "connect", modelData.ssid]
-                                connectProc.running = false
-                                connectProc.running = true
+                                connectProc.running = false; connectProc.running = true
                             }
                         }
                     }
@@ -281,15 +267,20 @@ Rectangle {
             }
         }
 
-        // Password field (shown when secured network selected)
+        // Password row
         Rectangle {
-            Layout.fillWidth: true
-            implicitHeight:   visible ? 44 : 0
-            visible:          root.needsPassword
-            radius:           8
-            color:            Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.07)
-            border.color:     panel.cBorder
-            border.width:     1
+            id: pwRow
+            anchors {
+                top:    networkList.bottom
+                left:   parent.left
+                right:  parent.right
+                topMargin: 4
+            }
+            height:   root.needsPassword ? root.pwRowHeight : 0
+            visible:  root.needsPassword
+            radius:   8
+            color:    Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.07)
+            border.color: panel.cBorder; border.width: 1
 
             RowLayout {
                 anchors { fill: parent; leftMargin: 10; rightMargin: 10 }
@@ -297,67 +288,47 @@ Rectangle {
 
                 TextField {
                     id: pwField
-                    Layout.fillWidth: true
-                    placeholderText:  "Password…"
-                    echoMode:         TextInput.Password
-                    font.pixelSize:   13
-
-                    background: Rectangle { color: "transparent" }
-
+                    Layout.fillWidth:     true
+                    placeholderText:      "Password…"
+                    echoMode:             TextInput.Password
+                    font.pixelSize:       13
+                    background:           Rectangle { color: "transparent" }
                     color:                panel.cText
                     placeholderTextColor: panel.cSubtext
-
-                    Keys.onReturnPressed: connectBtn.clicked()
+                    Keys.onReturnPressed: doConnect()
                 }
 
                 Rectangle {
-                    id: connectBtn
-                    implicitWidth:  80
-                    implicitHeight: 30
-                    radius:         6
-                    color:          Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.2)
-                    border.color:   panel.cNeonCyan
-                    border.width:   1
-
-                    signal clicked
-
-                    Text {
-                        anchors.centerIn: parent
-                        text:           "Connect"
-                        font.pixelSize: 12
-                        color:          panel.cNeonCyan
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            if (pwField.text.length > 0) {
-                                root.statusMsg     = "Connecting…"
-                                root.needsPassword = false
-                                connectProc.command = [
-                                    "nmcli", "dev", "wifi", "connect",
-                                    root.selectedSSID, "password", pwField.text
-                                ]
-                                connectProc.running = false
-                                connectProc.running = true
-                                pwField.text = ""
-                            }
-                        }
-                    }
+                    implicitWidth: 80; implicitHeight: 30; radius: 6
+                    color:        Qt.rgba(panel.cNeonCyan.r, panel.cNeonCyan.g, panel.cNeonCyan.b, 0.2)
+                    border.color: panel.cNeonCyan; border.width: 1
+                    Text { anchors.centerIn: parent; text: "Connect"; font.pixelSize: 12; color: panel.cNeonCyan }
+                    MouseArea { anchors.fill: parent; onClicked: doConnect() }
                 }
             }
         }
 
-        // Status message
+        // Status text
         Text {
+            anchors {
+                top:              pwRow.bottom
+                horizontalCenter: parent.horizontalCenter
+                topMargin:        4
+            }
             visible:        root.statusMsg.length > 0
             text:           root.statusMsg
             font.pixelSize: 12
             color:          panel.cNeonCyan
-            Layout.alignment: Qt.AlignHCenter
-            Layout.bottomMargin: 4
         }
+    }
 
-        Item { implicitHeight: 6 }
+    function doConnect() {
+        if (pwField.text.length > 0) {
+            root.statusMsg     = "Connecting…"
+            root.needsPassword = false
+            connectProc.command = ["nmcli", "dev", "wifi", "connect", root.selectedSSID, "password", pwField.text]
+            connectProc.running = false; connectProc.running = true
+            pwField.text = ""
+        }
     }
 }
