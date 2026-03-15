@@ -29,7 +29,7 @@ Rectangle {
             width:  32
             height: 32
             radius: 8
-            color:  Qt.rgba(badgeColor.r, badgeColor.g, badgeColor.b, 0.15)
+            color:  badgeColor.a > 0 ? Qt.rgba(badgeColor.r, badgeColor.g, badgeColor.b, 0.15) : "transparent"
 
             Text {
                 anchors.centerIn: parent
