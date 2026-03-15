@@ -5,7 +5,7 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/desktop/view/Window.hpp>
 #include <hyprland/src/helpers/memory/Memory.hpp>
-#include <hyprland/src/managers/HookSystemManager.hpp>
+#include <hyprland/src/helpers/signal/Signal.hpp>
 
 #include <string>
 #include <any>
