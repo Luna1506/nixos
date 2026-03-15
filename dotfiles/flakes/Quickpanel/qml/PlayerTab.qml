@@ -117,9 +117,11 @@ Item {
         // ── Track info card ────────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight:   80
-            color:            panel.cSurface
-            radius:           10
+            implicitHeight:   96
+            color:            panel.cCard
+            radius:           12
+            border.color:     panel.cBorder
+            border.width:     1
 
             RowLayout {
                 anchors {
@@ -131,16 +133,18 @@ Item {
 
                 // Placeholder album art
                 Rectangle {
-                    width:  52
-                    height: 52
-                    radius: 6
-                    color:  panel.cOverlay
+                    width:  72
+                    height: 72
+                    radius: 10
+                    color:  panel.cCard
+                    border.color: panel.cBorder
+                    border.width: 1
 
                     Text {
                         anchors.centerIn: parent
                         text:             ""
-                        font.pixelSize:   24
-                        color:            panel.cSubtext
+                        font.pixelSize:   28
+                        color:            panel.cNeonViolet
                     }
                 }
 
@@ -162,7 +166,7 @@ Item {
                         text:             root.trackArtist || (root.playerName.length > 0
                                               ? root.playerName : " ")
                         font.pixelSize:   12
-                        color:            panel.cSubtext
+                        color:            panel.cNeonCyan
                         elide:            Text.ElideRight
                     }
 
@@ -170,7 +174,7 @@ Item {
                         Layout.fillWidth: true
                         text:             root.trackAlbum
                         font.pixelSize:   11
-                        color:            panel.cOverlay
+                        color:            panel.cSubtext
                         elide:            Text.ElideRight
                         visible:          root.trackAlbum.length > 0
                     }
@@ -181,9 +185,11 @@ Item {
         // ── Playback controls ──────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight:   56
-            color:            panel.cSurface
-            radius:           10
+            implicitHeight:   68
+            color:            panel.cCard
+            radius:           12
+            border.color:     panel.cBorder
+            border.width:     1
 
             RowLayout {
                 anchors.centerIn: parent
@@ -191,24 +197,24 @@ Item {
 
                 // Previous
                 CtrlButton {
-                    panel:  root.panel
-                    iconText:   ""
+                    panel:    root.panel
+                    icon:     ""
                     onClicked: root.runCmd("previous")
                 }
 
                 // Play / Pause
                 CtrlButton {
                     panel:     root.panel
-                    iconText:      root.isPlaying ? "" : ""
+                    icon:      root.isPlaying ? "" : ""
                     accent:    true
-                    iconSize:  22
+                    iconSize:  26
                     onClicked: root.runCmd("play-pause")
                 }
 
                 // Next
                 CtrlButton {
-                    panel:  root.panel
-                    iconText:   ""
+                    panel:    root.panel
+                    icon:     ""
                     onClicked: root.runCmd("next")
                 }
 
@@ -221,8 +227,8 @@ Item {
 
                 // Stop
                 CtrlButton {
-                    panel:  root.panel
-                    iconText:   ""
+                    panel:    root.panel
+                    icon:     ""
                     onClicked: root.runCmd("stop")
                 }
             }
@@ -231,9 +237,11 @@ Item {
         // ── Volume row ─────────────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight:   44
-            color:            panel.cSurface
-            radius:           10
+            implicitHeight:   64
+            color:            panel.cCard
+            radius:           12
+            border.color:     panel.cBorder
+            border.width:     1
 
             RowLayout {
                 anchors {
@@ -261,15 +269,15 @@ Item {
                         x:      volSlider.leftPadding
                         y:      volSlider.topPadding + volSlider.availableHeight / 2 - height / 2
                         width:  volSlider.availableWidth
-                        height: 4
-                        radius: 2
-                        color:  panel.cOverlay
+                        height: 6
+                        radius: 3
+                        color:  panel.cBorder
 
                         Rectangle {
                             width:  volSlider.visualPosition * parent.width
                             height: parent.height
                             radius: parent.radius
-                            color:  panel.cAccent
+                            color:  panel.cNeonCyan
                         }
                     }
 
@@ -277,10 +285,10 @@ Item {
                         x:      volSlider.leftPadding + volSlider.visualPosition
                                     * (volSlider.availableWidth - width)
                         y:      volSlider.topPadding + volSlider.availableHeight / 2 - height / 2
-                        width:  14
-                        height: 14
-                        radius: 7
-                        color:  panel.cText
+                        width:  16
+                        height: 16
+                        radius: 8
+                        color:  panel.cNeonCyan
                     }
 
                     onMoved: {
@@ -296,7 +304,7 @@ Item {
                 Text {
                     text:           root.volume + "%"
                     font.pixelSize: 12
-                    color:          panel.cSubtext
+                    color:          panel.cNeonCyan
                     Layout.minimumWidth: 32
                 }
             }

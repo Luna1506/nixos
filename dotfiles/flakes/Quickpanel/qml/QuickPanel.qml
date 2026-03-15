@@ -5,7 +5,6 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 
 PanelWindow {
