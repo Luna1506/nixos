@@ -2,19 +2,6 @@
   wayland.windowManager.hyprland = {
     settings = {
 
-      plugin = {
-        liquid_glass = {
-          blur_strength = 20;
-          refraction = 0.7;
-          opacity = 0.75;
-          corner_radius = 16;
-          animate = 1;
-          tint_r = 0.96;
-          tint_g = 0.96;
-          tint_b = 1.0;
-          tint_a = 0.10;
-        };
-      };
       general = {
         gaps_in = 5;
         gaps_out = 10;
@@ -98,7 +85,4 @@
       };
     };
   };
-
-  imports = [ inputs.hyprfrost.homeManagerModules.default ];
-  wayland.windowManager.hyprland.hyprfrost.enable = true;
 }

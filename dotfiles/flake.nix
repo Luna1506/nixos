@@ -19,20 +19,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland = {
-      url = "github:hyprwm/Hyprland/4b07770b9ef1cceb2e6f56d33538aaffb9186b9c";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprfrost = {
-      url = "path:./flakes/hyprfrost";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.hyprland.follows = "hyprland";
-    };
-    #quickpanel = {
-    # url = "path:./flakes/Quickpanel/";
-    #inputs.nixpkgs.follows = "nixpkgs";
+    #hyprfrost = {
+    #  url = "path:./flakes/hyprfrost";
+    #  inputs.nixpkgs.follows = "nixpkgs";
+    #  inputs.hyprland.follows = "hyprland";
     #};
+    quickpanel = {
+      url = "path:./flakes/Quickpanel/";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
   };
 
@@ -55,7 +50,6 @@
 
         specialArgs = {
           inherit inputs username fullname nvidiaAlternative monitor zoom git-name git-email luna-path;
-          hyprland = inputs.hyprland;
         };
 
         modules = [
