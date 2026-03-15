@@ -45,8 +45,25 @@ PanelWindow {
     readonly property int dockMarginB: 14
 
     // ── State ─────────────────────────────────────────────────────────────────
-    property var  visibleClients: []
     property bool emptyWorkspace: false
+
+    function refreshEmpty() {
+        var ws = Hyprland.focusedWorkspace
+        emptyWorkspace = ws ? ws.toplevels.values.length === 0 : false
+    }
+
+    Connections {
+        target: Hyprland
+        function onFocusedWorkspaceChanged() { root.refreshEmpty() }
+        function onToplevelsChanged()        { root.refreshEmpty() }
+    }
+
+    Connections {
+        target: Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.toplevels : null
+        function onValuesChanged() { root.refreshEmpty() }
+    }
+
+    Component.onCompleted: refreshEmpty()
 
     // ── Layer-shell ───────────────────────────────────────────────────────────
     WlrLayershell.layer:         WlrLayer.Top
@@ -60,39 +77,6 @@ PanelWindow {
     implicitHeight: dockHeight + dockMarginB + 16
 
     color: "transparent"
-
-    // ── Helper: recompute state ───────────────────────────────────────────────
-    function refresh() {
-        var ws = Hyprland.activeWorkspace
-        if (!ws) {
-            emptyWorkspace = false
-            visibleClients = []
-            return
-        }
-
-        var all = Hyprland.clients.filter(function(c) {
-            return c.mapped && !c.floating && !c.hidden
-        })
-        visibleClients = all
-
-        var onActive = all.filter(function(c) {
-            return c.workspace && c.workspace.id === ws.id
-        })
-        emptyWorkspace = (onActive.length === 0)
-    }
-
-    // ── React to Hyprland events ──────────────────────────────────────────────
-    Connections {
-        target: Hyprland
-        function onClientsChanged()         { root.refresh() }
-        function onActiveWorkspaceChanged() { root.refresh() }
-        function onWorkspacesChanged()      { root.refresh() }
-    }
-
-    Component.onCompleted: refresh()
-
-    // ── Animated visibility ───────────────────────────────────────────────────
-    // Always visible=true; content slides off-screen when emptyWorkspace=false.
     visible: true
 
     Item {
@@ -140,7 +124,7 @@ PanelWindow {
                 spacing: root.dockGap
 
                 Repeater {
-                    model: root.visibleClients
+                    model: Hyprland.toplevels.values
 
                     DockItem {
                         required property var modelData
@@ -148,11 +132,7 @@ PanelWindow {
 
                         panel:    root
                         client:   modelData
-                        isActive: {
-                            var ws = Hyprland.activeWorkspace
-                            return ws && modelData.workspace &&
-                                   modelData.workspace.id === ws.id
-                        }
+                        isActive: modelData.activated
 
                         onFocusRequested: function(address) {
                             Hyprland.dispatch("focuswindow address:" + address)

@@ -125,7 +125,7 @@ Item {
             id: iconImage
             anchors.fill:    parent
             anchors.margins: 4
-            source:          "image://theme/" + (root.client.class_ || "application-x-executable")
+            source:          "image://theme/" + ((root.client.lastIpcObject.class ?? "") || "application-x-executable")
             fillMode:        Image.PreserveAspectFit
             smooth:          true
             mipmap:          true
@@ -136,7 +136,7 @@ Item {
             onStatusChanged: {
                 if (status === Image.Error && !retried) {
                     retried = true
-                    source = "image://theme/" + (root.client.class_ || "").toLowerCase()
+                    source = "image://theme/" + ((root.client.lastIpcObject.class ?? "") || "").toLowerCase()
                 }
             }
         }
@@ -149,7 +149,7 @@ Item {
 
             Text {
                 anchors.centerIn: parent
-                text:       (root.client.class_ || "?").charAt(0).toUpperCase()
+                text:       ((root.client.lastIpcObject.class ?? "") || "?").charAt(0).toUpperCase()
                 font.pixelSize: parent.width * 0.42
                 font.weight:    Font.Bold
                 color:          "#ffffff"
@@ -241,7 +241,7 @@ Item {
 
     // ── Deterministic colour from class name (for fallback bg) ────────────────
     function iconColor() {
-        var cls  = root.client.class_ || "?"
+        var cls  = (root.client.lastIpcObject.class ?? "") || "?"
         var hash = 0
         for (var i = 0; i < cls.length; i++)
             hash = (hash * 31 + cls.charCodeAt(i)) & 0xFFFFFF
