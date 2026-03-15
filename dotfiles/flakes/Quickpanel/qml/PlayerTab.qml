@@ -222,7 +222,7 @@ Item {
                 Rectangle {
                     width:  1
                     height: 24
-                    color:  panel.cOverlay
+                    color:  panel.cBorder
                 }
 
                 // Stop
