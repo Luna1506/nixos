@@ -1,31 +1,38 @@
-// ─── DockItem.qml ─────────────────────────────────────────────────────────────
-// Single app window icon in the dock.
+// ─── PinnedItem.qml ───────────────────────────────────────────────────────────
+// Dock icon for a statically pinned application.
 //
 // Features
 // ────────
-//   • Icon from the system icon theme  (image://theme/<class>)
-//     Falls back to a coloured circle with the first letter of the class name.
+//   • Icon from system icon theme  (image://theme/<classname>)
+//     Falls back to coloured circle with first letter.
 //   • macOS-style spring magnification on hover.
-//   • Tooltip: window title, shown above the icon.
-//   • Active indicator dot (green) when the window is on the current workspace.
-//   • Workspace number badge (top-right) for windows on other workspaces.
-//   • Click → emits focusRequested(address); bounce animation as tactile ack.
+//   • Tooltip: app name, shown above the icon.
+//   • Active indicator dot when the app is running.
+//   • Click → focus if running, launch if not.
 
 import QtQuick
 import QtQuick.Controls
+import Quickshell.Hyprland
 
 Item {
     id: root
 
     // ── Required inputs ───────────────────────────────────────────────────────
-    required property var  panel     // Dock root (colours + size constants)
-    required property var  client    // HyprlandClient
-    required property bool isActive  // window is on the active workspace
+    required property var  panel      // Dock root (colours + size constants)
+    required property var  pinnedApp  // { name, class, exec }
 
-    signal focusRequested(string address)
+    // ── Running state ─────────────────────────────────────────────────────────
+    readonly property bool isRunning: {
+        var tls = Hyprland.toplevels.values
+        var cls = pinnedApp.class.toLowerCase()
+        for (var i = 0; i < tls.length; i++) {
+            var tc = (tls[i].lastIpcObject.class ?? "").toLowerCase()
+            if (tc === cls) return true
+        }
+        return false
+    }
 
     // ── Sizing ────────────────────────────────────────────────────────────────
-    // Reserve the hover size at all times so neighbours don't shift.
     implicitWidth:  panel.iconHover + 4
     implicitHeight: panel.dockHeight
 
@@ -37,21 +44,15 @@ Item {
         : 1.0
 
     // ── Tooltip ───────────────────────────────────────────────────────────────
-    // Positioned using the SCALED height of the icon so it sits above the
-    // magnified icon, not the original unscaled geometry.
     Rectangle {
         id: tooltip
         z: 100
-        visible: root.hovered && root.client.title.length > 0
+        visible: root.hovered
         opacity: visible ? 1.0 : 0.0
         Behavior on opacity { NumberAnimation { duration: 100 } }
 
-        // Centre over the icon column
         x: (parent.width - width) / 2
 
-        // Sit above the scaled icon:
-        //   iconRect's centre is at parent.height/2 - 5 (verticalCenterOffset)
-        //   scaled half-height = (panel.iconBase / 2) * iconRect.scale
         property real scaledIconHalfH: (panel.iconBase / 2) * iconRect.scale
         property real iconCentreY:     parent.height / 2 - 5
         y: iconCentreY - scaledIconHalfH - height - 8
@@ -67,7 +68,7 @@ Item {
         Text {
             id: ttLabel
             anchors.centerIn: parent
-            text:             root.client.title
+            text:             root.pinnedApp.name
             color:            panel.cText
             font.pixelSize:   11
             font.weight:      Font.Medium
@@ -81,26 +82,23 @@ Item {
         id: iconRect
         width:  panel.iconBase
         height: panel.iconBase
-        radius: panel.iconBase * 0.22   // macOS rounded-square
+        radius: panel.iconBase * 0.22
 
         anchors {
             horizontalCenter: parent.horizontalCenter
             verticalCenter:   parent.verticalCenter
-            verticalCenterOffset: -5    // shift up to leave room for the dot
+            verticalCenterOffset: -5
         }
 
-        // Background only visible when the icon image fails to load
         color:        iconFallback.visible ? root.iconColor() : "transparent"
         border.color: Qt.rgba(1, 1, 1, iconFallback.visible ? 0.08 : 0.0)
         border.width: 1
 
-        // Spring scale
         scale: root.targetScale
         Behavior on scale {
             SpringAnimation { spring: 7.0; damping: 0.55; epsilon: 0.005 }
         }
 
-        // Bounce on click
         SequentialAnimation {
             id: bounceAnim
             alwaysRunToEnd: true
@@ -126,18 +124,17 @@ Item {
             id: iconImage
             anchors.fill:    parent
             anchors.margins: 4
-            source:          "image://theme/" + ((root.client.lastIpcObject.class ?? "") || "application-x-executable")
+            source:          "image://theme/" + (root.pinnedApp.class || "application-x-executable")
             fillMode:        Image.PreserveAspectFit
             smooth:          true
             mipmap:          true
             visible:         status === Image.Ready
 
-            // Retry with lowercase class on first failure
             property bool retried: false
             onStatusChanged: {
                 if (status === Image.Error && !retried) {
                     retried = true
-                    source = "image://theme/" + ((root.client.lastIpcObject.class ?? "") || "").toLowerCase()
+                    source = "image://theme/" + root.pinnedApp.class.toLowerCase()
                 }
             }
         }
@@ -150,7 +147,7 @@ Item {
 
             Text {
                 anchors.centerIn: parent
-                text:       ((root.client.lastIpcObject.class ?? "") || "?").charAt(0).toUpperCase()
+                text:       (root.pinnedApp.class || "?").charAt(0).toUpperCase()
                 font.pixelSize: parent.width * 0.42
                 font.weight:    Font.Bold
                 color:          "#ffffff"
@@ -177,53 +174,11 @@ Item {
         }
         width: 6; height: 6; radius: 3
 
-        color:   root.isActive ? "#a855f7" : Qt.rgba(0.659, 0.333, 0.969, 0.30)
-        opacity: root.isActive ? 1.0 : 0.40
+        color:   root.isRunning ? panel.cAccent : Qt.rgba(0.659, 0.333, 0.969, 0.30)
+        opacity: root.isRunning ? 1.0 : 0.40
 
         Behavior on color   { ColorAnimation  { duration: 200 } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
-    }
-
-    // ── Workspace badge ───────────────────────────────────────────────────────
-    // Positioned using computed scaled coordinates so it stays glued to the
-    // top-right corner of the magnified icon regardless of scale value.
-    Rectangle {
-        visible: !root.isActive
-
-        // Badge size (fixed)
-        readonly property real bw: Math.max(badgeTxt.implicitWidth + 8, 18)
-        readonly property real bh: 18
-
-        implicitWidth:  bw
-        implicitHeight: bh
-        radius:         9
-
-        // Track the scaled icon's top-right corner.
-        // iconRect's unscaled top-right in parent coords:
-        //   cx = parent.width/2   (iconRect is horizontalCenter)
-        //   cy = parent.height/2 - 5 (verticalCenterOffset)
-        // After applying scale the top-right shifts by:
-        //   dx = (iconBase/2) * scale
-        //   dy = -(iconBase/2) * scale
-        property real scaledHalf: (panel.iconBase / 2) * iconRect.scale
-        property real cx:         parent.width / 2
-        property real cy:         parent.height / 2 - 5
-
-        x: cx + scaledHalf - bw + 3
-        y: cy - scaledHalf - 3
-
-        color:        Qt.rgba(0.627, 0.082, 0.996, 0.25)
-        border.color: "#A015FE"
-        border.width: 1
-
-        Text {
-            id: badgeTxt
-            anchors.centerIn: parent
-            text:             root.client.workspace ? root.client.workspace.id : ""
-            font.pixelSize:   9
-            font.weight:      Font.Bold
-            color:            "#D19CFF"
-        }
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
@@ -236,13 +191,17 @@ Item {
 
         onClicked: {
             bounceAnim.restart()
-            root.focusRequested(root.client.address)
+            if (root.isRunning) {
+                Hyprland.dispatch("focuswindow class:" + root.pinnedApp.class)
+            } else {
+                Hyprland.dispatch("exec " + root.pinnedApp.exec)
+            }
         }
     }
 
-    // ── Deterministic colour from class name (for fallback bg) ────────────────
+    // ── Deterministic colour from class name ──────────────────────────────────
     function iconColor() {
-        var cls  = (root.client.lastIpcObject.class ?? "") || "?"
+        var cls  = root.pinnedApp.class || "?"
         var hash = 0
         for (var i = 0; i < cls.length; i++)
             hash = (hash * 31 + cls.charCodeAt(i)) & 0xFFFFFF

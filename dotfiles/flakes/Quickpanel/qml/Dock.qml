@@ -43,6 +43,24 @@ PanelWindow {
     readonly property int dockPad:     14
     readonly property int dockGap:     10
     readonly property int dockMarginB: 14
+    readonly property int tooltipOverhead: 44
+
+    // ── Pinned apps ───────────────────────────────────────────────────────────
+    readonly property var pinnedApps: [
+        { name: "Ghostty",     "class": "com.mitchellh.ghostty", exec: "ghostty" },
+        { name: "Zen Browser", "class": "zen",                   exec: "zen" },
+        { name: "Vesktop",     "class": "vesktop",               exec: "vesktop" },
+        { name: "Spotify",     "class": "spotify",               exec: "spotify" },
+        { name: "Steam",       "class": "steam",                 exec: "steam" },
+    ]
+
+    readonly property int openWindowCount: {
+        var count = 0
+        var tls = Hyprland.toplevels.values
+        for (var i = 0; i < tls.length; i++)
+            if (!tls[i].lastIpcObject.floating) count++
+        return count
+    }
 
     // ── State ─────────────────────────────────────────────────────────────────
     property bool emptyWorkspace: false
@@ -74,7 +92,7 @@ PanelWindow {
     exclusiveZone:  0
 
     implicitWidth:  Math.max(pill.implicitWidth, 120)
-    implicitHeight: dockHeight + dockMarginB + 16
+    implicitHeight: dockHeight + dockMarginB + 16 + tooltipOverhead
 
     color: "transparent"
     visible: true
@@ -123,6 +141,28 @@ PanelWindow {
                 }
                 spacing: root.dockGap
 
+                // ── Pinned apps ───────────────────────────────────────────────
+                Repeater {
+                    model: root.pinnedApps
+
+                    PinnedItem {
+                        required property var modelData
+
+                        panel:      root
+                        pinnedApp:  modelData
+                    }
+                }
+
+                // ── Separator ─────────────────────────────────────────────────
+                Rectangle {
+                    visible:          root.openWindowCount > 0
+                    width:            1
+                    height:           root.iconBase * 0.75
+                    color:            Qt.rgba(0.627, 0.082, 0.996, 0.35)
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                // ── Open windows ──────────────────────────────────────────────
                 Repeater {
                     model: Hyprland.toplevels.values
 
@@ -138,6 +178,11 @@ PanelWindow {
                             Hyprland.dispatch("focuswindow address:" + address)
                         }
                     }
+                }
+
+                // ── App menu button ───────────────────────────────────────────
+                AppMenuButton {
+                    panel: root
                 }
             }
         }

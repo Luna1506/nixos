@@ -118,17 +118,20 @@ WRAPPER
             # OR (simpler) just leave dock.enable=true.
             xdg.configFile =
               let
-                allFiles   = builtins.readDir qmlSrc;
-                dockFiles  = [ "Dock.qml" "DockItem.qml" ];
-                filtered   = if cfg.dock.enable
-                             then allFiles
-                             else lib.filterAttrs (n: _: !(builtins.elem n dockFiles)) allFiles;
-              in
-              lib.mapAttrs' (name: _:
-                lib.nameValuePair
-                  ("quickshell/" + name)
-                  { source = "${qmlSrc}/${name}"; }
-              ) filtered;
+                allFiles  = builtins.readDir qmlSrc;
+                dockFiles = [ "Dock.qml" "DockItem.qml" "PinnedItem.qml" "AppMenuButton.qml" ];
+                filtered  = if cfg.dock.enable
+                            then lib.filterAttrs (_: t: t == "regular") allFiles
+                            else lib.filterAttrs (n: t: t == "regular" && !(builtins.elem n dockFiles)) allFiles;
+                fileMappings = lib.mapAttrs' (name: _:
+                  lib.nameValuePair
+                    ("quickshell/" + name)
+                    { source = "${qmlSrc}/${name}"; }
+                ) filtered;
+                iconMapping = lib.optionalAttrs cfg.dock.enable {
+                  "quickshell/icons" = { source = "${qmlSrc}/icons"; recursive = true; };
+                };
+              in fileMappings // iconMapping;
 
             # ── systemd user service (autostart) ──────────────────────────────
             systemd.user.services.quickshell = lib.mkIf cfg.autostart {
