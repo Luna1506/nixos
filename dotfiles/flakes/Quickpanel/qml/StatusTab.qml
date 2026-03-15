@@ -118,46 +118,65 @@ Item {
         // ── Clock / date block ─────────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
-            implicitHeight:   72
-            color:   panel.cSurface
-            radius:  10
+            implicitHeight:   100
+            color:            panel.cCard
+            radius:           12
+            border.color:     panel.cBorder
+            border.width:     1
 
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: 2
 
-                Text {
-                    id: clockLabel
-                    Layout.alignment: Qt.AlignHCenter
-                    font.pixelSize:   34
-                    font.weight:      Font.Light
-                    color:            panel.cText
+                Item {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: clockLabel.width
+                    height: clockLabel.height
 
-                    property string timeStr: ""
-                    property string dateStr: ""
+                    // Glow layer
+                    Text {
+                        anchors.centerIn: parent
+                        font.pixelSize:   52
+                        font.weight:      Font.Light
+                        color:            panel.cNeonCyan
+                        opacity:          0.30
+                        text:             clockLabel.timeStr
+                    }
 
-                    text: timeStr
+                    // Main clock
+                    Text {
+                        id: clockLabel
+                        anchors.centerIn: parent
+                        font.pixelSize:   48
+                        font.weight:      Font.Light
+                        color:            panel.cNeonCyan
 
-                    function updateTime() {
-                        var d   = new Date()
-                        var h   = d.getHours().toString().padStart(2, "0")
-                        var m   = d.getMinutes().toString().padStart(2, "0")
-                        var s   = d.getSeconds().toString().padStart(2, "0")
-                        timeStr = h + ":" + m + ":" + s
+                        property string timeStr: ""
+                        property string dateStr: ""
 
-                        var days   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
-                        var months = ["Jan","Feb","Mar","Apr","May","Jun",
-                                      "Jul","Aug","Sep","Oct","Nov","Dec"]
-                        dateStr = days[d.getDay()] + ", " +
-                                  d.getDate() + " " + months[d.getMonth()] +
-                                  " " + d.getFullYear()
+                        text: timeStr
+
+                        function updateTime() {
+                            var d   = new Date()
+                            var h   = d.getHours().toString().padStart(2, "0")
+                            var m   = d.getMinutes().toString().padStart(2, "0")
+                            var s   = d.getSeconds().toString().padStart(2, "0")
+                            timeStr = h + ":" + m + ":" + s
+
+                            var days   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+                            var months = ["Jan","Feb","Mar","Apr","May","Jun",
+                                          "Jul","Aug","Sep","Oct","Nov","Dec"]
+                            dateStr = days[d.getDay()] + ", " +
+                                      d.getDate() + " " + months[d.getMonth()] +
+                                      " " + d.getFullYear()
+                        }
                     }
                 }
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     text:             clockLabel.dateStr
-                    font.pixelSize:   12
+                    font.pixelSize:   14
                     color:            panel.cSubtext
                 }
             }
@@ -165,21 +184,23 @@ Item {
 
         // ── WiFi ───────────────────────────────────────────────────────────────
         StatusRow {
-            panel:   root.panel
-            icon:    root.wifiConnected ? "" : ""
-            iconColor: root.wifiConnected ? panel.cGreen : panel.cSubtext
-            label:   "WiFi"
-            value:   root.wifiSSID
+            panel:      root.panel
+            icon:       root.wifiConnected ? "" : ""
+            iconColor:  root.wifiConnected ? panel.cNeonCyan : panel.cNeonPink
+            badgeColor: panel.cNeonCyan
+            label:      "WiFi"
+            value:      root.wifiSSID
         }
 
         // ── Bluetooth ──────────────────────────────────────────────────────────
         StatusRow {
-            panel:     root.panel
-            icon:      ""
-            iconColor: root.btEnabled ? panel.cAccent : panel.cSubtext
-            label:     "Bluetooth"
-            value:     root.btStatus + (root.btDevice.length > 0
-                           ? "  ·  " + root.btDevice : "")
+            panel:      root.panel
+            icon:       ""
+            iconColor:  root.btEnabled ? panel.cNeonPink : panel.cSubtext
+            badgeColor: panel.cNeonPink
+            label:      "Bluetooth"
+            value:      root.btStatus + (root.btDevice.length > 0
+                            ? "  ·  " + root.btDevice : "")
         }
 
         // ── Battery ────────────────────────────────────────────────────────────
