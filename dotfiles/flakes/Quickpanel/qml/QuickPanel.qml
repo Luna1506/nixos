@@ -24,8 +24,8 @@ PanelWindow {
 
     // ── Layer-shell setup ─────────────────────────────────────────────────────
     // Overlay layer → appears above all normal windows.
-    layer:         WlrLayerShell.Layer.Overlay
-    keyboardFocus: WlrLayerShell.KeyboardFocus.OnDemand
+    WlrLayershell.layer:         WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
     // Anchor to top-right; no exclusive zone (doesn't push other windows).
     anchors {
