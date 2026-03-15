@@ -6,18 +6,18 @@ import QtQuick.Controls
 
 RoundButton {
     required property var  panel
-    required property string iconText
+    required property string icon
 
     property bool  accent:   false
     property real  iconSize: 18
 
-    implicitWidth:  40
-    implicitHeight: 40
+    implicitWidth:  48
+    implicitHeight: 48
 
     background: Rectangle {
         radius: 20
-        color:  parent.accent ? panel.cAccent
-                              : (parent.hovered ? panel.cOverlay : "transparent")
+        color:  parent.accent ? panel.cNeonCyan
+                              : (parent.hovered ? panel.cBorder : "transparent")
 
         Behavior on color {
             ColorAnimation { duration: 120 }
@@ -25,7 +25,7 @@ RoundButton {
     }
 
     contentItem: Text {
-        text:                iconText
+        text:                icon
         font.pixelSize:      iconSize
         color:               parent.accent ? panel.cBase : panel.cText
         horizontalAlignment: Text.AlignHCenter
