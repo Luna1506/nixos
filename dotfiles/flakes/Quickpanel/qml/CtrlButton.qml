@@ -13,10 +13,9 @@ RoundButton {
 
     implicitWidth:  40
     implicitHeight: 40
-    radius:         20
 
     background: Rectangle {
-        radius: parent.radius
+        radius: 20
         color:  parent.accent ? panel.cAccent
                               : (parent.hovered ? panel.cOverlay : "transparent")
 
