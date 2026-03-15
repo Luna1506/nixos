@@ -12,6 +12,11 @@
     VISUAL = "nvim";
   };
 
+  home.sessionPath = [
+    "$HOME/.local/bin"
+    "$HOME/.npm-global/bin"
+  ];
+
   # Alternativ: Module direkt einbinden
   imports = [
     ./modules/default-hyprland
