@@ -160,32 +160,6 @@ Item {
         cmdProc.running = false; cmdProc.running = true
     }
 
-    // ── Volume slider component ───────────────────────────────────────────────
-    component VolumeSlider: Slider {
-        id: sldr
-        property color trackColor: panel.cNeonCyan
-        from: 0; to: 100; stepSize: 1
-
-        background: Rectangle {
-            x: sldr.leftPadding
-            y: sldr.topPadding + sldr.availableHeight / 2 - height / 2
-            width: sldr.availableWidth; height: 4; radius: 2
-            color: panel.cBorder
-            Rectangle {
-                width: sldr.visualPosition * parent.width
-                height: parent.height; radius: parent.radius
-                color: sldr.trackColor
-            }
-        }
-        handle: Rectangle {
-            x: sldr.leftPadding + sldr.visualPosition * (sldr.availableWidth - width)
-            y: sldr.topPadding + sldr.availableHeight / 2 - height / 2
-            width: 14; height: 14; radius: 7
-            color: sldr.trackColor
-            Behavior on color { ColorAnimation { duration: 100 } }
-        }
-    }
-
     // ── UI ────────────────────────────────────────────────────────────────────
     ColumnLayout {
         id: col
@@ -401,10 +375,9 @@ Item {
                 }
 
                 VolumeSlider {
-                    id:               masterSlider
                     Layout.fillWidth: true
                     value:            root.masterMuted ? 0 : Math.round(root.masterVol * 100)
-                    trackColor:       root.masterMuted ? panel.cSubtext : panel.cNeonCyan
+                    trackColor:       root.masterMuted ? "#4a4a6a" : "#a855f7"
                     enabled:          !root.masterMuted
                     onMoved: {
                         var v = (value / 100).toFixed(2)
@@ -459,7 +432,7 @@ Item {
                     VolumeSlider {
                         Layout.fillWidth: true
                         value:            modelData.vol
-                        trackColor:       panel.cNeonViolet
+                        trackColor:       "#7c3aed"
                         onMoved: {
                             var v = value + "%"
                             streamVolProc.command = ["pactl", "set-sink-input-volume", modelData.id, v]
