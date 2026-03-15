@@ -140,12 +140,20 @@ PanelWindow {
                     color:                root.cText
                     font.pixelSize:       14
                     font.weight:          Font.Medium
-                    placeholderText:      "App suchen…"
-                    placeholderTextColor: root.cSubtext
                     selectByMouse:        true
                     clip:                 true
                     onTextChanged:        root.searchText = text.toLowerCase()
                     Keys.onEscapePressed: root.visible = false
+
+                    // Placeholder via overlay Text
+                    Text {
+                        anchors.fill:  parent
+                        text:          "App suchen…"
+                        color:         root.cSubtext
+                        font.pixelSize: 14
+                        font.weight:   Font.Medium
+                        visible:       searchField.text.length === 0
+                    }
                 }
             }
         }
