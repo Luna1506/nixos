@@ -73,6 +73,26 @@ Item {
             radius:           12
             border.color:     panel.cBorder
             border.width:     1
+            clip:             true
+
+            // Battery % — top right overlay
+            Text {
+                anchors {
+                    top:         parent.top
+                    right:       parent.right
+                    topMargin:   8
+                    rightMargin: 10
+                }
+                text:           root.batteryPct + "%"
+                font.pixelSize: 11
+                font.weight:    Font.Medium
+                color: {
+                    if (root.batteryStatus === "Charging") return panel.cNeonCyan
+                    if (root.batteryPct >= 41)             return panel.cSubtext
+                    if (root.batteryPct >= 16)             return panel.cNeonYellow
+                    return panel.cNeonPink
+                }
+            }
 
             ColumnLayout {
                 anchors.centerIn: parent
@@ -80,13 +100,13 @@ Item {
 
                 Item {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    width: clockLabel.width
-                    height: clockLabel.height
+                    width:  clockLabel.implicitWidth
+                    height: clockLabel.implicitHeight
 
-                    // Glow layer
+                    // Glow layer (same size as main clock)
                     Text {
                         anchors.centerIn: parent
-                        font.pixelSize:   52
+                        font.pixelSize:   48
                         font.weight:      Font.Light
                         color:            panel.cNeonCyan
                         opacity:          0.30
@@ -142,13 +162,6 @@ Item {
         BluetoothDropdown {
             Layout.fillWidth: true
             panel: root.panel
-        }
-
-        // ── Battery ────────────────────────────────────────────────────────────
-        BatteryRow {
-            panel:   root.panel
-            pct:     root.batteryPct
-            status:  root.batteryStatus
         }
 
         // Bottom padding
