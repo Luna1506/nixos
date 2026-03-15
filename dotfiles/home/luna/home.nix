@@ -21,19 +21,15 @@
     ./modules/cursor.nix
     ./modules/neovim.nix
     ./modules/nerdfetch-bash.nix
-    #  ./modules/quickshell/caelestia-shell.nix
-    #inputs.quickpanel.homeManagerModules.default
+    inputs.quickpanel.homeManagerModules.default
   ];
 
-  #programs.caelestiaShell = {
-  #  enable = true;
-  #};
-  #programs.quickpanel = {
-  # enable = true;
-  #keybind = "SUPER, P"; # Hyprland Shortcut
-  #autostart = true; # systemd user service
-  #extraPackages = with pkgs; [ networkmanager bluez upower playerctl ];
-  #};
+  programs.quickpanel = {
+    enable = true;
+    keybind = "SUPER SHIFT, P";
+    autostart = true;
+    extraPackages = with pkgs; [ networkmanager bluez upower playerctl ];
+  };
 
 }
 
