@@ -15,7 +15,7 @@
     #./nwg-dock.nix
     ./starship.nix
     ./theme.nix
-    #./waybar.nix
+    ./waybar.nix
     ./wofi.nix
   ];
 
