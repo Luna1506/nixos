@@ -22,5 +22,7 @@
   wayland.windowManager.hyprland = {
     enable = true;
   };
+
+  services.power-profiles-daemon.enable = true;
 }
 
