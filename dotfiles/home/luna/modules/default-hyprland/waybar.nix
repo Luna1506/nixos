@@ -17,6 +17,7 @@
           "wireplumber"
           "network"
           "bluetooth"
+          "battery"
           "clock"
           "custom/power"
         ];
@@ -29,27 +30,41 @@
         };
 
         wireplumber = {
-          format = "  {volume}%";
-          format-muted = " muted";
+          format = "  {volume}%";
+          format-muted = " muted";
           on-click = "pavucontrol";
           on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+";
           on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
         };
 
         network = {
-          format-wifi = "  {signalStrength}%";
+          format-wifi = "  {signalStrength}%";
           format-ethernet = "{ipaddr}";
-          format-disconnected = "  offline";
+          format-disconnected = "  offline";
           tooltip = true;
           on-click = "sh -lc 'command -v nm-connection-editor >/dev/null && nm-connection-editor || nmtui'";
         };
 
         bluetooth = {
-          format = "";
-          format-off = " off";
-          format-disabled = " off";
+          format = "";
+          format-off = " off";
+          format-disabled = " off";
           tooltip = true;
           on-click = "sh -lc 'command -v blueman-manager >/dev/null && blueman-manager || bluetoothctl'";
+        };
+
+        battery = {
+          bat = "BAT1";
+          format = "{icon} {capacity}%";
+          format-charging = "  {capacity}%";
+          format-icons = [ "" "" "" "" "" ];
+          format-full = "  {capacity}%";
+          states = {
+            warning = 20;
+            critical = 10;
+          };
+          tooltip = true;
+          tooltip-format = "{timeTo}, {capacity}%";
         };
 
         clock = {
@@ -58,7 +73,7 @@
         };
 
         "custom/power" = {
-          format = "";
+          format = "";
           tooltip = true;
           tooltip-format = "Power";
           on-click = "wlogout";
@@ -88,6 +103,7 @@
           #wireplumber,
           #network,
           #bluetooth,
+          #battery,
           #custom-power {
       	margin: 6px 4px;
       	padding: 0 10px;
@@ -107,6 +123,7 @@
           #wireplumber,
           #network,
           #bluetooth,
+          #battery,
           #custom-power {
             font-family: "JetBrainsMono Nerd Font",
                          "JetBrainsMono NF",
@@ -141,6 +158,14 @@
           #custom-power:hover {
             background: rgba(255, 255, 255, 0.12);
             color: #ffffff;
+          }
+
+          #battery.warning {
+            color: #f5c04d;
+          }
+
+          #battery.critical {
+            color: #f56c6c;
           }
 
           /* Workspaces */
@@ -198,4 +223,3 @@
     executable = true;
   };
 }
-
