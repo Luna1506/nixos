@@ -16,5 +16,7 @@
     # Electron/Chromium Apps auf Wayland
     NIXOS_OZONE_WL = "1";
   };
+
+  services.power-profiles-daemon.enable = true;
 }
 
