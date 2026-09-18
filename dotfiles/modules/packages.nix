@@ -65,6 +65,7 @@
     claude-code
     vscodium
     python3
+    nuclei
     # END AUTO PACKAGES
   ];
 
