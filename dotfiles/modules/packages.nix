@@ -61,7 +61,7 @@
     lavat
     nyancat
     asciiquarium
-    nodejs_20
+    nodejs
     claude-code
     vscodium
     python3
