@@ -18,5 +18,6 @@
   };
 
   services.power-profiles-daemon.enable = true;
+  services.upower.enable = true; # battery data for the Quickshell panel
 }
 

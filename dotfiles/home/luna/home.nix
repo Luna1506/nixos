@@ -26,16 +26,7 @@
     ./modules/cursor.nix
     ./modules/neovim.nix
     ./modules/nerdfetch-bash.nix
-    inputs.quickpanel.homeManagerModules.default
+    ./modules/quickshell
   ];
-
-  programs.quickpanel = {
-    enable = true;
-    keybind = "SUPER SHIFT, P";
-    autostart = true;
-    dock.enable = false;
-    extraPackages = with pkgs; [ networkmanager bluez upower playerctl ];
-  };
-
 }
 

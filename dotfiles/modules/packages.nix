@@ -53,7 +53,6 @@
     nerdfetch
     hypridle
     hyprpicker
-    swaynotificationcenter
     playerctl
     cliphist
     protonup-qt
