@@ -35,7 +35,7 @@ in
 
   wayland.windowManager.hyprland.settings = {
     bind = [
-      "SUPER, N, global, quickshell:panelToggle"
+      "SUPER, B, global, quickshell:panelToggle"
     ];
 
     # The shell animates its own surfaces; Hyprland's layer animations would

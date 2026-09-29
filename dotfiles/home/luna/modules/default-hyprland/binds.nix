@@ -11,7 +11,6 @@
       "$mainMod, P, pin"
       "$mainMod, J, layoutmsg, togglesplit"
       "$mainMod, F, fullscreen"
-      "$mainMod, B, exec, ~/.config/hypr/scripts/waybar-toggle.sh"
       "$mainMod, L, exec, hyprlock"
       "$mainMod, D, exec, grim -g \"$(slurp)\" - | wl-copy"
       "$mainMod SHIFT, E, exit"
