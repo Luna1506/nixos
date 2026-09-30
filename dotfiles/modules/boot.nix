@@ -25,7 +25,9 @@
       [ -n "$linux" ] || exit 0
       order=$(efibootmgr | sed -n 's/^BootOrder: //p')
       case "$order" in "$linux"*) exit 0 ;; esac
-      rest=$(echo "$order" | tr ',' '\n' | grep -vx "$linux" | paste -sd, -)
+      # HP-Firmware lässt tote IDs in der BootOrder stehen, die efibootmgr -o ablehnt
+      existing=$(efibootmgr | sed -n 's/^Boot\([0-9A-F]\{4\}\).*/\1/p')
+      rest=$(echo "$order" | tr ',' '\n' | grep -vx "$linux" | grep -Fx "$existing" | paste -sd, -)
       efibootmgr -o "$linux''${rest:+,$rest}" >/dev/null
     '';
   };
