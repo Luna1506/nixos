@@ -2,9 +2,8 @@
 {
   wayland.windowManager.hyprland.settings = {
     env = [
-      "XCURSOR_THEME,Bibata-Modern-Classic"
-      "XCURSOR_SIZE,25"
+      { _args = [ "XCURSOR_THEME" "Bibata-Modern-Classic" ]; }
+      { _args = [ "XCURSOR_SIZE" "25" ]; }
     ];
   };
 }
-

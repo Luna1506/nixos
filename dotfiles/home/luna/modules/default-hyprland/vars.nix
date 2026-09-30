@@ -1,17 +1,12 @@
 { ... }:
 
-let
-  terminal = "ghostty";
-  fileManager = "nautilus";
-  menu = "wofi --show drun";
-  mainMod = "SUPER";
-in
+# Werden als Lua-Locals (`local terminal = "ghostty"` ...) an den Anfang von
+# hyprland.lua geschrieben und können in Binds/Autostart referenziert werden.
 {
   wayland.windowManager.hyprland.settings = {
-    "$terminal" = terminal;
-    "$fileManager" = fileManager;
-    "$menu" = menu;
-    "$mainMod" = mainMod;
+    terminal._var = "ghostty";
+    fileManager._var = "nautilus";
+    menu._var = "wofi --show drun";
+    mainMod._var = "SUPER";
   };
 }
-

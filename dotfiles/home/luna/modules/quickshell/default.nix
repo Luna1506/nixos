@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 # Quickshell desktop shell: control center (SUPER+N), notification popups and
 # a workspace OSD. There is no permanent bar; nothing is visible until used.
@@ -35,13 +35,18 @@ in
 
   wayland.windowManager.hyprland.settings = {
     bind = [
-      "SUPER, B, global, quickshell:panelToggle"
+      {
+        _args = [
+          "SUPER + B"
+          (lib.generators.mkLuaInline ''hl.dsp.global("quickshell:panelToggle")'')
+        ];
+      }
     ];
 
     # The shell animates its own surfaces; Hyprland's layer animations would
     # run on top of that.
-    layerrule = [
-      "no_anim on, match:namespace ^quickshell-.*$"
+    layer_rule = [
+      { match.namespace = "^quickshell-.*$"; no_anim = true; }
     ];
   };
 }

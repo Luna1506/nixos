@@ -1,6 +1,6 @@
 { ... }:
 {
-  wayland.windowManager.hyprland.settings = {
+  wayland.windowManager.hyprland.settings.config = {
     input = {
       kb_layout = "de";
       follow_mouse = 1;
@@ -9,4 +9,3 @@
     };
   };
 }
-

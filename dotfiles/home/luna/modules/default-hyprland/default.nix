@@ -26,6 +26,8 @@
     # das nur hyprland.portal enthält -> gtk-Portal & System-Config werden ignoriert.
     package = null;
     portalPackage = null;
+    # hyprland.lua statt hyprland.conf (hyprlang fällt mit Hyprland 0.57 weg)
+    configType = "lua";
   };
 
 }

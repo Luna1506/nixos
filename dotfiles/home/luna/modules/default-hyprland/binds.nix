@@ -1,69 +1,71 @@
-{ ... }:
+{ lib, ... }:
+let
+  inherit (lib.generators) mkLuaInline toLua;
+
+  # key: Taste(n) hinter mainMod, z.B. "Q" oder "SHIFT + E"
+  mod = key: mkLuaInline ''mainMod .. " + ${key}"'';
+  bind = keys: dispatcher: { _args = [ keys (mkLuaInline dispatcher) ]; };
+  bindWith = opts: keys: dispatcher: { _args = [ keys (mkLuaInline dispatcher) opts ]; };
+  exec = cmd: "hl.dsp.exec_cmd(${toLua { } cmd})";
+
+  media = bindWith { locked = true; repeating = true; };
+  mediaLocked = bindWith { locked = true; };
+  mouse = bindWith { mouse = true; };
+
+  # mainMod + [0-9] -> Workspace, mainMod + SHIFT + [0-9] -> Fenster verschieben
+  workspaceBinds = lib.concatMap (
+    i:
+    let
+      key = toString (lib.mod i 10);
+      ws = toString i;
+    in
+    [
+      (bind (mod key) "hl.dsp.focus({ workspace = ${ws} })")
+      (bind (mod "SHIFT + ${key}") "hl.dsp.window.move({ workspace = ${ws}, follow = true })")
+    ]
+  ) (lib.range 1 10);
+in
 {
   wayland.windowManager.hyprland.settings = {
     bind = [
-      "$mainMod, Q, exec, $terminal"
-      "$mainMod, C, killactive"
-      "$mainMod, M, exit"
-      "$mainMod, E, exec, $fileManager"
-      "$mainMod, T, togglefloating"
-      "$mainMod, R, exec, wofi --show drun"
-      "$mainMod, P, pin"
-      "$mainMod, J, layoutmsg, togglesplit"
-      "$mainMod, F, fullscreen"
-      "$mainMod, L, exec, hyprlock"
-      "$mainMod, D, exec, grim -g \"$(slurp)\" - | wl-copy"
-      "$mainMod SHIFT, E, exit"
-      "$mainMod, V, exec, cliphist list | wofi -dmenu | cliphist decode | wl-copy"
-      "$mainMod SHIFT, TAB, exec, qs ipc -c overview call overview toggle"
-      "$mainMod, 1, workspace, 1"
-      "$mainMod, 2, workspace, 2"
-      "$mainMod, 3, workspace, 3"
-      "$mainMod, 4, workspace, 4"
-      "$mainMod, 5, workspace, 5"
-      "$mainMod, 6, workspace, 6"
-      "$mainMod, 7, workspace, 7"
-      "$mainMod, 8, workspace, 8"
-      "$mainMod, 9, workspace, 9"
-      "$mainMod, 0, workspace, 10"
-      "$mainMod SHIFT, 1, movetoworkspace, 1"
-      "$mainMod SHIFT, 2, movetoworkspace, 2"
-      "$mainMod SHIFT, 3, movetoworkspace, 3"
-      "$mainMod SHIFT, 4, movetoworkspace, 4"
-      "$mainMod SHIFT, 5, movetoworkspace, 5"
-      "$mainMod SHIFT, 6, movetoworkspace, 6"
-      "$mainMod SHIFT, 7, movetoworkspace, 7"
-      "$mainMod SHIFT, 8, movetoworkspace, 8"
-      "$mainMod SHIFT, 9, movetoworkspace, 9"
-      "$mainMod SHIFT, 0, movetoworkspace, 10"
-      "$mainMod, S, togglespecialworkspace, magic"
-      "$mainMod SHIFT, S, movetoworkspace, special:magic"
-      "$mainMod, TAB, workspace, e+1"
-      "$mainMod, right, workspace, e+1"
-      "$mainMod, left, workspace, e-1"
-      "ALT, Tab, workspace, previous"
-    ];
+      (bind (mod "Q") "hl.dsp.exec_cmd(terminal)")
+      (bind (mod "C") "hl.dsp.window.close()")
+      (bind (mod "M") "hl.dsp.exit()")
+      (bind (mod "E") "hl.dsp.exec_cmd(fileManager)")
+      (bind (mod "T") ''hl.dsp.window.float({ action = "toggle" })'')
+      (bind (mod "R") "hl.dsp.exec_cmd(menu)")
+      (bind (mod "P") ''hl.dsp.window.pin({ action = "toggle" })'')
+      (bind (mod "J") ''hl.dsp.layout("togglesplit")'')
+      (bind (mod "F") ''hl.dsp.window.fullscreen({ action = "toggle" })'')
+      (bind (mod "L") (exec "hyprlock"))
+      (bind (mod "D") (exec ''grim -g "$(slurp)" - | wl-copy''))
+      (bind (mod "SHIFT + E") "hl.dsp.exit()")
+      (bind (mod "V") (exec "cliphist list | wofi -dmenu | cliphist decode | wl-copy"))
+      (bind (mod "SHIFT + TAB") (exec "qs ipc -c overview call overview toggle"))
+    ]
+    ++ workspaceBinds
+    ++ [
+      (bind (mod "S") ''hl.dsp.workspace.toggle_special("magic")'')
+      (bind (mod "SHIFT + S") ''hl.dsp.window.move({ workspace = "special:magic" })'')
+      (bind (mod "TAB") ''hl.dsp.focus({ workspace = "e+1" })'')
+      (bind (mod "right") ''hl.dsp.focus({ workspace = "e+1" })'')
+      (bind (mod "left") ''hl.dsp.focus({ workspace = "e-1" })'')
+      (bind "ALT + Tab" ''hl.dsp.focus({ workspace = "previous" })'')
 
-    bindm = [
-      "$mainMod, mouse:272, movewindow"
-      "$mainMod, mouse:273, resizewindow"
-    ];
+      (mouse (mod "mouse:272") "hl.dsp.window.drag()")
+      (mouse (mod "mouse:273") "hl.dsp.window.resize()")
 
-    bindel = [
-      ",XF86AudioRaiseVolume, exec, wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"
-      ",XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-      ",XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-      ",XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-      ",XF86MonBrightnessUp, exec, brightnessctl -e4 -n2 set 5%+"
-      ",XF86MonBrightnessDown, exec, brightnessctl -e4 -n2 set 5%-"
-    ];
+      (media "XF86AudioRaiseVolume" (exec "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"))
+      (media "XF86AudioLowerVolume" (exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"))
+      (media "XF86AudioMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
+      (media "XF86AudioMicMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
+      (media "XF86MonBrightnessUp" (exec "brightnessctl -e4 -n2 set 5%+"))
+      (media "XF86MonBrightnessDown" (exec "brightnessctl -e4 -n2 set 5%-"))
 
-    bindl = [
-      ",XF86AudioNext, exec, playerctl next"
-      ",XF86AudioPause, exec, playerctl play-pause"
-      ",XF86AudioPlay, exec, playerctl play-pause"
-      ",XF86AudioPrev, exec, playerctl previous"
+      (mediaLocked "XF86AudioNext" (exec "playerctl next"))
+      (mediaLocked "XF86AudioPause" (exec "playerctl play-pause"))
+      (mediaLocked "XF86AudioPlay" (exec "playerctl play-pause"))
+      (mediaLocked "XF86AudioPrev" (exec "playerctl previous"))
     ];
   };
 }
-

@@ -1,15 +1,26 @@
-{ ... }:
+{ lib, ... }:
+let
+  inherit (lib.generators) mkLuaInline toLua;
+
+  # Wird beim Start von Hyprland ausgeführt (ersetzt exec-once).
+  # Strings sind Shell-Befehle, mkLuaInline-Werte rohe Lua-Ausdrücke.
+  startup = [
+    "hyprpaper"
+    (mkLuaInline "terminal")
+    "wl-paste --type text --watch cliphist store"
+  ];
+in
 {
   wayland.windowManager.hyprland.settings = {
-    exec-once = [
-      "hyprpaper"
-      "$terminal"
-      "wl-paste --type text --watch cliphist store"
-
-      # Alles auf Workspace 1
-      # "[workspace 1 silent] ghostty --title main"
-      # "[workspace 1 silent] bash -lc 'sleep 0.2 && exec ghostty --title matrix -e cmatrix'"
-      # "[workspace 1 silent] bash -lc 'sleep 0.4 && exec ghostty --title cava -e cava'"
+    on = [
+      {
+        _args = [
+          "hyprland.start"
+          (mkLuaInline ''
+            function()
+            ${lib.concatMapStrings (cmd: "  hl.exec_cmd(${toLua { } cmd})\n") startup}end'')
+        ];
+      }
     ];
   };
 }
