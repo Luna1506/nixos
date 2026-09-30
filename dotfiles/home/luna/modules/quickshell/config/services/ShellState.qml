@@ -4,8 +4,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 
-// UI state of the control center: whether it is open, on which screen, and
-// which detail view is shown.
+// UI state of the control center and the app launcher: whether they are
+// open, on which screen, and which detail view is shown. At most one of the
+// two is open at a time.
 Singleton {
     id: root
 
@@ -13,6 +14,9 @@ Singleton {
     property ShellScreen panelScreen: null
     // "" (none), "wifi", "bluetooth" or "audio"
     property string detail: ""
+
+    property bool launcherOpen: false
+    property ShellScreen launcherScreen: null
 
     function focusedScreen(): ShellScreen {
         const name = Hyprland.focusedMonitor?.name;
@@ -22,9 +26,11 @@ Singleton {
     function openPanel(): void {
         if (panelOpen)
             return;
-        panelScreen = focusedScreen();
-        if (!panelScreen)
+        const screen = focusedScreen();
+        if (!screen)
             return;
+        closeLauncher();
+        panelScreen = screen;
         detail = "";
         panelOpen = true;
     }
@@ -36,6 +42,25 @@ Singleton {
 
     function togglePanel(): void {
         panelOpen ? closePanel() : openPanel();
+    }
+
+    function openLauncher(): void {
+        if (launcherOpen)
+            return;
+        const screen = focusedScreen();
+        if (!screen)
+            return;
+        closePanel();
+        launcherScreen = screen;
+        launcherOpen = true;
+    }
+
+    function closeLauncher(): void {
+        launcherOpen = false;
+    }
+
+    function toggleLauncher(): void {
+        launcherOpen ? closeLauncher() : openLauncher();
     }
 
     readonly property var details: ["wifi", "bluetooth", "audio"]
@@ -58,7 +83,7 @@ Singleton {
         detail !== "" ? closeDetail() : closePanel();
     }
 
-    // Close the panel if its monitor gets unplugged.
+    // Close the panel or launcher if its monitor gets unplugged.
     Connections {
         target: Quickshell
 
@@ -68,6 +93,10 @@ Singleton {
             if (root.panelScreen && !Quickshell.screens.includes(root.panelScreen)) {
                 root.closePanel();
                 root.panelScreen = null;
+            }
+            if (root.launcherScreen && !Quickshell.screens.includes(root.launcherScreen)) {
+                root.closeLauncher();
+                root.launcherScreen = null;
             }
         }
     }

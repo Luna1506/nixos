@@ -29,6 +29,9 @@ Singleton {
         readonly property color textOnError: "#601410"
         readonly property color errorSurface: "#3a1d1f"
 
+        // High usage (Claude plan limits) and similar soft alerts.
+        readonly property color warning: "#f0c38e"
+
         // State layers drawn over a surface while hovered / pressed.
         readonly property color hover: Qt.rgba(1, 1, 1, 0.07)
         readonly property color pressed: Qt.rgba(1, 1, 1, 0.12)
@@ -67,6 +70,7 @@ Singleton {
         readonly property int body: 14
         readonly property int title: 16
         readonly property int large: 20
+        readonly property int badge: 10
         readonly property int clock: 64
         readonly property real labelLetterSpacing: 0.4
 
@@ -149,6 +153,24 @@ Singleton {
         readonly property int osdDot: 8
         readonly property int osdDotActive: 26
         readonly property int osdDotSpacing: 7
+
+        // App launcher
+        readonly property int launcherWidth: 680
+        // Share of the screen height the launcher card takes.
+        readonly property real launcherMaxHeightShare: 0.72
+        readonly property int launcherPadding: 20
+        readonly property int searchFieldHeight: 52
+        readonly property int appTileHeight: 96
+        readonly property int appTileIcon: 44
+        readonly property int appRowIcon: 32
+        readonly property int badgeHeight: 16
+        readonly property int badgePadding: 6
+        readonly property int menuWidth: 240
+        readonly property int menuRow: 40
+        readonly property int usageBarHeight: 6
+        readonly property int claudeIcon: 44
+        // Fallback glyph size relative to the app icon.
+        readonly property real appIconGlyphScale: 0.55
     }
 
     // Surface opacity of the panel/cards; Hyprland blurs behind them.

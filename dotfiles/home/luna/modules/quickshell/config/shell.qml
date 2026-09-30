@@ -8,6 +8,7 @@ import qs.services
 import qs.panel
 import qs.notifications
 import qs.osd
+import qs.launcher
 
 ShellRoot {
     // Singletons are created lazily; these must run from the start
@@ -25,11 +26,37 @@ ShellRoot {
 
     WorkspaceOsd {}
 
-    // Hyprland: bind = SUPER, N, global, quickshell:panelToggle
+    Launcher {}
+
+    // Hyprland: SUPER + B -> global, quickshell:panelToggle
     GlobalShortcut {
         name: "panelToggle"
         description: "Toggle the control center"
         onPressed: ShellState.togglePanel()
+    }
+
+    // Hyprland: SUPER + R -> global, quickshell:launcherToggle
+    GlobalShortcut {
+        name: "launcherToggle"
+        description: "Toggle the app launcher"
+        onPressed: ShellState.toggleLauncher()
+    }
+
+    // qs -c luna ipc call launcher toggle|open|close
+    IpcHandler {
+        target: "launcher"
+
+        function toggle(): void {
+            ShellState.toggleLauncher();
+        }
+
+        function open(): void {
+            ShellState.openLauncher();
+        }
+
+        function close(): void {
+            ShellState.closeLauncher();
+        }
     }
 
     // qs -c luna ipc call panel toggle|open|close|detail <wifi|bluetooth|audio>

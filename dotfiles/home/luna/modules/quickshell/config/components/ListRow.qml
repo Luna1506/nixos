@@ -2,8 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import qs
 
-// Row for detail lists: icon, title/subtitle and trailing items
-// (children are placed at the end of the row).
+// Row for detail lists: icon (or custom `leading` items), title/subtitle
+// and trailing items (children are placed at the end of the row).
 Rectangle {
     id: root
 
@@ -14,8 +14,11 @@ Rectangle {
     property bool clickable: true
     property real iconFill: highlighted ? 1 : 0
     default property alias trailing: trailingRow.data
+    property alias leading: leadingItem.data
 
     signal clicked
+    // Right click, in row coordinates.
+    signal contextMenuRequested(real x, real y)
 
     implicitHeight: Theme.size.listRow
     radius: Theme.radius.small
@@ -28,7 +31,8 @@ Rectangle {
     Clickable {
         enabled: root.clickable
         radius: root.radius
-        onClicked: root.clicked()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => mouse.button === Qt.RightButton ? root.contextMenuRequested(mouse.x, mouse.y) : root.clicked()
     }
 
     RowLayout {
@@ -36,6 +40,14 @@ Rectangle {
         anchors.leftMargin: Theme.spacing.md
         anchors.rightMargin: Theme.spacing.sm
         spacing: Theme.spacing.md
+
+        Item {
+            id: leadingItem
+
+            visible: children.length > 0
+            implicitWidth: childrenRect.width
+            implicitHeight: childrenRect.height
+        }
 
         MaterialIcon {
             visible: root.icon !== ""

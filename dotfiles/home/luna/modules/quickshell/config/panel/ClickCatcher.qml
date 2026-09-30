@@ -3,8 +3,9 @@ import Quickshell
 import Quickshell.Wayland
 import qs.services
 
-// While the panel is open, an invisible surface on every other monitor
-// closes it on click (on the panel's own monitor ControlCenter does that).
+// While the panel or the launcher is open, an invisible surface on every
+// other monitor closes it on click (on its own monitor the overlay itself
+// does that).
 Variants {
     model: Quickshell.screens
 
@@ -12,7 +13,7 @@ Variants {
         required property ShellScreen modelData
 
         screen: modelData
-        visible: ShellState.panelOpen && modelData !== ShellState.panelScreen
+        visible: (ShellState.panelOpen && modelData !== ShellState.panelScreen) || (ShellState.launcherOpen && modelData !== ShellState.launcherScreen)
         color: "transparent"
         anchors {
             top: true
@@ -29,7 +30,10 @@ Variants {
             anchors.fill: parent
             // On press: the press moves keyboard focus away from the panel,
             // which cancels the click before it would complete.
-            onPressed: ShellState.closePanel()
+            onPressed: {
+                ShellState.closePanel();
+                ShellState.closeLauncher();
+            }
         }
     }
 }

@@ -33,7 +33,7 @@ in
       (bind (mod "M") "hl.dsp.exit()")
       (bind (mod "E") "hl.dsp.exec_cmd(fileManager)")
       (bind (mod "T") ''hl.dsp.window.float({ action = "toggle" })'')
-      (bind (mod "R") "hl.dsp.exec_cmd(menu)")
+      # mainMod + R: app launcher, bound in ../quickshell
       (bind (mod "P") ''hl.dsp.window.pin({ action = "toggle" })'')
       (bind (mod "J") ''hl.dsp.layout("togglesplit")'')
       (bind (mod "F") ''hl.dsp.window.fullscreen({ action = "toggle" })'')
