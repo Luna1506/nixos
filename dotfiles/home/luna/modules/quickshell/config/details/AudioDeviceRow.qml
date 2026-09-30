@@ -39,7 +39,7 @@ Rectangle {
                 if (root.stream)
                     return root.node.properties?.["media.name"] ?? "";
                 if (root.isDefault)
-                    return "Default";
+                    return I18n.tr("Default");
                 return root.node.description !== title ? root.node.description : "";
             }
             onClicked: Audio.setDefault(root.node)

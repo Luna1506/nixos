@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import qs
 import Quickshell.Services.Pipewire
 
 Singleton {
@@ -40,7 +41,7 @@ Singleton {
 
     function displayName(node: PwNode): string {
         if (!node)
-            return "No device";
+            return I18n.tr("No device");
         return node.nickname || node.description || node.name;
     }
 

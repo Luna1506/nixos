@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import qs
 import Quickshell.Bluetooth
 
 // Named BluetoothState to avoid shadowing the Quickshell `Bluetooth` singleton.
@@ -33,16 +34,16 @@ Singleton {
 
     readonly property string status: {
         if (!available)
-            return "Unavailable";
+            return I18n.tr("Unavailable");
         if (blocked)
-            return "Blocked";
+            return I18n.tr("Blocked");
         if (!enabled)
-            return "Off";
+            return I18n.tr("Off");
         if (connected.length === 1)
             return connected[0].name;
         if (connected.length > 1)
             return connected.length + " devices";
-        return "On";
+        return I18n.tr("On");
     }
 
     function toggle(): void {
@@ -79,17 +80,17 @@ Singleton {
     function stateText(device: BluetoothDevice): string {
         switch (device.state) {
         case BluetoothDeviceState.Connecting:
-            return "Connecting…";
+            return I18n.tr("Connecting…");
         case BluetoothDeviceState.Disconnecting:
-            return "Disconnecting…";
+            return I18n.tr("Disconnecting…");
         case BluetoothDeviceState.Connected:
-            return device.batteryAvailable ? "Connected · " + Math.round(device.battery * 100) + "%" : "Connected";
+            return device.batteryAvailable ? I18n.tr("Connected · %1", Math.round(device.battery * 100) + "%") : I18n.tr("Connected");
         default:
             if (device.pairing)
-                return "Pairing…";
+                return I18n.tr("Pairing…");
             if (device === failedDevice)
-                return "Pairing failed";
-            return device.paired || device.bonded ? "Paired" : device.address;
+                return I18n.tr("Pairing failed");
+            return device.paired || device.bonded ? I18n.tr("Paired") : device.address;
         }
     }
 

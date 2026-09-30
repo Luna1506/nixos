@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import qs
 import Quickshell.Io
 import Quickshell.Networking
 
@@ -54,14 +55,14 @@ Singleton {
         if (wired)
             return "Ethernet";
         if (!wifiAvailable)
-            return "Unavailable";
+            return I18n.tr("Unavailable");
         if (wifiBlockedByHardware)
-            return "Blocked by hardware switch";
+            return I18n.tr("Blocked by hardware switch");
         if (!wifiEnabled)
-            return "Off";
+            return I18n.tr("Off");
         if (activeNetwork)
             return activeNetwork.name;
-        return wifi.state === ConnectionState.Connecting ? "Connecting…" : "Not connected";
+        return wifi.state === ConnectionState.Connecting ? I18n.tr("Connecting…") : I18n.tr("Not connected");
     }
 
     readonly property bool online: wired !== null || activeNetwork !== null
@@ -106,7 +107,7 @@ Singleton {
     function securityName(network: WifiNetwork): string {
         switch (network.security) {
         case WifiSecurityType.Open:
-            return "Open";
+            return I18n.tr("Open");
         case WifiSecurityType.Owe:
             return "Enhanced open";
         case WifiSecurityType.Sae:
@@ -120,7 +121,7 @@ Singleton {
         case WifiSecurityType.Wpa3SuiteB192:
             return "Enterprise";
         default:
-            return "Secured";
+            return I18n.tr("Secured");
         }
     }
 

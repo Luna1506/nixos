@@ -26,7 +26,7 @@ Singleton {
     property real now: Date.now()
 
     function appKey(n: Notification): string {
-        return n.appName || "Unknown";
+        return n.appName || I18n.tr("Unknown");
     }
 
     function timeOf(n: Notification): real {
@@ -74,15 +74,9 @@ Singleton {
 
     function relativeTime(n: Notification): string {
         const seconds = Math.max(0, (now - timeOf(n)) / 1000);
-        if (seconds < 60)
-            return "now";
-        const minutes = Math.floor(seconds / 60);
-        if (minutes < 60)
-            return minutes + " min ago";
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24)
-            return hours + " h ago";
-        return Config.locale.toString(new Date(timeOf(n)), "d MMM");
+        if (seconds < 24 * 3600)
+            return I18n.relativeTime(seconds);
+        return Config.locale.toString(new Date(timeOf(n)), Config.shortDateFormat);
     }
 
     // A new notification, or one that replaced an earlier one (same id).

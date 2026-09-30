@@ -28,8 +28,8 @@ ColumnLayout {
         Layout.bottomMargin: Theme.spacing.xl
         visible: !root.usable
         icon: "bluetooth_disabled"
-        title: !BluetoothState.available ? "No Bluetooth adapter" : BluetoothState.blocked ? "Bluetooth is blocked" : "Bluetooth is off"
-        subtitle: !BluetoothState.available ? "" : BluetoothState.blocked ? "Check airplane mode (rfkill)." : "Turn it on to connect devices."
+        title: !BluetoothState.available ? I18n.tr("No Bluetooth adapter") : BluetoothState.blocked ? I18n.tr("Bluetooth is blocked") : I18n.tr("Bluetooth is off")
+        subtitle: !BluetoothState.available ? "" : BluetoothState.blocked ? I18n.tr("Check airplane mode (rfkill).") : I18n.tr("Turn it on to connect devices.")
     }
 
     ScrollArea {
@@ -40,7 +40,7 @@ ColumnLayout {
 
         SectionHeader {
             visible: BluetoothState.paired.length > 0
-            text: "Paired devices"
+            text: I18n.tr("Paired devices")
             bottomPadding: Theme.spacing.xs
         }
 
@@ -75,7 +75,7 @@ ColumnLayout {
         }
 
         SectionHeader {
-            text: BluetoothState.discovered.length > 0 ? "Available devices" : "Searching for devices…"
+            text: BluetoothState.discovered.length > 0 ? I18n.tr("Available devices") : I18n.tr("Searching for devices…")
             topPadding: BluetoothState.paired.length > 0 ? Theme.spacing.md : 0
             bottomPadding: Theme.spacing.xs
         }
@@ -91,7 +91,7 @@ ColumnLayout {
                 width: parent.width
                 icon: BluetoothState.deviceIcon(modelData)
                 title: modelData.name
-                subtitle: BluetoothState.pairingDevice === modelData ? "Pairing…" : BluetoothState.stateText(modelData)
+                subtitle: BluetoothState.pairingDevice === modelData ? I18n.tr("Pairing…") : BluetoothState.stateText(modelData)
                 onClicked: BluetoothState.pair(modelData)
             }
         }

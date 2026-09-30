@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import qs
 import Quickshell.Services.UPower
 
 Singleton {
@@ -27,18 +28,15 @@ Singleton {
 
     readonly property string stateText: {
         if (full)
-            return "Fully charged";
+            return I18n.tr("Fully charged");
         if (charging)
-            return device.timeToFull > 0 ? "Charging · " + formatDuration(device.timeToFull) + " until full" : "Charging";
+            return device.timeToFull > 0 ? I18n.tr("Charging · %1 until full", formatDuration(device.timeToFull)) : I18n.tr("Charging");
         if (pluggedIn)
-            return "Plugged in";
-        return device.timeToEmpty > 0 ? formatDuration(device.timeToEmpty) + " left" : "On battery";
+            return I18n.tr("Plugged in");
+        return device.timeToEmpty > 0 ? I18n.tr("%1 left", formatDuration(device.timeToEmpty)) : I18n.tr("On battery");
     }
 
     function formatDuration(seconds: real): string {
-        const minutes = Math.round(seconds / 60);
-        const h = Math.floor(minutes / 60);
-        const m = minutes % 60;
-        return h > 0 ? h + " h " + m + " min" : m + " min";
+        return I18n.duration(seconds);
     }
 }
