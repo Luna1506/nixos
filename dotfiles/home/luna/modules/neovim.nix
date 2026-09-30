@@ -236,7 +236,12 @@
       -- Servers
       local servers = {
         lua_ls        = { settings = { Lua = { workspace = { checkThirdParty = false }, telemetry = { enable = false } } } },
-        nil_ls        = { settings = { ["nil"] = { formatting = { command = { "nixpkgs-fmt" } } } } },
+        -- autoArchive: fetch missing flake inputs (e.g. after a GC) silently
+        -- instead of asking on every opened .nix file.
+        nil_ls        = { settings = { ["nil"] = {
+          formatting = { command = { "nixpkgs-fmt" } },
+          nix = { flake = { autoArchive = true } },
+        } } },
         pyright       = {},
         ts_ls         = {},
         html          = {},
