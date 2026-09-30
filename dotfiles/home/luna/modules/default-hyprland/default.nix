@@ -21,6 +21,11 @@
 
   wayland.windowManager.hyprland = {
     enable = true;
+    # Hyprland + Portal kommen aus dem NixOS-Modul (programs.hyprland).
+    # Sonst setzt Home-Manager NIX_XDG_DESKTOP_PORTAL_DIR auf das User-Profil,
+    # das nur hyprland.portal enthält -> gtk-Portal & System-Config werden ignoriert.
+    package = null;
+    portalPackage = null;
   };
 
 }

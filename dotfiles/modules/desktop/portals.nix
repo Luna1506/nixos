@@ -8,26 +8,19 @@
       xdg-desktop-portal-gtk
     ];
 
-    # Wichtig: In deinem NixOS-Modul erwartet xdg.portal.config pro Interface ein Attrset.
+    # Die Keys von xdg.portal.config sind Desktop-Namen (-> <name>-portals.conf),
+    # NICHT Interface-Namen. Die Interfaces gehören als Attribute in den Desktop-Block.
     config = {
       common = {
-        default = [ "gtk" "hyprland" ];
+        default = [ "hyprland" "gtk" ];
       };
 
-      "org.freedesktop.impl.portal.ScreenCast" = {
-        default = "hyprland";
-      };
-
-      "org.freedesktop.impl.portal.Screenshot" = {
-        default = "hyprland";
-      };
-
-      "org.freedesktop.impl.portal.FileChooser" = {
-        default = "gtk";
-      };
-
-      "org.freedesktop.impl.portal.OpenURI" = {
-        default = "gtk";
+      hyprland = {
+        default = [ "hyprland" "gtk" ];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "hyprland" ];
+        "org.freedesktop.impl.portal.Screenshot" = [ "hyprland" ];
+        "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
+        "org.freedesktop.impl.portal.OpenURI" = [ "gtk" ];
       };
     };
   };
