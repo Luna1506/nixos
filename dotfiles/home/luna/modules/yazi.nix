@@ -15,7 +15,8 @@
       opener = {
         edit = [
           {
-            run = "nvim \"$@\"";
+            # Yazi >= 26 expands %s to the selected files ("$@" stays empty).
+            run = "nvim %s";
             block = true;
           }
         ];
