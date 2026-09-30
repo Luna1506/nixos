@@ -1,5 +1,7 @@
 {
-  time.timeZone = "Europe/Berlin";
+  # Zeitzone automatisch per IP-Geolocation setzen (beim Boot + stündlich).
+  # tzupdate setzt time.timeZone = null, daher hier keine feste Zone.
+  services.tzupdate.enable = true;
 
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.extraLocaleSettings = {
