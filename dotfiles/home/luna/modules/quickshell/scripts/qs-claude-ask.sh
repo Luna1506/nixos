@@ -12,7 +12,7 @@ prompt=$1
 shift
 
 log="${XDG_CONFIG_HOME:-$HOME/.config}/Claude/logs/main.log"
-window='class:^(com\.anthropic\.Claude)$'
+window_class=com.anthropic.Claude
 # Startup timeout and the time the chat page needs before pasting (seconds).
 ready_timeout=60
 page_delay=1.5
@@ -48,8 +48,17 @@ claude-desktop "$link" >/dev/null 2>&1
 
 [ $# -gt 0 ] || exit 0
 
+# Hyprland's Lua dispatchers; a failed one only prints a warning.
+dispatch() {
+  hyprctl dispatch "$1" >/dev/null || true
+}
+
 sleep "$page_delay"
-hyprctl dispatch focuswindow "$window" >/dev/null
+# Addressed directly: the Lua API ignores "class:<regex>" selectors.
+address=$(hyprctl clients -j | jq -r --arg c "$window_class" 'first(.[] | select(.class == $c) | .address) // empty')
+[ -n "$address" ] || exit 1
+window="address:$address"
+dispatch "hl.dsp.focus({ window = \"$window\" })"
 for image in "$@"; do
   case $image in
     *.jpeg | *.jpg) type=image/jpeg ;;
@@ -59,7 +68,7 @@ for image in "$@"; do
   esac
   wl-copy --type "$type" <"$image"
   sleep 0.3
-  hyprctl dispatch sendshortcut "CTRL, V, $window" >/dev/null
+  dispatch "hl.dsp.send_shortcut({ mods = \"CTRL\", key = \"V\", window = \"$window\" })"
   sleep 0.7
 done
 rm -f -- "$@"
