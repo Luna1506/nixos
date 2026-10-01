@@ -13,3 +13,5 @@ try(hl.curve, "velaSoftSpring", { type = "spring", mass = 1, stiffness = 120, da
 set({ decoration = { blur = { special = true } } })
 try(hl.unbind, "SUPER + R")
 try(hl.bind, "SUPER + R", hl.dsp.exec_cmd("vela toggle"), { description = "vela: App Launcher öffnen" })
+try(hl.unbind, "SUPER + B")
+try(hl.bind, "SUPER + B", hl.dsp.exec_cmd("vela panel"), { description = "vela: Run a command: vela panel" })
