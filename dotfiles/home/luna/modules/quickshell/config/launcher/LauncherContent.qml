@@ -27,7 +27,7 @@ Rectangle {
     // "apps" (one grid row) | "result" | "ask"
     readonly property var rows: query !== "" ? searchRows(Apps.search(query)) : homeRows()
     // { key, row, col, app } in navigation order; app is null for the Claude
-    // card and the "Claude fragen" row.
+    // card and the "Ask Claude" row.
     readonly property var items: navigationItems(rows)
     // Key of the selected item; if it disappears (e.g. unpinned), the
     // selection stays at about the same place.
@@ -506,8 +506,8 @@ Rectangle {
 
                         ListRow {
                             height: Theme.size.listRow
-                            title: "Claude fragen"
-                            subtitle: "„" + root.query + "“"
+                            title: "Ask Claude"
+                            subtitle: "“" + root.query + "”"
                             highlighted: root.isSelected(row.index, 0)
                             onClicked: Apps.askClaude(root.query)
                             leading: AppIcon {

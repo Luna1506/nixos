@@ -52,7 +52,7 @@ Singleton {
     readonly property string claudeDesktopId: "com.anthropic.Claude"
     readonly property var claudeWebCommand: ["xdg-open", "https://claude.ai"]
     readonly property var claudeCodeCommand: ["claude"]
-    // "Claude fragen" from the launcher search opens a new chat with the
+    // "Ask Claude" from the launcher search opens a new chat with the
     // query, via the same deep link as the app's GNOME search provider.
     readonly property string claudeAskUrl: "claude://claude.ai/new"
     readonly property string claudeAskWebUrl: "https://claude.ai/new"
