@@ -15,21 +15,21 @@ ColumnLayout {
 
     readonly property var actions: ({
             "logout": {
-                label: "Log out",
+                label: I18n.tr("Log out"),
                 icon: "logout",
-                question: "Log out now?",
+                question: I18n.tr("Log out now?"),
                 run: () => Session.logout()
             },
             "reboot": {
-                label: "Restart",
+                label: I18n.tr("Restart"),
                 icon: "restart_alt",
-                question: "Restart now?",
+                question: I18n.tr("Restart now?"),
                 run: () => Session.reboot()
             },
             "poweroff": {
-                label: "Shut down",
+                label: I18n.tr("Shut down"),
                 icon: "power_settings_new",
-                question: "Shut down now?",
+                question: I18n.tr("Shut down now?"),
                 run: () => Session.poweroff()
             }
         })
@@ -160,13 +160,13 @@ ColumnLayout {
             }
 
             PillButton {
-                text: "Cancel"
+                text: I18n.tr("Cancel")
                 style: "text"
                 onClicked: root.pending = ""
             }
 
             PillButton {
-                text: "Confirm"
+                text: I18n.tr("Confirm")
                 style: "danger"
                 onClicked: root.actions[root.pending].run()
             }

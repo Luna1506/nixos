@@ -44,7 +44,7 @@ Card {
                 visible: root.items.length > root.collapsedCount
                 implicitHeight: Theme.icon.large
                 style: "text"
-                text: root.expanded ? "Show less" : "Show " + (root.items.length - root.collapsedCount) + " more"
+                text: root.expanded ? I18n.tr("Show less") : I18n.tr("Show %1 more", root.items.length - root.collapsedCount)
                 onClicked: root.expanded = !root.expanded
             }
 

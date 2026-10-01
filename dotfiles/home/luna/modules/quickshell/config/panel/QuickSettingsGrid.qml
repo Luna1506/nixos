@@ -40,8 +40,8 @@ GridLayout {
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         icon: Audio.muted ? "volume_off" : "volume_up"
-        title: "Audio output"
-        subtitle: Audio.muted ? "Muted" : Audio.displayName(Audio.sink)
+        title: I18n.tr("Audio output")
+        subtitle: Audio.muted ? I18n.tr("Muted") : Audio.displayName(Audio.sink)
         active: Audio.sink !== null && !Audio.muted
         hasDetail: true
         onToggled: Audio.toggleMute(Audio.sink)
@@ -52,8 +52,8 @@ GridLayout {
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         icon: Audio.micMuted ? "mic_off" : "mic"
-        title: "Microphone"
-        subtitle: Audio.source === null ? "No device" : Audio.micMuted ? "Muted" : "Unmuted"
+        title: I18n.tr("Microphone")
+        subtitle: Audio.source === null ? I18n.tr("No device") : Audio.micMuted ? I18n.tr("Muted") : I18n.tr("Unmuted")
         active: Audio.source !== null && !Audio.micMuted
         hasDetail: true
         enabled: Audio.source !== null
@@ -65,8 +65,8 @@ GridLayout {
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         icon: "bedtime"
-        title: "Night light"
-        subtitle: NightLight.enabled ? Config.nightLightTemperature + " K" : "Off"
+        title: I18n.tr("Night light")
+        subtitle: NightLight.enabled ? Config.nightLightTemperature + " K" : I18n.tr("Off")
         active: NightLight.enabled
         onToggled: NightLight.toggle()
     }
@@ -75,8 +75,8 @@ GridLayout {
         Layout.fillWidth: true
         Layout.preferredWidth: 1
         icon: Notifications.dnd ? "do_not_disturb_on" : "do_not_disturb_off"
-        title: "Do not disturb"
-        subtitle: Notifications.dnd ? "On" : "Off"
+        title: I18n.tr("Do not disturb")
+        subtitle: Notifications.dnd ? I18n.tr("On") : I18n.tr("Off")
         active: Notifications.dnd
         onToggled: Notifications.toggleDnd()
     }

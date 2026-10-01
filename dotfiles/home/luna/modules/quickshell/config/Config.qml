@@ -24,10 +24,11 @@ Singleton {
     // Sliders: volume/brightness change per mouse wheel notch.
     readonly property real sliderWheelStep: 0.05
 
-    // Clock and date. Swap the locale for e.g. Qt.locale("de_DE").
-    readonly property var locale: Qt.locale("en_GB")
-    readonly property string timeFormat: "HH:mm"
-    readonly property string dateFormat: "dddd, d MMMM"
+    // Clock and date follow the system locale (LC_TIME), see I18n.qml.
+    readonly property var locale: I18n.timeLocale
+    readonly property string timeFormat: locale.timeFormat(Locale.ShortFormat)
+    readonly property string dateFormat: I18n.withoutYear(locale.dateFormat(Locale.LongFormat))
+    readonly property string shortDateFormat: I18n.withoutYear(locale.dateFormat(Locale.ShortFormat))
 
     // Night light color temperature in Kelvin (hyprsunset).
     readonly property int nightLightTemperature: 4000

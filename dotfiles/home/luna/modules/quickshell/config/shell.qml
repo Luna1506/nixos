@@ -2,6 +2,7 @@
 
 import QtQuick
 import Quickshell
+import qs
 import Quickshell.Hyprland
 import Quickshell.Io
 import qs.services
@@ -31,7 +32,7 @@ ShellRoot {
     // Hyprland: SUPER + B -> global, quickshell:panelToggle
     GlobalShortcut {
         name: "panelToggle"
-        description: "Toggle the control center"
+        description: I18n.tr("Toggle the control center")
         onPressed: ShellState.togglePanel()
     }
 

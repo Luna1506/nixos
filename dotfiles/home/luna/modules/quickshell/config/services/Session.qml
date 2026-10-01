@@ -16,11 +16,7 @@ Singleton {
     readonly property string uptime: {
         if (bootTime <= 0)
             return "";
-        const total = Math.max(0, Math.floor((clock.date.getTime() - bootTime) / 1000));
-        const d = Math.floor(total / 86400);
-        const h = Math.floor(total % 86400 / 3600);
-        const m = Math.floor(total % 3600 / 60);
-        return "up " + (d > 0 ? d + "d " : "") + (d > 0 || h > 0 ? h + "h " : "") + m + "m";
+        return I18n.uptime(Math.max(0, Math.floor((clock.date.getTime() - bootTime) / 1000)));
     }
 
     function lock(): void {

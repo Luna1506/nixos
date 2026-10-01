@@ -13,7 +13,7 @@ ColumnLayout {
         spacing: Theme.spacing.sm
 
         StyledText {
-            text: "Notifications"
+            text: I18n.tr("Notifications")
             font.pixelSize: Theme.font.title
             font.weight: Theme.font.weightMedium
         }
@@ -44,7 +44,7 @@ ColumnLayout {
             visible: Notifications.count > 0
             style: "text"
             icon: "clear_all"
-            text: "Clear all"
+            text: I18n.tr("Clear all")
             onClicked: Notifications.clearAll()
         }
     }
@@ -112,8 +112,8 @@ ColumnLayout {
             width: parent.width
             visible: Notifications.count === 0
             icon: Notifications.dnd ? "do_not_disturb_on" : "notifications_active"
-            title: "All caught up"
-            subtitle: Notifications.dnd ? "Do not disturb is on. New notifications will still show up here." : "No notifications"
+            title: I18n.tr("All caught up")
+            subtitle: Notifications.dnd ? I18n.tr("Do not disturb is on. New notifications will still show up here.") : I18n.tr("No notifications")
         }
     }
 }

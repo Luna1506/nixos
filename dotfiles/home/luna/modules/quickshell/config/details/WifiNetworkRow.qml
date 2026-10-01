@@ -26,13 +26,13 @@ ColumnLayout {
             if (askPassword)
                 Qt.callLater(() => password.input.forceActiveFocus());
         } else {
-            error = "Enterprise networks need to be set up with nmtui";
+            error = I18n.tr("Enterprise networks need to be set up with nmtui");
         }
     }
 
     function submitPassword(): void {
         if (!NetworkState.validPsk(password.text)) {
-            error = "Password must be 8 to 63 characters";
+            error = I18n.tr("Password must be 8 to 63 characters");
             return;
         }
         error = "";
@@ -48,11 +48,11 @@ ColumnLayout {
 
         function onConnectionFailed(reason: int): void {
             if (reason === ConnectionFailReason.NoSecrets && NetworkState.usesPsk(root.network)) {
-                root.error = root.network.known ? "Wrong password" : "";
+                root.error = root.network.known ? I18n.tr("Wrong password") : "";
                 root.askPassword = true;
                 Qt.callLater(() => password.input.forceActiveFocus());
             } else {
-                root.error = "Couldn't connect";
+                root.error = I18n.tr("Couldn't connect");
             }
         }
     }
@@ -63,11 +63,11 @@ ColumnLayout {
         title: root.network.name
         subtitle: {
             if (root.busy)
-                return "Connecting…";
+                return I18n.tr("Connecting…");
             if (root.error !== "")
                 return root.error;
             const security = NetworkState.securityName(root.network);
-            return root.network.known ? "Saved · " + security : security;
+            return root.network.known ? I18n.tr("Saved · %1", security) : security;
         }
         onClicked: root.activate()
 
@@ -103,13 +103,13 @@ ColumnLayout {
             id: password
 
             Layout.fillWidth: true
-            placeholder: "Password"
+            placeholder: I18n.tr("Password")
             password: true
             onAccepted: root.submitPassword()
         }
 
         PillButton {
-            text: "Connect"
+            text: I18n.tr("Connect")
             style: "filled"
             enabled: NetworkState.validPsk(password.text)
             onClicked: root.submitPassword()

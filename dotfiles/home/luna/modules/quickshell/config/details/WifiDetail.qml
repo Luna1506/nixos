@@ -15,7 +15,7 @@ ColumnLayout {
 
     DetailHeader {
         Layout.fillWidth: true
-        title: "Wi-Fi"
+        title: I18n.tr("Wi-Fi")
         showSwitch: NetworkState.wifiAvailable
         checked: NetworkState.wifiEnabled
         switchEnabled: !NetworkState.wifiBlockedByHardware
@@ -35,8 +35,8 @@ ColumnLayout {
         Layout.bottomMargin: Theme.spacing.xl
         visible: !root.usable
         icon: "signal_wifi_off"
-        title: !NetworkState.wifiAvailable ? "No Wi-Fi adapter" : NetworkState.wifiBlockedByHardware ? "Wi-Fi is blocked" : "Wi-Fi is off"
-        subtitle: !NetworkState.wifiAvailable ? "" : NetworkState.wifiBlockedByHardware ? "Check the hardware switch or airplane mode." : "Turn it on to see networks."
+        title: !NetworkState.wifiAvailable ? I18n.tr("No Wi-Fi adapter") : NetworkState.wifiBlockedByHardware ? I18n.tr("Wi-Fi is blocked") : I18n.tr("Wi-Fi is off")
+        subtitle: !NetworkState.wifiAvailable ? "" : NetworkState.wifiBlockedByHardware ? I18n.tr("Check the hardware switch or airplane mode.") : I18n.tr("Turn it on to see networks.")
     }
 
     Card {
@@ -51,11 +51,11 @@ ColumnLayout {
             iconFill: 1
             icon: NetworkState.signalIcon(NetworkState.activeNetwork?.signalStrength ?? 0)
             title: NetworkState.activeNetwork?.name ?? ""
-            subtitle: NetworkState.activeNetwork ? "Connected · " + NetworkState.securityName(NetworkState.activeNetwork) : ""
+            subtitle: NetworkState.activeNetwork ? I18n.tr("Connected · %1", NetworkState.securityName(NetworkState.activeNetwork)) : ""
 
             PillButton {
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Disconnect"
+                text: I18n.tr("Disconnect")
                 onClicked: NetworkState.activeNetwork?.disconnect()
             }
         }
@@ -63,7 +63,7 @@ ColumnLayout {
 
     SectionHeader {
         visible: root.usable
-        text: root.others.length > 0 ? "Available networks" : "Searching for networks…"
+        text: root.others.length > 0 ? I18n.tr("Available networks") : I18n.tr("Searching for networks…")
     }
 
     ScrollArea {

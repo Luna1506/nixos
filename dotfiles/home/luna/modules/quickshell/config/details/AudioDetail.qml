@@ -18,7 +18,7 @@ ColumnLayout {
 
     DetailHeader {
         Layout.fillWidth: true
-        title: "Sound"
+        title: I18n.tr("Sound")
     }
 
     ScrollArea {
@@ -27,7 +27,7 @@ ColumnLayout {
         spacing: Theme.spacing.xs
 
         SectionHeader {
-            text: "Output"
+            text: I18n.tr("Output")
             bottomPadding: Theme.spacing.xs
         }
 
@@ -46,7 +46,7 @@ ColumnLayout {
         }
 
         SectionHeader {
-            text: "Input"
+            text: I18n.tr("Input")
             topPadding: Theme.spacing.md
             bottomPadding: Theme.spacing.xs
         }
@@ -67,14 +67,14 @@ ColumnLayout {
 
         StyledText {
             visible: Audio.sources.length === 0
-            text: "No input devices"
+            text: I18n.tr("No input devices")
             color: Theme.colors.textMuted
             leftPadding: Theme.spacing.md
         }
 
         SectionHeader {
             visible: Audio.streams.length > 0
-            text: "Applications"
+            text: I18n.tr("Applications")
             topPadding: Theme.spacing.md
             bottomPadding: Theme.spacing.xs
         }
