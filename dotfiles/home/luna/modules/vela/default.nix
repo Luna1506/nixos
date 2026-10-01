@@ -13,6 +13,12 @@ in
   programs.vela = {
     enable = true;
     panelPeek = "SUPER + B";
+    # Volles Profil ohne Updates (pacman/Flatpak; NixOS updatet über die Flake,
+    # updates ist im Modul ohnehin aus). share_picker schreibt ~/.config/hypr/xdph.conf.
+    components = {
+      share_picker = true;
+      updates = false;
+    };
     nixos = {
       # String, kein Nix-Pfad: vela schreibt hier hinein.
       stateDir = "/home/${username}/nixos/dotfiles/home/${username}/modules/vela/state";

@@ -25,7 +25,7 @@
     #  inputs.hyprland.follows = "hyprland";
     #};
     vela = {
-      url = "github:raindancer118/vela/nixos-support";
+      url = "github:raindancer118/vela";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

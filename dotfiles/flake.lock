@@ -134,16 +134,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1790876062,
-        "narHash": "sha256-TgH4wsj/QxBbA8rlgyEJBWQwHM+tBEZApAR9tyhdwaI=",
+        "lastModified": 1790880542,
+        "narHash": "sha256-VNJheowWHzsnZ8raGxs3BLWlTXud4NsKn4dXq9zPjRc=",
         "owner": "raindancer118",
         "repo": "vela",
-        "rev": "ab299f198659317b368e0e940358b7f7f55ce944",
+        "rev": "ec114e5ae29db3cad3cf67e308208512cc883381",
         "type": "github"
       },
       "original": {
         "owner": "raindancer118",
-        "ref": "nixos-support",
         "repo": "vela",
         "type": "github"
       }
