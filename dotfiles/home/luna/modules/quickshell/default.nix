@@ -23,6 +23,31 @@ let
     ];
     text = builtins.readFile ./scripts/qs-claude-usage.sh;
   };
+
+  # "Ask Claude" from the launcher: clipboard images in, new chat out.
+  # hyprctl comes from the system PATH so it matches the running Hyprland.
+  qs-claude-paste = pkgs.writeShellApplication {
+    name = "qs-claude-paste";
+    runtimeInputs = with pkgs; [
+      coreutils
+      findutils
+      gnugrep
+      wl-clipboard
+    ];
+    text = builtins.readFile ./scripts/qs-claude-paste.sh;
+  };
+  qs-claude-ask = pkgs.writeShellApplication {
+    name = "qs-claude-ask";
+    runtimeInputs = with pkgs; [
+      claude-desktop
+      coreutils
+      gnugrep
+      jq
+      procps
+      wl-clipboard
+    ];
+    text = builtins.readFile ./scripts/qs-claude-ask.sh;
+  };
 in
 {
   programs.quickshell = {
@@ -56,6 +81,8 @@ in
     rubik # UI font
     claude-desktop
     qs-claude-usage
+    qs-claude-paste
+    qs-claude-ask
   ];
 
   # The launcher picks up new apps through Quickshell's watcher on the XDG

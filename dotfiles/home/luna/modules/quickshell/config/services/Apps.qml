@@ -364,18 +364,16 @@ Singleton {
         }
     }
 
-    // New Claude chat with `text` as the prompt (desktop app, or claude.ai
-    // as fallback).
-    function askClaude(text: string): void {
-        const params = "q=" + encodeURIComponent(text.trim().slice(0, Config.claudeAskMaxChars)) + "&surface=chat&source=os_open";
+    // New Claude chat with `text` as the prompt and the image files pasted
+    // in (desktop app; claude.ai as fallback, without images).
+    function askClaude(text: string, images: var): void {
+        const prompt = text.trim().slice(0, Config.claudeAskMaxChars);
         const app = appsById[Config.claudeDesktopId];
-        // Drop field codes like %U; the link takes their place.
-        const command = (app?.entry.command ?? []).filter(arg => !arg.startsWith("%"));
-        if (command.length > 0) {
-            run(command.concat([Config.claudeAskUrl + "?" + params]), app.entry.workingDirectory, app.id);
+        if (app) {
+            run(Config.claudeAskCommand.concat([prompt], images), home, app.id);
             recordLaunch(app.id);
         } else {
-            run(["xdg-open", Config.claudeAskWebUrl + "?" + params], "", "claude-web");
+            run(["xdg-open", Config.claudeAskWebUrl + "?q=" + encodeURIComponent(prompt)], "", "claude-web");
         }
         ShellState.closeLauncher();
     }

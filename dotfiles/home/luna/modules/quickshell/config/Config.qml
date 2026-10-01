@@ -53,8 +53,9 @@ Singleton {
     readonly property var claudeWebCommand: ["xdg-open", "https://claude.ai"]
     readonly property var claudeCodeCommand: ["claude"]
     // "Ask Claude" from the launcher search opens a new chat with the
-    // query, via the same deep link as the app's GNOME search provider.
-    readonly property string claudeAskUrl: "claude://claude.ai/new"
+    // query and pasted images (qs-claude-ask); claude.ai without the app.
+    readonly property var claudeAskCommand: ["qs-claude-ask"]
+    readonly property var claudePasteCommand: ["qs-claude-paste"]
     readonly property string claudeAskWebUrl: "https://claude.ai/new"
     readonly property int claudeAskMaxChars: 2000
 

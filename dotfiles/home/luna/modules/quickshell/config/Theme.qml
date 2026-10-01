@@ -169,6 +169,9 @@ Singleton {
         readonly property int menuRow: 40
         readonly property int usageBarHeight: 6
         readonly property int claudeIcon: 44
+        // Pasted images for "Ask Claude".
+        readonly property int launcherThumb: 64
+        readonly property int thumbRemoveButton: 22
         // Fallback glyph size relative to the app icon.
         readonly property real appIconGlyphScale: 0.55
     }

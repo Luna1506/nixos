@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
+import Quickshell.Widgets
 import qs
 import qs.components
 import qs.services
@@ -9,7 +11,7 @@ import qs.services
 // list shows the Claude card and the sections (pinned, recent, new, all
 // apps) as icon grids; with a query, one list of results by relevance.
 // Without matches the query can be sent to Claude as a new chat; Shift+Enter
-// does that with any query.
+// does that with any query. Images pasted with Ctrl+V go along with it.
 //
 // The list is a ListView of rows (headers, grid rows, result rows), so it
 // stays virtualized with hundreds of apps. Rows carry a stable `key` for the
@@ -20,12 +22,16 @@ Rectangle {
     id: root
 
     readonly property string query: search.text.trim()
+    // Image files pasted for "Ask Claude" (saved by qs-claude-paste).
+    property var images: []
+    readonly property bool canAsk: query !== "" || images.length > 0
+    readonly property string imageDir: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/quickshell/claude-images"
     readonly property int columns: Config.launcherColumns
     readonly property real cellWidth: list.width / columns
 
     // { key, kind, ... } with kind: "claude" | "header" | "hint" |
     // "apps" (one grid row) | "result" | "ask"
-    readonly property var rows: query !== "" ? searchRows(Apps.search(query)) : homeRows()
+    readonly property var rows: canAsk ? searchRows(query !== "" ? Apps.search(query) : []) : homeRows()
     // { key, row, col, app } in navigation order; app is null for the Claude
     // card and the "Ask Claude" row.
     readonly property var items: navigationItems(rows)
@@ -41,6 +47,7 @@ Rectangle {
 
     function reset(): void {
         search.text = "";
+        images = [];
         menu.close();
         selectedKey = "";
         selectedHint = 0;
@@ -90,19 +97,36 @@ Rectangle {
         return out.concat([header("Alle Apps")], gridRows(Apps.apps, "all"));
     }
 
+    // "Ask Claude" when nothing matches, and first when images are pasted.
     function searchRows(results: var): var {
-        if (results.length === 0)
-            return [header("Claude"),
-                {
-                    key: "ask",
-                    kind: "ask"
-                }
-            ];
-        return results.map(app => ({
+        const ask = [header("Claude"),
+            {
+                key: "ask",
+                kind: "ask"
+            }
+        ];
+        const apps = results.map(app => ({
                     key: "result:" + app.id,
                     kind: "result",
                     app: app
                 }));
+        if (images.length > 0)
+            return apps.length > 0 ? ask.concat([header("Apps")], apps) : ask;
+        return apps.length > 0 ? apps : ask;
+    }
+
+    function askClaude(): void {
+        if (canAsk)
+            Apps.askClaude(query, images);
+    }
+
+    function pasteImage(): void {
+        if (!pasteProc.running)
+            pasteProc.running = true;
+    }
+
+    function removeImage(index: int): void {
+        images = images.filter((_, i) => i !== index);
     }
 
     function navigationItems(rows: var): var {
@@ -182,7 +206,7 @@ Rectangle {
         if (item.app)
             Apps.launch(item.app, null);
         else if (item.key === "ask")
-            Apps.askClaude(query);
+            askClaude();
         else
             Apps.launchClaude();
     }
@@ -294,8 +318,8 @@ Rectangle {
             break;
         case Qt.Key_Return:
         case Qt.Key_Enter:
-            if ((event.modifiers & Qt.ShiftModifier) && query !== "")
-                Apps.askClaude(query);
+            if ((event.modifiers & Qt.ShiftModifier) && canAsk)
+                askClaude();
             else
                 activate(current);
             break;
@@ -306,6 +330,17 @@ Rectangle {
             if (!ctrl)
                 return;
             openMenuForCurrent();
+            break;
+        case Qt.Key_V:
+            // Text still goes into the field; an image is added on top.
+            if (ctrl)
+                pasteImage();
+            return;
+        case Qt.Key_Backspace:
+            // At the start of the field, removes the last pasted image.
+            if (images.length === 0 || search.input.cursorPosition > 0 || search.input.selectedText !== "")
+                return;
+            removeImage(images.length - 1);
             break;
         default:
             return;
@@ -350,13 +385,54 @@ Rectangle {
             Layout.fillWidth: true
             implicitHeight: Theme.size.searchFieldHeight
             icon: "search"
-            placeholder: "Apps durchsuchen…"
+            placeholder: root.images.length > 0 ? "Prompt zu den Bildern…" : "Apps durchsuchen…"
             input.font.pixelSize: Theme.font.title
             input.focus: true
             forwardKeysTo: [keyHandler]
             trailing: Badge {
-                visible: root.query !== ""
+                visible: root.canAsk
                 text: "Claude ⇧↵"
+            }
+        }
+
+        Row {
+            Layout.fillWidth: true
+            visible: root.images.length > 0
+            spacing: Theme.spacing.sm
+
+            Repeater {
+                model: root.images
+
+                ClippingRectangle {
+                    id: thumb
+
+                    required property string modelData
+                    required property int index
+
+                    width: Theme.size.launcherThumb
+                    height: Theme.size.launcherThumb
+                    radius: Theme.radius.small
+                    color: Theme.colors.surfaceHighest
+
+                    Image {
+                        anchors.fill: parent
+                        source: "file://" + thumb.modelData
+                        sourceSize.width: 2 * Theme.size.launcherThumb
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                    }
+
+                    IconButton {
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: Theme.spacing.xs
+                        implicitWidth: Theme.size.thumbRemoveButton
+                        implicitHeight: Theme.size.thumbRemoveButton
+                        icon: "close"
+                        iconSize: Theme.icon.small
+                        onClicked: root.removeImage(thumb.index)
+                    }
+                }
             }
         }
 
@@ -507,9 +583,17 @@ Rectangle {
                         ListRow {
                             height: Theme.size.listRow
                             title: "Ask Claude"
-                            subtitle: "“" + root.query + "”"
+                            subtitle: {
+                                const parts = [];
+                                if (root.query !== "")
+                                    parts.push("“" + root.query + "”");
+                                const n = root.images.length;
+                                if (n > 0)
+                                    parts.push(n === 1 ? "1 image" : n + " images");
+                                return parts.join(" · ");
+                            }
                             highlighted: root.isSelected(row.index, 0)
-                            onClicked: Apps.askClaude(root.query)
+                            onClicked: root.askClaude()
                             leading: AppIcon {
                                 icon: Apps.claudeEntry?.icon ?? ""
                                 fallback: "auto_awesome"
@@ -543,5 +627,18 @@ Rectangle {
         id: menu
 
         anchors.fill: parent
+    }
+
+    Process {
+        id: pasteProc
+
+        command: Config.claudePasteCommand.concat([root.imageDir])
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const path = text.trim();
+                if (path !== "")
+                    root.images = root.images.concat([path]);
+            }
+        }
     }
 }
