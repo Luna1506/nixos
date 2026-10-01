@@ -20,6 +20,14 @@
             block = true;
           }
         ];
+        pdf = [
+          {
+            # Zen statt dem xdg-open-Fallback Firefox.
+            run = "zen %s";
+            orphan = true;
+            desc = "Zen Browser";
+          }
+        ];
       };
 
       open = {
@@ -27,6 +35,8 @@
         prepend_rules = [
           # Wichtig für neue/leere Dateien: Extension matcht immer
           { url = "*.nix"; use = "edit"; }
+
+          { mime = "application/pdf"; use = "pdf"; }
 
           # Allgemein Textdateien
           { mime = "text/*"; use = "edit"; }
