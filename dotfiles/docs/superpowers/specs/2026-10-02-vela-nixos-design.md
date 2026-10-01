@@ -31,7 +31,9 @@ NixOS-Modus ist aktiv genau dann, wenn
    rebuild   = "rebuild"
    ```
 
-   `state_dir` muss absolut sein. `rebuild` ist optional (Default `"rebuild"`).
+   `state_dir` muss absolut sein. `rebuild` ist optional (Default
+   `"sudo nixos-rebuild switch --flake ."`, läuft im state_dir; Nix sucht die
+   flake.nix aufwärts). Luna setzt `"rebuild vela"`.
 
 Die Erkennung läuft einmal pro Prozess (`OnceLock`). Für Tests nimmt sie
 os-release-Inhalt und Zeiger-Pfad als Parameter (`detect(os_release: &str,
@@ -69,8 +71,9 @@ Zeiger. Existiert `state_dir` nicht, legt vela es an (wie heute `~/.config/vela`
 - Klick: startet `[terminal].executable` aus vela's Config mit dem
   Rebuild-Befehl über den vorhandenen Launch-Code in `src/launch.rs`
   (SpawnSpec, kein `sh -c` mit Nutzertext). Der Befehl wird mit `shlex`
-  gesplittet. Danach den Status neu prüfen, sobald das Terminal beendet ist
-  (Child-Watch); bis dahin bleibt der Banner sichtbar.
+  gesplittet. Das Terminal bleibt nach dem Befehl offen (Ergebnis +
+  „Press Enter to close“). vela startet es detached, daher kein Child-Watch:
+  der Status wird neu geprüft, sobald das Settings-Fenster wieder aktiv wird.
 
 ## 4. `contrib/hyprland/vela.lua`
 
@@ -95,7 +98,7 @@ Neue Option `settings_file` (Default `nil` → bisheriger Pfad
   - `enable`, `package` (Default: Paket aus dem Flake)
   - `panelPeek` (nullOr str, z. B. `"SUPER + B"`)
   - `nixos.stateDir` (nullOr str, absolut) – null → kein Zeiger, normaler Modus
-  - `nixos.rebuildCommand` (str, Default `"rebuild"`)
+  - `nixos.rebuildCommand` (str, Default `"sudo nixos-rebuild switch --flake ."`)
   - Erzeugt: `home.packages`, `systemd.user.services.vela` (Inhalt wie
     `contrib/systemd/vela.service.in`: ExecStart `${pkg}/bin/vela-daemon`,
     PartOf/After `graphical-session.target`, kein WantedBy – vela.lua startet
