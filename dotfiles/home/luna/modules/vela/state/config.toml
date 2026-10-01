@@ -1,2 +1,111 @@
+# vela configuration. Edited by the settings window (`vela settings`);
+# manual edits are picked up live. See README.md for every option.
+[general]
+width = 760
+max_height = 580
+vertical_position = 18
+opacity = 0.86
+close_on_focus_loss = true
+main_monitor = ""
+max_results = 20
+systemd_scope = true
+
+[appearance]
+theme = "dark"
+accent = "#7aa2f7"
+tile_size = 108
+icon_size = 52
+spacing = 8
+columns = 0
+border_radius = 22
+surface_opacity = 0.06
+show_labels = true
+tile_outline = false
+tile_background = true
+font_scale = 1.0
+animations = true
+animation_speed = 1.0
+backdrop = false
+backdrop_dim = 0.18
+backdrop_strength = 1
+
+[apps]
+grid = "pinned"
+pinned = [
+    "zen.desktop",
+    "vesktop.desktop",
+    "spotify.desktop",
+    "steam.desktop",
+    "jetbrains-toolbox.desktop",
+]
+hidden = []
+desktop_actions = true
+custom = []
+
+[search]
+apps = true
+files = true
+claude = true
+max_app_results = 8
+max_file_results = 10
+file_backend = "auto"
+file_roots = ["~"]
+exclude = [
+    ".git",
+    "node_modules",
+    "target",
+    ".cache",
+    "__pycache__",
+    ".venv",
+    "venv",
+    ".gradle",
+    ".m2",
+    ".cargo",
+    ".rustup",
+    ".npm",
+]
+include_hidden = false
+include_directories = true
+min_file_query_len = 2
+debounce_ms = 80
+index_interval_minutes = 30
+
+[claude]
+always_visible = true
+shift_enter = true
+prefer_for_questions = true
+executable = "claude"
+args = ["--dangerously-skip-permissions"]
+working_dir = "~"
+
 [terminal]
 executable = "ghostty"
+
+[panel]
+width = 420
+close_on_focus_loss = true
+backdrop = false
+backdrop_strength = 1
+popup_timeout_secs = 5
+popup_max_visible = 4
+critical_popups_stay = true
+group_collapsed_count = 2
+compact_notifications = true
+workspace_osd = true
+night_light_temperature = 4000
+clock_centered = false
+claude_usage = true
+claude_usage_subtle = false
+claude_usage_only_default = false
+claude_usage_hidden = []
+
+[idle]
+dim = true
+dim_after_min = 2.5
+lock = true
+lock_after_min = 5.0
+screen_off = true
+screen_off_after_min = 5.5
+suspend = true
+suspend_after_min = 30.0
+lock_before_sleep = true

@@ -2,6 +2,7 @@
 # are overridden; everything else stays as in your hyprland.lua.
 
 [options]
+"decoration:blur:special" = true
 
 [[shortcuts]]
 action = "exec"

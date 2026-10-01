@@ -10,5 +10,6 @@ try(hl.curve, "velaSnappy", { type = "bezier", points = { {0.05, 0.9}, {0.1, 1.0
 try(hl.curve, "velaOvershoot", { type = "bezier", points = { {0.34, 1.56}, {0.64, 1} } })
 try(hl.curve, "velaSpring", { type = "spring", mass = 1, stiffness = 210, dampening = 17 })
 try(hl.curve, "velaSoftSpring", { type = "spring", mass = 1, stiffness = 120, dampening = 16 })
+set({ decoration = { blur = { special = true } } })
 try(hl.unbind, "SUPER + R")
 try(hl.bind, "SUPER + R", hl.dsp.exec_cmd("vela toggle"), { description = "vela: App Launcher öffnen" })
