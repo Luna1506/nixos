@@ -26,7 +26,8 @@
     ./modules/cursor.nix
     ./modules/neovim.nix
     ./modules/nerdfetch-bash.nix
-    ./modules/quickshell
+    ./modules/vela
+    ./modules/claude-desktop
   ];
 }
 

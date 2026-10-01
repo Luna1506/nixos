@@ -102,51 +102,13 @@
         "type": "github"
       }
     },
-    "quickpanel": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "quickshell": "quickshell"
-      },
-      "locked": {
-        "path": "./flakes/Quickpanel/",
-        "type": "path"
-      },
-      "original": {
-        "path": "./flakes/Quickpanel/",
-        "type": "path"
-      },
-      "parent": []
-    },
-    "quickshell": {
-      "inputs": {
-        "nixpkgs": [
-          "quickpanel",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1790343625,
-        "narHash": "sha256-dLtjYGr1sTihGhsISR71LB17E6m0r18JhF+6BNAHy0M=",
-        "ref": "refs/heads/master",
-        "rev": "41651d7dcd62a9400eb6f4f8a8580efe00901efb",
-        "revCount": 864,
-        "type": "git",
-        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
-      }
-    },
     "root": {
       "inputs": {
         "catppuccin": "catppuccin",
         "flutter-dev": "flutter-dev",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs_2",
-        "quickpanel": "quickpanel",
+        "vela": "vela",
         "zen-browser": "zen-browser"
       }
     },
@@ -162,6 +124,27 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "vela": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1790876062,
+        "narHash": "sha256-TgH4wsj/QxBbA8rlgyEJBWQwHM+tBEZApAR9tyhdwaI=",
+        "owner": "raindancer118",
+        "repo": "vela",
+        "rev": "ab299f198659317b368e0e940358b7f7f55ce944",
+        "type": "github"
+      },
+      "original": {
+        "owner": "raindancer118",
+        "ref": "nixos-support",
+        "repo": "vela",
         "type": "github"
       }
     },

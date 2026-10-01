@@ -24,8 +24,8 @@
     #  inputs.nixpkgs.follows = "nixpkgs";
     #  inputs.hyprland.follows = "hyprland";
     #};
-    quickpanel = {
-      url = "path:./flakes/Quickpanel/";
+    vela = {
+      url = "github:raindancer118/vela/nixos-support";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
