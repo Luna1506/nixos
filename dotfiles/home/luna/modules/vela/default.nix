@@ -1,9 +1,12 @@
-{ inputs, pkgs, username, ... }:
+{ config, inputs, lib, pkgs, username, ... }:
 
-# vela (github:raindancer118/vela): launcher (Super antippen), Control Center
-# (SUPER+B), Benachrichtigungen, Workspace-OSD und alle Hyprland-Einstellungen.
+# vela (github:raindancer118/vela): launcher (SUPER+R, siehe ./state), Control
+# Center (SUPER+B), Benachrichtigungen, Workspace-OSD und alle Hyprland-Einstellungen.
 # Was vela ändert, landet in ./state (config.toml, hyprland.toml/.lua);
 # "Apply & rebuild" in den vela-Settings committet und rebuildet.
+let
+  vela = config.programs.vela;
+in
 {
   imports = [ inputs.vela.homeManagerModules.default ];
 
@@ -16,6 +19,20 @@
       rebuildCommand = "rebuild vela";
     };
   };
+
+  # Ersetzt den setup()-Aufruf des vela-Moduls, das keine Option für das
+  # Super-Antippen hat: ohne Keycodes öffnet Super allein den Launcher nicht mehr.
+  wayland.windowManager.hyprland.extraConfig = lib.mkForce ''
+    -- vela: control center, idle and vela's Hyprland settings (kein Super-Antippen)
+    dofile("${vela.package}/share/vela/vela.lua").setup(${
+      lib.generators.toLua { } {
+        binary = lib.getExe vela.package;
+        settings_file = "${vela.nixos.stateDir}/hyprland.lua";
+        panel_peek = vela.panelPeek;
+        keycodes = [ ];
+      }
+    })
+  '';
 
   home.packages = with pkgs; [
     brightnessctl # XF86-Helligkeitstasten (binds.nix)
