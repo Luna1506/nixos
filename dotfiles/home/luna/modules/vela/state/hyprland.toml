@@ -1,0 +1,13 @@
+# Hyprland settings changed in vela (Settings → Hyprland). Only these options
+# are overridden; everything else stays as in your hyprland.lua.
+
+[options]
+
+[[shortcuts]]
+action = "exec"
+arg = "vela toggle"
+description = "App Launcher öffnen"
+enabled = true
+keys = "SUPER + R"
+locked = false
+repeat = false
