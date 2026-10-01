@@ -42,6 +42,7 @@
     teamspeak6-client
     pipewire
     pulseaudio
+    figma-linux
 
     # BEGIN AUTO PACKAGES
     teams-for-linux

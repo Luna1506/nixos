@@ -364,6 +364,22 @@ Singleton {
         }
     }
 
+    // New Claude chat with `text` as the prompt (desktop app, or claude.ai
+    // as fallback).
+    function askClaude(text: string): void {
+        const params = "q=" + encodeURIComponent(text.trim().slice(0, Config.claudeAskMaxChars)) + "&surface=chat&source=os_open";
+        const app = appsById[Config.claudeDesktopId];
+        // Drop field codes like %U; the link takes their place.
+        const command = (app?.entry.command ?? []).filter(arg => !arg.startsWith("%"));
+        if (command.length > 0) {
+            run(command.concat([Config.claudeAskUrl + "?" + params]), app.entry.workingDirectory, app.id);
+            recordLaunch(app.id);
+        } else {
+            run(["xdg-open", Config.claudeAskWebUrl + "?" + params], "", "claude-web");
+        }
+        ShellState.closeLauncher();
+    }
+
     function launchClaudeCode(): void {
         run(Config.terminalCommand.concat(Config.claudeCodeCommand), home, "claude-code");
         ShellState.closeLauncher();

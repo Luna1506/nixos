@@ -8,6 +8,8 @@ import qs.services
 // The launcher card: search field above a single list. Without a query the
 // list shows the Claude card and the sections (pinned, recent, new, all
 // apps) as icon grids; with a query, one list of results by relevance.
+// Without matches the query can be sent to Claude as a new chat; Shift+Enter
+// does that with any query.
 //
 // The list is a ListView of rows (headers, grid rows, result rows), so it
 // stays virtualized with hundreds of apps. Rows carry a stable `key` for the
@@ -22,9 +24,10 @@ Rectangle {
     readonly property real cellWidth: list.width / columns
 
     // { key, kind, ... } with kind: "claude" | "header" | "hint" |
-    // "apps" (one grid row) | "result" | "empty"
+    // "apps" (one grid row) | "result" | "ask"
     readonly property var rows: query !== "" ? searchRows(Apps.search(query)) : homeRows()
-    // { key, row, col, app } in navigation order; app is null for the Claude card.
+    // { key, row, col, app } in navigation order; app is null for the Claude
+    // card and the "Claude fragen" row.
     readonly property var items: navigationItems(rows)
     // Key of the selected item; if it disappears (e.g. unpinned), the
     // selection stays at about the same place.
@@ -89,10 +92,10 @@ Rectangle {
 
     function searchRows(results: var): var {
         if (results.length === 0)
-            return [
+            return [header("Claude"),
                 {
-                    key: "empty",
-                    kind: "empty"
+                    key: "ask",
+                    kind: "ask"
                 }
             ];
         return results.map(app => ({
@@ -105,9 +108,9 @@ Rectangle {
     function navigationItems(rows: var): var {
         const out = [];
         rows.forEach((row, i) => {
-            if (row.kind === "claude")
+            if (row.kind === "claude" || row.kind === "ask")
                 out.push({
-                    key: "claude",
+                    key: row.key,
                     row: i,
                     col: 0,
                     app: null
@@ -178,6 +181,8 @@ Rectangle {
             return;
         if (item.app)
             Apps.launch(item.app, null);
+        else if (item.key === "ask")
+            Apps.askClaude(query);
         else
             Apps.launchClaude();
     }
@@ -289,7 +294,10 @@ Rectangle {
             break;
         case Qt.Key_Return:
         case Qt.Key_Enter:
-            activate(current);
+            if ((event.modifiers & Qt.ShiftModifier) && query !== "")
+                Apps.askClaude(query);
+            else
+                activate(current);
             break;
         case Qt.Key_Menu:
             openMenuForCurrent();
@@ -346,6 +354,10 @@ Rectangle {
             input.font.pixelSize: Theme.font.title
             input.focus: true
             forwardKeysTo: [keyHandler]
+            trailing: Badge {
+                visible: root.query !== ""
+                text: "Claude ⇧↵"
+            }
         }
 
         Item {
@@ -385,7 +397,7 @@ Rectangle {
                         case "result":
                             return resultRow;
                         default:
-                            return emptyRow;
+                            return askRow;
                         }
                     }
 
@@ -490,19 +502,23 @@ Rectangle {
                     }
 
                     Component {
-                        id: emptyRow
+                        id: askRow
 
-                        Item {
-                            implicitHeight: empty.implicitHeight + 4 * Theme.spacing.xl
+                        ListRow {
+                            height: Theme.size.listRow
+                            title: "Claude fragen"
+                            subtitle: "„" + root.query + "“"
+                            highlighted: root.isSelected(row.index, 0)
+                            onClicked: Apps.askClaude(root.query)
+                            leading: AppIcon {
+                                icon: Apps.claudeEntry?.icon ?? ""
+                                fallback: "auto_awesome"
+                                size: Theme.size.appRowIcon
+                            }
 
-                            EmptyState {
-                                id: empty
-
-                                anchors.centerIn: parent
-                                width: parent.width - 2 * Theme.spacing.xl
-                                icon: "search_off"
-                                title: "Keine Treffer"
-                                subtitle: "Nichts gefunden für „" + root.query + "“"
+                            Badge {
+                                anchors.verticalCenter: parent?.verticalCenter
+                                text: "⇧↵"
                             }
                         }
                     }

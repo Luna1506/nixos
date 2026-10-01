@@ -14,6 +14,8 @@ Rectangle {
     property bool reveal: false
     // Items that get key presses before the text input (Keys.forwardTo).
     property list<Item> forwardKeysTo
+    // Items at the end of the field, e.g. a shortcut hint.
+    property alias trailing: trailingRow.data
 
     signal accepted
 
@@ -43,7 +45,7 @@ Rectangle {
         id: input
 
         anchors.left: leadingIcon.visible ? leadingIcon.right : parent.left
-        anchors.right: eye.visible ? eye.left : parent.right
+        anchors.right: trailingRow.left
         anchors.leftMargin: leadingIcon.visible ? Theme.spacing.md : Theme.spacing.lg
         anchors.rightMargin: Theme.spacing.sm
         anchors.verticalCenter: parent.verticalCenter
@@ -64,6 +66,15 @@ Rectangle {
             color: Theme.colors.textMuted
             font.pixelSize: input.font.pixelSize
         }
+    }
+
+    Row {
+        id: trailingRow
+
+        anchors.right: eye.visible ? eye.left : parent.right
+        anchors.rightMargin: width > 0 ? Theme.spacing.md : 0
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Theme.spacing.xs
     }
 
     IconButton {
