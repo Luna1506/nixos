@@ -40,6 +40,13 @@ in
         keycodes = [ ];
       }
     })
+    -- Die Catch-all-Regel aus look.nix (ignore_alpha = 0.3) würde den fast
+    -- durchsichtigen Blur-Hintergrund hinter Panel und Launcher nie blurren.
+    hl.layer_rule({
+      name = "vela-backdrop-alpha",
+      match = { namespace = "^vela-(shell-)?backdrop$" },
+      ignore_alpha = 0,
+    })
   '';
 
   home.packages = with pkgs; [
