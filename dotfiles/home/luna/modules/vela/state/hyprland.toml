@@ -12,11 +12,3 @@ enabled = true
 keys = "SUPER + R"
 locked = false
 repeat = false
-
-[[shortcuts]]
-action = "exec"
-arg = "vela panel"
-enabled = true
-keys = "SUPER + B"
-locked = false
-repeat = false

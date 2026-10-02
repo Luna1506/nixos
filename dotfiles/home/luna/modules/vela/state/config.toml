@@ -4,6 +4,11 @@
 width = 760
 max_height = 580
 vertical_position = 18
+horizontal_position = "center"
+side_margin = 48
+clock = false
+clock_size = 128
+clock_font = ""
 opacity = 0.86
 close_on_focus_loss = true
 main_monitor = ""
@@ -28,6 +33,7 @@ animation_speed = 1.0
 backdrop = false
 backdrop_dim = 0.18
 backdrop_strength = 1
+backdrop_blur = true
 
 [apps]
 grid = "pinned"
@@ -86,6 +92,7 @@ width = 420
 close_on_focus_loss = true
 backdrop = false
 backdrop_strength = 1
+backdrop_blur = true
 popup_timeout_secs = 5
 popup_max_visible = 4
 critical_popups_stay = true
@@ -93,11 +100,26 @@ group_collapsed_count = 2
 compact_notifications = true
 workspace_osd = true
 night_light_temperature = 4000
-clock_centered = false
+clock_centered = true
+clock_on_backdrop = false
+clock_font = ""
+backdrop_clock_size = 128
+media_player = true
+media_player_any = false
+media_player_position = "tiles"
+media_player_cover = true
+media_player_cover_background = true
+media_player_progress = true
+media_player_shuffle_repeat = true
+media_player_scale = 1.0
+media_player_cover_blur = 0.75
+media_player_button_scale = 1.0
+media_player_button_background = false
 claude_usage = true
 claude_usage_subtle = false
 claude_usage_only_default = false
 claude_usage_hidden = []
+updates_tile = true
 
 [idle]
 dim = true
@@ -109,3 +131,13 @@ screen_off_after_min = 5.5
 suspend = true
 suspend_after_min = 30.0
 lock_before_sleep = true
+
+[updates]
+check_interval_hours = 6
+aur = true
+flatpak = true
+claude_workspace = "special:minimized"
+
+[self_update]
+check_interval_hours = 12
+notify = true
