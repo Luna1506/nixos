@@ -21,7 +21,7 @@ accent = "#7aa2f7"
 tile_size = 108
 icon_size = 52
 spacing = 8
-columns = 3
+columns = 0
 border_radius = 22
 surface_opacity = 0.06
 show_labels = true
@@ -36,7 +36,7 @@ backdrop_strength = 1
 backdrop_blur = true
 
 [apps]
-grid = "pinned"
+grid = "pinned_then_all"
 pinned = [
     "zen.desktop",
     "vesktop.desktop",
