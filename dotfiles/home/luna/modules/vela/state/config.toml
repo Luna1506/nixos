@@ -122,13 +122,13 @@ claude_usage_hidden = []
 updates_tile = true
 
 [idle]
-dim = true
+dim = false
 dim_after_min = 2.5
-lock = true
+lock = false
 lock_after_min = 5.0
-screen_off = true
+screen_off = false
 screen_off_after_min = 5.5
-suspend = true
+suspend = false
 suspend_after_min = 30.0
 lock_before_sleep = true
 
