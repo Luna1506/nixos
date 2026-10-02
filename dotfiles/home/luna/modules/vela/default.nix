@@ -34,6 +34,8 @@ in
       lib.generators.toLua { } {
         binary = lib.getExe vela.package;
         settings_file = "${vela.nixos.stateDir}/hyprland.lua";
+        # Settings → System → Features speichert dort (seit 0.44.0).
+        components_file = "${vela.nixos.stateDir}/components.toml";
         panel_peek = vela.panelPeek;
         keycodes = [ ];
       }
