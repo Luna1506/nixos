@@ -90,7 +90,7 @@ executable = "ghostty"
 [panel]
 width = 420
 close_on_focus_loss = true
-backdrop = false
+backdrop = true
 backdrop_strength = 1
 backdrop_blur = true
 popup_timeout_secs = 5
