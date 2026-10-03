@@ -68,6 +68,12 @@ in
     vela_restart_stale '^/nix/store/[^ ]*-vela-[^ /]*/bin/vela idle$' idle
     # Pulse nur beenden; Ctrl+Shift+Esc startet ihn in der neuen Version.
     vela_restart_stale 'quickshell -p /nix/store/[^ ]*-vela-[^ /]*/.*share/vela/shell/pulse\.qml$' ""
+
+    # Der Launcher beobachtet die applications-Ordner per inotify; ein Rebuild
+    # biegt aber nur die Profil-Symlinks um, neue Programme sähe er erst nach
+    # einem Neustart. Über Hyprland, damit vela seinen IPC-Socket findet.
+    run /run/current-system/sw/bin/hyprctl -i 0 eval \
+      "hl.exec_cmd('${lib.getExe vela.package} reload')" >/dev/null 2>&1 || true
   '';
 
   home.packages = with pkgs; [
