@@ -24,11 +24,18 @@
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
-  fileSystems."/home/luna/games" = 
+  # Externe USB-HDD "steamdisk" (WD Elements, 4 TB). nofail: Boot läuft ohne sie
+  # weiter; device-timeout: ohne Platte geben Boot/Rebuild nach 1 s auf statt 90 s.
+  fileSystems."/home/luna/games" =
     { device = "/dev/disk/by-uuid/f9925996-2161-4752-8fc8-245ce12b2d03";
       fsType = "ext4";
-      options = [ "nofail" ];
+      options = [ "nofail" "x-systemd.device-timeout=1s" ];
     };
+
+  # Beim Einstecken mounten: systemd startet fstab-Mounts sonst nur beim Boot.
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_UUID}=="f9925996-2161-4752-8fc8-245ce12b2d03", ENV{SYSTEMD_WANTS}+="home-luna-games.mount"
+  '';
 
   swapDevices = [ ];
 
