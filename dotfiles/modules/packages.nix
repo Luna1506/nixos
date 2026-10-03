@@ -6,7 +6,14 @@
     firefox # browser
     nautilus # file manager
     steam
-    prismlauncher # minecraft launcher (fabric, mods)
+    # minecraft launcher (fabric, mods)
+    # ohne gtk3-platformtheme: Prism lädt alle Qt-Styles, qt6gtk2 (GTK2) + gtk3 im selben Prozess = Segfault
+    (symlinkJoin {
+      name = "prismlauncher";
+      paths = [ prismlauncher ];
+      nativeBuildInputs = [ makeWrapper ];
+      postBuild = "wrapProgram $out/bin/prismlauncher --unset QT_QPA_PLATFORMTHEME";
+    })
     vulkan-loader
     vulkan-validation-layers
     gnome-disk-utility # disks app from gnome
