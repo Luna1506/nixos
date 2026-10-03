@@ -134,11 +134,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790883595,
-        "narHash": "sha256-UOW09F91klU74psG67Sf1jNdmuc2dUBBCf9W2Lt3HYQ=",
+        "lastModified": 1791027327,
+        "narHash": "sha256-TZSBuG2VOA9nMgbLtNnnU1HfXaGtgvHJqvoJmSHCOZ8=",
         "owner": "raindancer118",
         "repo": "vela",
-        "rev": "ef52c28149d8dc4d043365b748f456516bca244c",
+        "rev": "75ab84039cb1d6074fa6c8eb285d09d3d32516cd",
         "type": "github"
       },
       "original": {
