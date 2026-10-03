@@ -49,6 +49,27 @@ in
     })
   '';
 
+  # vela erkennt Updates nur daran, dass sich die eigene Binary ändert (Arch).
+  # Unter NixOS liegt jede Version unter einem neuen Store-Pfad: Control Center
+  # und Idle liefen bis zum nächsten Login alt weiter, und SUPER+B (neue Binary)
+  # fand die Quickshell-Instanz der alten Version nicht. Hier werden veraltete
+  # Instanzen beendet und über Hyprland mit der neuen Version neu gestartet.
+  home.activation.velaRestartStale = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+    vela_restart_stale() {
+      local pattern=$1 cmd=$2 pids
+      pids=$(${pkgs.procps}/bin/pgrep -af "$pattern" | grep -vF "${vela.package}/" | cut -d' ' -f1 || true)
+      [ -n "$pids" ] || return 0
+      verboseEcho "vela: veraltete Instanz ($cmd) wird neu gestartet"
+      run kill $pids || true
+      [ -z "$cmd" ] || run /run/current-system/sw/bin/hyprctl -i 0 eval \
+        "hl.exec_cmd('${lib.getExe vela.package} $cmd')" >/dev/null || true
+    }
+    vela_restart_stale 'quickshell -p /nix/store/[^ ]*-vela-[^ /]*/.*share/vela/shell$' shell
+    vela_restart_stale '^/nix/store/[^ ]*-vela-[^ /]*/bin/vela idle$' idle
+    # Pulse nur beenden; Ctrl+Shift+Esc startet ihn in der neuen Version.
+    vela_restart_stale 'quickshell -p /nix/store/[^ ]*-vela-[^ /]*/.*share/vela/shell/pulse\.qml$' ""
+  '';
+
   home.packages = with pkgs; [
     brightnessctl # XF86-Helligkeitstasten (binds.nix)
     hyprsunset # Nachtlicht im Control Center
