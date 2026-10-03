@@ -6,6 +6,7 @@
     firefox # browser
     nautilus # file manager
     steam
+    prismlauncher # minecraft launcher (fabric, mods)
     vulkan-loader
     vulkan-validation-layers
     gnome-disk-utility # disks app from gnome
