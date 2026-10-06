@@ -73,6 +73,26 @@
         "type": "github"
       }
     },
+    "kartei": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791263996,
+        "narHash": "sha256-shkozzd+QTqO8OkMsULOkuwx3tD2MGe8HWl0KSwwHbY=",
+        "ref": "refs/heads/feat/teil1-laptop",
+        "rev": "b843fd43d0362fa3616a41a14e4e6a9277689769",
+        "revCount": 16,
+        "type": "git",
+        "url": "file:///home/luna/projects/kartei"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///home/luna/projects/kartei"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1789044656,
@@ -107,6 +127,7 @@
         "catppuccin": "catppuccin",
         "flutter-dev": "flutter-dev",
         "home-manager": "home-manager",
+        "kartei": "kartei",
         "nixpkgs": "nixpkgs_2",
         "vela": "vela",
         "zen-browser": "zen-browser"
