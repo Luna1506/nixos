@@ -73,24 +73,24 @@
         "type": "github"
       }
     },
-    "kartei": {
+    "naklearn": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1791263996,
-        "narHash": "sha256-shkozzd+QTqO8OkMsULOkuwx3tD2MGe8HWl0KSwwHbY=",
-        "ref": "refs/heads/feat/teil1-laptop",
-        "rev": "b843fd43d0362fa3616a41a14e4e6a9277689769",
-        "revCount": 16,
+        "lastModified": 1791276228,
+        "narHash": "sha256-LABAv74HuSoKJCordLUOqd3UY0p8bUBzincDsFtK3Ws=",
+        "ref": "refs/heads/main",
+        "rev": "4c6b563a3f430bc44d02180167f3b63170fa65b4",
+        "revCount": 24,
         "type": "git",
-        "url": "file:///home/luna/projects/kartei"
+        "url": "file:///home/luna/projects/naklearn"
       },
       "original": {
         "type": "git",
-        "url": "file:///home/luna/projects/kartei"
+        "url": "file:///home/luna/projects/naklearn"
       }
     },
     "nixpkgs": {
@@ -127,7 +127,7 @@
         "catppuccin": "catppuccin",
         "flutter-dev": "flutter-dev",
         "home-manager": "home-manager",
-        "kartei": "kartei",
+        "naklearn": "naklearn",
         "nixpkgs": "nixpkgs_2",
         "vela": "vela",
         "zen-browser": "zen-browser"

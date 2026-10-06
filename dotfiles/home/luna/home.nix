@@ -28,7 +28,7 @@
     ./modules/nerdfetch-bash.nix
     ./modules/vela
     ./modules/claude-desktop
-    ./modules/kartei
+    ./modules/naklearn
   ];
 }
 

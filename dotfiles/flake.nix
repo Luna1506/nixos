@@ -29,8 +29,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    kartei = {
-      url = "git+file:///home/luna/projects/kartei";
+    naklearn = {
+      url = "git+file:///home/luna/projects/naklearn";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
