@@ -38,7 +38,8 @@ in
       (bind (mod "J") ''hl.dsp.layout("togglesplit")'')
       (bind (mod "F") ''hl.dsp.window.fullscreen({ action = "toggle" })'')
       (bind (mod "L") (exec "hyprlock"))
-      (bind (mod "D") (exec ''grim -g "$(slurp)" - | wl-copy''))
+      # Screenshot: Bereich wählen, als JPG in ~/Pictures/Screenshots speichern und kopieren
+      (bind (mod "D") (exec ''d=~/Pictures/Screenshots; mkdir -p "$d"; f="$d/$(date +%F_%H-%M-%S).jpg"; g=$(slurp) && grim -t jpeg -q 90 -g "$g" "$f" && wl-copy < "$f"''))
       (bind (mod "SHIFT + E") "hl.dsp.exit()")
       (bind (mod "V") (exec "cliphist list | wofi -dmenu | cliphist decode | wl-copy"))
       (bind (mod "SHIFT + TAB") (exec "qs ipc -c overview call overview toggle"))

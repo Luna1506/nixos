@@ -1,10 +1,6 @@
 {
   networking.networkmanager.enable = true;
 
-  services.tailscale.enable = true;
-  # NAKLearn-Server (Port 8742) nur über Tailscale erreichbar
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 8742 ];
-
   # Beispiel: Firewall etc. könntest du hier ergänzen
   # networking.firewall.enable = true;
 
