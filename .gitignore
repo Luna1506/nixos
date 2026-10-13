@@ -2,3 +2,5 @@
 ./hosts/laptop/hardware-configuration.nix
 ./.git/.
 
+result
+result-*

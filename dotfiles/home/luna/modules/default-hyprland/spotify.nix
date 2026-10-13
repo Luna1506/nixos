@@ -12,7 +12,7 @@ let
   # an der gespeicherten Stelle weiterzumachen. Die Marke wird beim Start gesetzt
   # und beim ersten Abspielen (auch direkt in Spotify) wieder entfernt.
   freshMark = ''"''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/spotify-fresh"'';
-  # zuletzt gespielter Song (vom Benachrichtigungsdienst geschrieben)
+  # zuletzt gespielter Song (von spotify-track-watch geschrieben)
   lastTrack = ''"''${XDG_STATE_HOME:-$HOME/.local/state}/spotify-last-track"'';
 
   ctl = pkgs.writeShellScript "spotify-ctl" ''
@@ -69,17 +69,14 @@ let
     esac
   '';
 
-  # Benachrichtigung bei jedem Songwechsel (nur wenn auch wirklich gespielt wird)
-  trackNotify = pkgs.writeShellScript "spotify-track-notify" ''
+  # Merkt sich bei jedem Songwechsel den Song (nur wenn auch wirklich gespielt wird)
+  trackWatch = pkgs.writeShellScript "spotify-track-watch" ''
     mark=${freshMark}
     state=${lastTrack}
     mkdir -p "$(dirname "$state")"
-    cover="''${XDG_RUNTIME_DIR:-/tmp}/spotify-cover.jpg"
     last=""
-    sep=$'\x1f' # Feldtrenner; Tabs würde read bei leeren Feldern zusammenfassen
-    ${playerctl} metadata --follow \
-      --format "{{status}}$sep{{mpris:trackid}}$sep{{title}}$sep{{artist}}$sep{{album}}$sep{{mpris:artUrl}}" |
-      while IFS="$sep" read -r status id title artist album art; do
+    ${playerctl} metadata --follow --format "{{status}} {{mpris:trackid}}" |
+      while read -r status id; do
         # leere Zeile = Spotify wurde beendet
         [ -n "$id" ] || { last=""; continue; }
         [ "$status" = Playing ] || continue
@@ -87,12 +84,6 @@ let
         [ "$id" != "$last" ] || continue
         last=$id
         echo "$id" > "$state"
-        icon=()
-        if [ -n "$art" ] && ${pkgs.curl}/bin/curl -sfL --max-time 3 -o "$cover" "$art"; then
-          icon=(-i "$cover")
-        fi
-        ${notifySend} "''${icon[@]}" -h string:x-canonical-private-synchronous:spotify-track \
-          "$title" "$artist''${album:+ – $album}"
       done
   '';
 
@@ -130,14 +121,14 @@ in
     ];
   };
 
-  systemd.user.services.spotify-track-notify = {
+  systemd.user.services.spotify-track-watch = {
     Unit = {
-      Description = "Benachrichtigung bei Spotify-Songwechsel";
+      Description = "Merkt sich den zuletzt gespielten Spotify-Song";
       PartOf = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];
     };
     Service = {
-      ExecStart = "${trackNotify}";
+      ExecStart = "${trackWatch}";
       Restart = "always";
       RestartSec = 2;
     };

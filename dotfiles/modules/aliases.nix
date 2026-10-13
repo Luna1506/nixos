@@ -32,15 +32,25 @@ in
 
       git add .
 
-      # Wenn Argument(e) da sind und nicht leer -> nutze sie, sonst Datum/Uhrzeit
-      if [ $# -gt 0 ] && [ -n "$*" ]; then
-        MESSAGE="$*"
-      else
-        MESSAGE="$(date '+%Y-%m-%d %H:%M:%S')"
-      fi
-
       # Nur committen wenn staged changes existieren
       if ! git diff --cached --quiet; then
+        # Wenn Argument(e) da sind und nicht leer -> nutze sie, sonst lässt
+        # Claude (Haiku) aus dem Diff eine kurze Message schreiben
+        if [ $# -gt 0 ] && [ -n "$*" ]; then
+          MESSAGE="$*"
+        else
+          echo "Commit-Message wird generiert..."
+          MESSAGE="$(
+            { git diff --cached --stat; echo; git diff --cached | head -c 30000; } |
+              timeout 60 claude -p --model haiku "Schreibe für den folgenden Git-Diff einer NixOS-Konfiguration eine Commit-Message auf Deutsch: eine Zeile, höchstens 72 Zeichen, grob was geändert wurde (z. B. \"Spotify-Shortcuts und Zen-Autostart hinzugefügt\"). Keine Anführungszeichen, kein Präfix, keine Erklärung – gib nur die Message aus." 2>/dev/null |
+              head -n 1 || true
+          )"
+          # Fallback ohne claude/Netz: geänderte Dateien
+          if [ -z "$MESSAGE" ]; then
+            MESSAGE="Geändert: $(git diff --cached --name-only | xargs -n1 basename | sort -u | head -n 5 | paste -sd ',' | sed 's/,/, /g')"
+          fi
+        fi
+
         git commit -m "$MESSAGE"
       else
         echo "Keine Änderungen zum Committen."
