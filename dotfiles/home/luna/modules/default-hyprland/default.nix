@@ -8,6 +8,7 @@
     ./look.nix
     ./input.nix
     ./binds.nix
+    ./spotify.nix
     ./rules.nix
     ./ghostty.nix
     ./hyprlock.nix

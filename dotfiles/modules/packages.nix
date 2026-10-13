@@ -5,6 +5,7 @@
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default # browser
     firefox # browser
     nautilus # file manager
+    loupe # image viewer
     steam
     # minecraft launcher (fabric, mods)
     # ohne gtk3-platformtheme: Prism lädt alle Qt-Styles, qt6gtk2 (GTK2) + gtk3 im selben Prozess = Segfault
@@ -76,6 +77,15 @@
     nuclei
     # END AUTO PACKAGES
   ];
+
+  # Bilder standardmäßig mit Loupe öffnen
+  xdg.mime.defaultApplications = {
+    "image/png" = "org.gnome.Loupe.desktop";
+    "image/jpeg" = "org.gnome.Loupe.desktop";
+    "image/gif" = "org.gnome.Loupe.desktop";
+    "image/webp" = "org.gnome.Loupe.desktop";
+    "image/svg+xml" = "org.gnome.Loupe.desktop";
+  };
 
   programs.nix-ld.enable = true;
 
