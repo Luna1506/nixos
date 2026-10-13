@@ -29,11 +29,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    naklearn = {
-      url = "git+file:///home/luna/projects/naklearn";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:

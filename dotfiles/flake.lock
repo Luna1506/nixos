@@ -73,26 +73,6 @@
         "type": "github"
       }
     },
-    "naklearn": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1791295477,
-        "narHash": "sha256-le4aAlLmoVGYiDZVp++rsZj7hyxOdhECkgTnvdjEeOI=",
-        "ref": "refs/heads/main",
-        "rev": "8cde6adb8ae4c7859ea4be9898525217c21cb57b",
-        "revCount": 33,
-        "type": "git",
-        "url": "file:///home/luna/projects/naklearn"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:///home/luna/projects/naklearn"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1789044656,
@@ -127,7 +107,6 @@
         "catppuccin": "catppuccin",
         "flutter-dev": "flutter-dev",
         "home-manager": "home-manager",
-        "naklearn": "naklearn",
         "nixpkgs": "nixpkgs_2",
         "vela": "vela",
         "zen-browser": "zen-browser"
