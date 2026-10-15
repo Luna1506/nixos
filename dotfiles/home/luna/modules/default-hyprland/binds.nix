@@ -38,8 +38,9 @@ in
       (bind (mod "J") ''hl.dsp.layout("togglesplit")'')
       (bind (mod "F") ''hl.dsp.window.fullscreen({ action = "toggle" })'')
       (bind (mod "L") (exec "hyprlock"))
-      # Screenshot: Bereich wählen, als JPG in ~/Pictures/Screenshots speichern und kopieren
-      (bind (mod "D") (exec ''d=~/Pictures/Screenshots; mkdir -p "$d"; f="$d/$(date +%F_%H-%M-%S).jpg"; g=$(slurp) && grim -t jpeg -q 90 -g "$g" "$f" && wl-copy < "$f"''))
+      # Screenshot: Bereich wählen, als JPG in ~/Pictures/Screenshots speichern und als PNG kopieren
+      # (Claude Code liest nur image/png aus der Zwischenablage)
+      (bind (mod "D") (exec ''d=~/Pictures/Screenshots; mkdir -p "$d"; f="$d/$(date +%F_%H-%M-%S).jpg"; g=$(slurp) && grim -t jpeg -q 90 -g "$g" "$f" && grim -g "$g" - | wl-copy -t image/png''))
       (bind (mod "SHIFT + E") "hl.dsp.exit()")
       (bind (mod "V") (exec "cliphist list | wofi -dmenu | cliphist decode | wl-copy"))
       (bind (mod "SHIFT + TAB") (exec "qs ipc -c overview call overview toggle"))
