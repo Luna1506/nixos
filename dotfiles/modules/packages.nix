@@ -1,8 +1,14 @@
-{ pkgs, inputs, ... }:
+{ pkgs, lib, inputs, ... }:
 {
   environment.systemPackages = with pkgs; [
     ghostty # terminal
-    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default # browser
+    # browser; ffmpeg dazu, sonst kein H.264 (Zen bringt nur ffvpx mit, Firefox aus nixpkgs hat ffmpeg)
+    (symlinkJoin {
+      name = "zen-browser";
+      paths = [ inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default ];
+      nativeBuildInputs = [ makeWrapper ];
+      postBuild = "wrapProgram $out/bin/zen --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ ffmpeg.lib ]}";
+    })
     firefox # browser
     nautilus # file manager
     loupe # image viewer
