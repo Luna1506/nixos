@@ -2,6 +2,8 @@
 {
   environment.systemPackages = with pkgs; [
     ghostty # terminal
+    iloader # installiert SideStore aufs iPhone (NAKLearn)
+    libimobiledevice # iPhone-Tools (idevice_id, ideviceinfo)
     # browser; ffmpeg dazu, sonst kein H.264 (Zen bringt nur ffvpx mit, Firefox aus nixpkgs hat ffmpeg)
     (symlinkJoin {
       name = "zen-browser";
@@ -111,5 +113,8 @@
     enable = true;
     package = pkgs.temurin-bin-25;
   };
+
+  # iPhone per USB (SideStore für NAKLearn): usbmuxd
+  services.usbmuxd.enable = true;
 }
 
