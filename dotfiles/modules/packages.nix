@@ -2,7 +2,22 @@
 {
   environment.systemPackages = with pkgs; [
     ghostty # terminal
-    iloader # installiert SideStore aufs iPhone (NAKLearn)
+    # installiert SideStore aufs iPhone (NAKLearn); nixpkgs hängt bei 2.3.3, daher selbst hochgezogen
+    (iloader.overrideAttrs (final: prev: {
+      version = "2.3.8";
+      src = prev.src.override {
+        sha256 = "sha256-97CTooLPAhYt9tzPGWyJNyJcUqvomR1eaSpWnKleMh4=";
+      };
+      nodeModules = prev.nodeModules.overrideAttrs {
+        outputHash = "sha256-v6Hy3fmbpArVJh0YLJZGKH65nXiWPMjUsu1nPKdHlQ8=";
+      };
+      cargoHash = "sha256-EwgiDDYDD8jDXO0cKQeJOFNGKWgXZw7txCQ3uFReXKI=";
+      cargoDeps = rustPlatform.fetchCargoVendor {
+        inherit (final) src;
+        sourceRoot = "${final.src.name}/src-tauri";
+        hash = final.cargoHash;
+      };
+    }))
     libimobiledevice # iPhone-Tools (idevice_id, ideviceinfo)
     # browser; ffmpeg dazu, sonst kein H.264 (Zen bringt nur ffvpx mit, Firefox aus nixpkgs hat ffmpeg)
     (symlinkJoin {
